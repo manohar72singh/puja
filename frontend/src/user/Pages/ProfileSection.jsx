@@ -26,7 +26,7 @@ const ProfileSection = () => {
   return (
     /* Changed 'inset-0' to specific top margin to accommodate Navbar */
     /* Added z-40 to ensure it stays above common page elements but below modals */
-    <div className="h-screen w-full bg-[#fff8ec] fixed top-0 left-0 right-0 flex items-center justify-center p-4 overflow-hidden font-sans z-40">
+    <div className="h-screen w-full bg-[#FFF4E1] fixed top-0 left-0 right-0 flex items-center justify-center p-4 overflow-hidden font-sans z-40">
       
       {/* Decorative Orbs */}
       <div className="absolute top-[-5%] right-[-5%] w-[450px] h-[450px] bg-orange-200/30 rounded-full blur-[120px]" />

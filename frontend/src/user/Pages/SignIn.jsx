@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { ArrowLeft, Phone, Loader2, KeyRound, Flame } from 'lucide-react';
+import { useState } from 'react';
+import { ArrowLeft,Loader2, KeyRound, Flame } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 const SignIn = () => {

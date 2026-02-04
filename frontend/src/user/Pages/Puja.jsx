@@ -119,7 +119,7 @@ export default function Puja() {
     <div className="min-h-screen bg-[#FFF4E1]">
       
       {/* 1. HERO SECTION (Adjusted for same bg) */}
-      <section className="bg-[#FFF4E1]py-12 px-6">
+      <section className="bg-[#FFF4E1]py-12 pt-5 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <span className="inline-block bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold tracking-widest uppercase mb-4">
             Divine Ceremonies
@@ -183,8 +183,7 @@ export default function Puja() {
       </div>      
 
       {/* 4. SERVICES GRID */}
-      <section className="max-w-7xl mx-auto px-6 pb-20 bg-[#FFF4E1]
-">
+      <section className="max-w-7xl mx-auto px-6 pb-20 bg-[#FFF4E1]">
         <div className="flex flex-col mb-10">
           <div className="flex items-center gap-2 mb-1">
             <span className="h-[2px] w-8 bg-orange-500"></span>

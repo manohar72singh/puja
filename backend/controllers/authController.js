@@ -17,7 +17,7 @@ export const signupRequest = async (req, res) => {
             userData: { name, phone, email, gotra },
             otp: otp,
             type: 'SIGNUP',
-            expires: Date.now() + 10 * 60 * 1000 
+            expires: Date.now() + 10 * 60 * 1000
         };
 
         console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
@@ -46,7 +46,7 @@ export const signupVerify = async (req, res) => {
             );
 
             delete otpStore[phone];
-            const token = jwt.sign({ id: result.insertId, name, phone ,email}, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+            const token = jwt.sign({ id: result.insertId, name, phone, email }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
             res.status(201).json({ message: "Verified!", token });
         } else {
             res.status(400).json({ message: "Invalid OTP" });
@@ -82,7 +82,15 @@ export const verifyOtp = async (req, res) => {
         if (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString()) {
             const [rows] = await db.query("SELECT id, name, phone, email FROM users WHERE phone = ?", [phone]);
             delete otpStore[phone];
-            const token = jwt.sign({ id: rows[0].id, name: rows[0].name }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
+            // verifyOtp function mein payload ko aise clean karein:
+            const token = jwt.sign({
+                id: rows[0].id,
+                name: rows[0].name,
+                phone: rows[0].phone,
+                email: rows[0].email  // Email ko seedha bhejien, object ke andar nahi
+            }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
             res.status(200).json({ message: "Login success", token });
         } else {
             res.status(400).json({ message: "Invalid OTP" });
