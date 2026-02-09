@@ -48,7 +48,7 @@ const HowItWorks = () => {
         </div>
 
         {/* REFERRAL CARD - Slim Profile */}
-        <div className="max-w-4xl mx-auto bg-[#fff8ec] border border-orange-100 rounded-3xl p-5 md:p-8 shadow-sm">
+        <div className="max-w-4xl mx-auto bg-[#fff8ec] border border-orange-200 rounded-3xl p-5 md:p-8 shadow-sm">
             <div className="flex flex-col md:flex-row items-center gap-6">
                 
                 {/* Gift Icon - Smaller */}
