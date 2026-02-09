@@ -130,6 +130,7 @@ export const verifyOtp = async (req, res) => {
     }
 };
 
+
 //5.add-address
 
 export const addAddress = async (req, res) => {
@@ -185,7 +186,6 @@ export const addAddress = async (req, res) => {
         });
     }
 };
-
 
 // 6.users ka profile mai sara address dikhana
 export const getUserAddresses = async (req, res) => {
@@ -353,7 +353,6 @@ export const addMember = async(req,res) =>{
     }
 }
 
-
 // show all family members of user
 export const allMembers = async(req,res)=>{
     try{
@@ -370,7 +369,6 @@ export const allMembers = async(req,res)=>{
         res.status(500).json({message:"Server Error"})
     }
 }
-
 
 // DELETE a family member
 export const deleteMember = async (req, res) => {

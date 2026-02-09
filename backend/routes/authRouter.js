@@ -15,6 +15,7 @@ import {
     deleteMember
 } from '../controllers/authController.js';
 
+
 import { verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();

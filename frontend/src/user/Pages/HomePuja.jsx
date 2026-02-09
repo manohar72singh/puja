@@ -178,7 +178,8 @@ export default function HomePuja() {
               </div>
 
               {/* Content Box (Background white to pop out from cream bg) */}
-              <div className="p-6 flex flex-col justify-between flex-1 bg-white">
+              <div className="p-6 flex flex-col justify-between flex-1 bg-white"
+              onClick={() => navigate(`/homePuja/${service.id}`)}>
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span className="text-[10px] font-bold text-orange-500 uppercase bg-orange-50 px-2 py-0.5 rounded">
@@ -186,7 +187,7 @@ export default function HomePuja() {
                     </span>
                     <span className="text-xs font-bold text-[#3b2a1a]">★ {service.rating}</span>
                   </div>
-                  <h3 className="text-xl font-serif text-[#3b2a1a] mb-3 group-hover:text-orange-600 transition-colors line-clamp-1">
+                  <h3 className="text-2xl font-serif text-[#3b2a1a] mb-3 group-hover:text-orange-600 transition-colors line-clamp-1">
                     {service.title}
                   </h3>
                   <div className="space-y-2">

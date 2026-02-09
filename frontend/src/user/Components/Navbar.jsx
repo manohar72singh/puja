@@ -58,6 +58,8 @@ const Navbar = () => {
     window.location.reload();
   };
 
+  
+
   const navItems = [
     { to: "/", label: "Home", icon: <Home size={18} /> },
     { to: "/homepuja", label: "Home-Puja", icon: <Globe size={18} /> },

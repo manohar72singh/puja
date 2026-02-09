@@ -1,244 +1,257 @@
-import React, { useState } from 'react';
-import { Clock, Shield, Heart, Briefcase, Users, Box, ChevronRight, Zap, House, MessageCircle, ChevronLeft } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { Clock, Shield, Heart, Briefcase, Users, Box, ChevronRight, Zap, House, MessageCircle, ChevronLeft, Star, HelpCircle, Info, ClipboardList } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 
-// ... (services array same rahega)
 const services = [
-  {
-    id: 1,
-    title: "Satyanarayan Katha",
-    temple: "Ayodhya Ram Mandir",
-    category: "Dosha",
-    date: "Thursday",
-    rating: 4.9,
-    reviews: 180,
-    price: 1500,
-    image: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
-    badge: "Popular",
-  },
-  {
-    id: 2,
-    title: "Griha Pravesh Puja",
-    temple: "Haridwar",
-    category: "Marriage",
-    date: "Auspicious Day",
-    rating: 4.7,
-    reviews: 92,
-    price: 4100,
-    image: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg",
-  },
-  {
-    id: 3,
-    title: "Maha Mrityunjaya Jaap",
-    temple: "Kashi Vishwanath",
-    category: "Shiv Puja",
-    date: "Monday",
-    rating: 5.0,
-    reviews: 256,
-    price: 5100,
-    image: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
-    badge: "Highly Rated"
-  },
-  {
-    id: 4,
-    title: "Rahu–Ketu Shanti Puja",
-    temple: "Srikalahasti",
-    category: "Navgraha",
-    date: "Next Week",
-    rating: 4.6,
-    reviews: 110,
-    price: 2700,
-    image: "https://images.unsplash.com/photo-1508672019048-805c876b67e2",
-  },
-  {
-    id: 5,
-    title: "Kaal Sarp Dosha Puja",
-    temple: "Trimbakeshwar, Nashik",
-    category: "Dosha",
-    date: "Tomorrow",
-    rating: 4.8,
-    reviews: 124,
-    price: 2100,
-    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b",
-    badge: "Most Booked",
-  },
-  {
-    id: 6,
-    title: "Manglik Dosha Nivaran",
-    temple: "Ujjain Mahakal",
-    category: "Marriage",
-    date: "Amavasya",
-    rating: 4.7,
-    reviews: 98,
-    price: 2500,
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaIc1BqS_aDmS26-3x3JSSotU2p0Dr2InktA&s",
-    badge: "Recommended",
-  },
-  {
-    id: 7,
-    title: "Navgraha Shanti Puja",
-    temple: "Kashi Vishwanath",
-    category: "Navgraha",
-    date: "This Week",
-    rating: 4.9,
-    reviews: 210,
-    price: 3100,
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN4BqbvT9jy2Jgqr3gQY-Q9bWELVO3eyyS6A&s",
-  },
-  {
-    id: 8,
-    title: "Rudrabhishek",
-    temple: "Somnath Temple",
-    category: "Shiv Puja",
-    date: "Monday",
-    rating: 4.6,
-    reviews: 76,
-    price: 1100,
-    image: "https://static.wixstatic.com/media/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg/v1/fill/w_568,h_378,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg",
-  },
+    {
+        id: 1,
+        title: "Satyanarayan Katha",
+        temple: "Ayodhya Ram Mandir",
+        category: "Dosha",
+        date: "Thursday",
+        rating: 4.9,
+        reviews: 180,
+        price: 1500,
+        image: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
+    },
 ];
 
-
 const HomePujaBooking = () => {
-  const [samagriEnabled, setSamagriEnabled] = useState(true);
-  const navigate = useNavigate();
-  const { id } = useParams();
+    const [samagriEnabled, setSamagriEnabled] = useState(true);
+    const [activeTab, setActiveTab] = useState('about');
+    const navigate = useNavigate();
+    const { id } = useParams();
 
-  const findService = services.find(s => s.id === Number(id)) || services[0];
+    const sections = {
+        about: useRef(null),
+        benefits: useRef(null),
+        process: useRef(null),
+        reviews: useRef(null),
+        faqs: useRef(null),
+    };
 
-  return (
-    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-8 font-sans text-gray-800">
-      <div className="max-w-6xl mx-auto">
-        
-        {/* --- BACK BUTTON --- */}
-        <button 
-          onClick={() => navigate(-1)} 
-          className="flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-orange-600 mb-6 transition-colors group"
-        >
-            <ChevronLeft size={18} strokeWidth={2.5} />
+    // Auto-update active tab on scroll
+    useEffect(() => {
+        const handleScroll = () => {
+            // 150px offset (Main Nav + Puja Nav + bit of margin)
+            const scrollPosition = window.scrollY + 150;
+            for (const [key, ref] of Object.entries(sections)) {
+                if (ref.current && 
+                    scrollPosition >= ref.current.offsetTop && 
+                    scrollPosition < ref.current.offsetTop + ref.current.offsetHeight) {
+                    setActiveTab(key);
+                }
+            }
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
-          <span>Back to All Pujas</span>
-        </button>
+    const scrollToSection = (sectionId) => {
+        const element = sections[sectionId].current;
+        if (element) {
+            // Main Nav (64px) + Puja Nav (64px) = 128px + safety margin
+            const offset = 140; 
+            const bodyRect = document.body.getBoundingClientRect().top;
+            const elementRect = element.getBoundingClientRect().top;
+            const elementPosition = elementRect - bodyRect;
+            const offsetPosition = elementPosition - offset;
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          
-          {/* Left Column */}
-          <div className="lg:col-span-2 space-y-6">
+            window.scrollTo({
+                top: offsetPosition,
+                behavior: 'smooth'
+            });
+        }
+    };
 
-            {/* 1. Hero Card */}
-            <div className="bg-white rounded-[2rem] shadow-sm overflow-hidden border border-orange-200">
-              <div className="relative h-64 md:h-80 bg-gray-200">
-                <img
-                  src={findService.image}
-                  alt={findService.title}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                <div className="absolute top-4 left-4 flex gap-2">
-                  <span className="bg-white/90 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full text-gray-700">North Indian</span>
-                  <span className="bg-gradient-to-r from-orange-400 to-red-400 text-white text-xs font-semibold px-3 py-1 rounded-full flex items-center gap-1">✨ Trending</span>
-                </div>
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h1 className="text-3xl md:text-4xl font-serif font-bold mb-1 drop-shadow-md">{findService.title}</h1>
-                </div>
-              </div>
-              <div className="p-6">
-                <p className="text-gray-500 text-lg mb-4">Divine narrative worship for prosperity</p>
-                <div className="flex items-center gap-2 text-orange-600 font-medium">
-                  <Clock size={18} />
-                  <span>3 hours</span>
-                </div>
-              </div>
-            </div>
+    const findService = services.find(s => s.id === Number(id)) || services[0];
 
-            {/* 2. Samagri Kit Toggle */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-orange-200 flex flex-row items-center justify-between gap-4">
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-orange-50 rounded-lg text-orange-500 shrink-0 border border-orange-100"><Box size={24} /></div>
-                <div>
-                  <h3 className="text-lg font-serif font-bold text-gray-800">All-in-One Samagri Kit</h3>
-                  <p className="text-gray-500 text-sm mt-1"><span className="text-orange-500 font-medium">Relax.</span> We bring Flowers, Ghee & Vessels.</p>
-                </div>
-              </div>
-              <div className="flex flex-col items-end gap-1 shrink-0">
-                <button onClick={() => setSamagriEnabled(!samagriEnabled)} className={`w-12 h-7 flex items-center rounded-full p-1 transition-colors duration-300 border border-orange-200 ${samagriEnabled ? 'bg-orange-500' : 'bg-gray-300'}`}>
-                  <div className={`bg-white w-5 h-5 rounded-full shadow-md transform duration-300 ${samagriEnabled ? 'translate-x-5' : 'translate-x-0'}`}></div>
+    return (
+        <div className="min-h-screen bg-[#FFFBF5] p-4 md:p-8 font-sans text-gray-800">
+            <div className="max-w-6xl mx-auto">
+                
+                {/* BACK BUTTON */}
+                <button 
+                    onClick={() => navigate(-1)} 
+                    className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-orange-600 mb-6 transition-colors group"
+                >
+                    <ChevronLeft size={18} strokeWidth={2.5} className="group-hover:-translate-x-1 transition-transform" />
+                    <span>Back to All Pujas</span>
                 </button>
-                <span className="text-xs font-semibold text-gray-500">+₹600</span>
-              </div>
-            </div>
 
-            {/* ... baaki ka benefits aur WhatsApp section same rahega ... */}
-            
-            {/* 3. Benefits Section */}
-            <div className="space-y-4">
-              <h3 className="text-xl font-serif font-bold text-gray-800">Benefits of {findService.title}</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <BenefitCard icon={<Heart size={20} />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                <BenefitCard icon={<Shield size={20} />} title="Protection & Blessings" desc="Divine protection for family" />
-                <BenefitCard icon={<Briefcase size={20} />} title="Prosperity & Success" desc="Removes obstacles in career" />
-                <BenefitCard icon={<Users size={20} />} title="Family Harmony" desc="Strengthens bond between members" />
-                <BenefitCard icon={<Zap size={20} />} title="Positive Energy" desc="Purify home with mantras" />
-                <BenefitCard icon={<House size={20} />} title="Vastu Benefits" desc="Harmonize living space" />
-              </div>
-            </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    
+                    {/* Left Column */}
+                    <div className="lg:col-span-2">
+                        
+                        {/* HERO IMAGE SECTION */}
+                        <div className="bg-white rounded-t-[2rem] overflow-hidden border-t border-x border-orange-200 shadow-sm">
+                            <div className="relative h-64 md:h-80">
+                                <img src={findService.image} alt={findService.title} className="w-full h-full object-cover" />
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                                <div className="absolute bottom-6 left-6 text-white">
+                                    <h1 className="text-2xl md:text-4xl font-serif font-bold mb-1">{findService.title}</h1>
+                                    <p className="text-orange-200 text-sm flex items-center gap-2 font-medium">
+                                        <Star size={14} fill="currentColor" /> {findService.rating} | Certified Vedic Pandits
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
 
-            {/* 4. WhatsApp Card */}
-            <div className="bg-[#FFF9E5] rounded-2xl p-5 border border-orange-200 flex items-start gap-4">
-              <div className="p-2 bg-[#FFEDC2] text-yellow-700 rounded-xl mt-1 border border-orange-100"><MessageCircle size={24} /></div>
-              <div>
-                <h3 className="text-lg font-serif font-bold text-gray-900">Pandit Details via WhatsApp</h3>
-                <p className="text-gray-600 text-sm mt-1">Your assigned Pandit's details will be shared on <span className="font-bold text-gray-800">WhatsApp</span> on the booking date.</p>
-              </div>
-            </div>
-          </div>
+                        {/* --- PUJA STICKY NAVBAR --- */}
+                        {/* top-[64px] prevents overlapping with your Main Website Header */}
+                        <nav className="sticky top-[64px] z-[40] bg-white border border-orange-200 shadow-lg flex overflow-x-auto no-scrollbar rounded-b-2xl mb-8">
+                            {['about', 'benefits', 'process', 'reviews', 'faqs'].map((tab) => (
+                                <button
+                                    key={tab}
+                                    onClick={() => scrollToSection(tab)}
+                                    className={`flex-1 px-4 py-4 text-xs md:text-sm font-extrabold capitalize whitespace-nowrap transition-all border-b-4 ${
+                                        activeTab === tab 
+                                        ? 'border-orange-500 text-orange-600 bg-orange-50/50' 
+                                        : 'border-transparent text-gray-400 hover:text-orange-400'
+                                    }`}
+                                >
+                                    {tab}
+                                </button>
+                            ))}
+                        </nav>
 
-          {/* Right Column Summary (Sticky) */}
-          <div className="lg:col-span-1 lg:sticky lg:top-8 h-fit z-10">
-            <div className="bg-white rounded-3xl shadow-lg border border-orange-200 p-6">
-              <h2 className="text-2xl font-serif font-bold mb-6">Booking Summary</h2>
-              <div className="space-y-4 mb-6 text-gray-600 text-sm md:text-base">
-                <div className="flex justify-between">
-                  <span>Base Price</span>
-                  <span className="font-medium text-gray-900">₹{findService.price}</span>
+                        {/* CONTENT SECTIONS */}
+                        <div className="space-y-6">
+                            
+                            {/* Samagri Card */}
+                            <div className="bg-white rounded-2xl p-6 border border-orange-200 hover:border-orange-500 transition-all duration-300 flex items-center justify-between shadow-sm group">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-orange-50 rounded-xl text-orange-500 border border-orange-100 group-hover:bg-orange-500 group-hover:text-white transition-colors">
+                                        <Box size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-lg font-bold text-gray-800">Add Complete Samagri Kit</h3>
+                                        <p className="text-gray-500 text-sm">Everything from flowers to pure ghee included.</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end gap-1">
+                                    <button onClick={() => setSamagriEnabled(!samagriEnabled)} className={`w-14 h-7 flex items-center rounded-full p-1 transition-colors ${samagriEnabled ? 'bg-orange-500' : 'bg-gray-300'}`}>
+                                        <div className={`bg-white w-5 h-5 rounded-full shadow-md transform duration-300 ${samagriEnabled ? 'translate-x-7' : 'translate-x-0'}`}></div>
+                                    </button>
+                                    <span className="text-[10px] font-bold text-orange-600">+₹600</span>
+                                </div>
+                            </div>
+
+                            <section ref={sections.about} className="scroll-mt-32 pt-2">
+                                <SectionTitle icon={<Info />} title="About the Ritual" />
+                                <div className="bg-white p-6 rounded-2xl border border-orange-200 hover:border-orange-500 transition-all duration-300 text-gray-600 leading-relaxed shadow-sm">
+                                    {findService.title} is a divine ritual that ensures peace, prosperity, and wealth. Our Pandits are trained to perform this according to the ancient Vedic traditions.
+                                </div>
+                            </section>
+
+                            <section ref={sections.benefits} className="scroll-mt-32 pt-2">
+                                <SectionTitle icon={<Zap />} title="Spiritual Benefits" />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <BenefitCard icon={<Heart />} title="Peace of Mind" desc="Creates a harmonious vibe for your home." />
+                                    <BenefitCard icon={<Shield />} title="Divine Shield" desc="Safeguards family from negative energy." />
+                                </div>
+                            </section>
+
+                            <section ref={sections.process} className="scroll-mt-32 pt-2">
+                                <SectionTitle icon={<ClipboardList />} title="Booking Process" />
+                                <div className="space-y-3">
+                                    {["Pandit reaches your home 15 mins early", "Sankalp and Pujan starts", "Katha path and Aarti"].map((step, i) => (
+                                        <div key={i} className="flex items-center gap-4 p-4 bg-white rounded-xl border border-orange-200 hover:border-orange-500 transition-all shadow-sm">
+                                            <span className="text-orange-500 font-bold bg-orange-50 h-8 w-8 rounded-full flex items-center justify-center border border-orange-100">{i+1}</span>
+                                            <span className="font-medium text-gray-700">{step}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            <section ref={sections.reviews} className="scroll-mt-32 pt-2">
+                                <SectionTitle icon={<Star />} title="User Reviews" />
+                                <div className="bg-white p-6 rounded-2xl border border-orange-200 hover:border-orange-500 transition-all shadow-sm">
+                                    <div className="flex items-center gap-1 text-orange-400 mb-2">
+                                        {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
+                                    </div>
+                                    <p className="text-gray-600 italic">"Highly professional service. Pandit ji explained every mantra beautifully."</p>
+                                    <p className="mt-4 text-xs font-bold text-gray-400 uppercase tracking-widest">— Rajesh Mehra</p>
+                                </div>
+                            </section>
+
+                            <section ref={sections.faqs} className="pb-10 scroll-mt-32 pt-2">
+                                <SectionTitle icon={<HelpCircle />} title="FAQs" />
+                                <div className="space-y-3">
+                                    <FAQItem q="Is the Pandit provided by you?" a="Yes, all our Pandits are verified and certified by our temple board." />
+                                    <FAQItem q="What if I need to reschedule?" a="You can reschedule for free up to 24 hours before the puja." />
+                                </div>
+                            </section>
+
+                        </div>
+                    </div>
+
+                    {/* Right Column Summary (Sticky) */}
+                    {/* top-[90px] ensures it sits below main nav and puja nav level */}
+                    <div className="lg:col-span-1 lg:sticky lg:top-[90px] z-30">
+                        <div className="bg-white rounded-3xl shadow-xl border border-orange-200 p-6">
+                            <h2 className="text-xl font-bold mb-6 text-gray-800 border-b border-orange-100 pb-2">Booking Summary</h2>
+                            <div className="space-y-4 mb-6">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500 font-medium">Base Service Fee</span>
+                                    <span className="text-gray-900 font-bold">₹{findService.price}</span>
+                                </div>
+                                {samagriEnabled && (
+                                    <div className="flex justify-between text-sm text-orange-600 font-semibold">
+                                        <span>Samagri Kit Charge</span>
+                                        <span>+₹600</span>
+                                    </div>
+                                )}
+                            </div>
+                            <div className="border-t border-dashed border-orange-200 my-4"></div>
+                            <div className="flex justify-between items-center mb-8">
+                                <span className="text-gray-800 font-bold text-lg">Payable Amount</span>
+                                <span className="text-3xl font-serif font-bold text-orange-500 tracking-tighter">
+                                    ₹{samagriEnabled ? Number(findService.price) + 600 : findService.price}
+                                </span>
+                            </div>
+                            <button 
+                                onClick={() => navigate("/payment")}
+                                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-2xl shadow-lg hover:shadow-orange-200 active:scale-95 transition-all uppercase tracking-wide"
+                            >
+                                Book This Puja
+                            </button>
+                        </div>
+                    </div>
+
                 </div>
-                <div className={`flex justify-between transition-opacity ${samagriEnabled ? 'opacity-100' : 'opacity-50'}`}>
-                  <span>Samagri Kit</span>
-                  <span className="font-medium text-gray-900">+₹600</span>
-                </div>
-              </div>
-              <div className="border-t border-dashed border-orange-200 my-4"></div>
-              <div className="flex justify-between items-end mb-1">
-                <span className="text-lg font-medium text-gray-800">Total</span>
-                <span className="text-3xl font-serif font-bold text-orange-500 tracking-tight">
-                  ₹{samagriEnabled ? Number(findService.price) + 600 : findService.price}
-                </span>
-              </div>
-              <p className="text-right text-xs text-gray-400 mb-6 italic">Fixed - No Cash Tips needed</p>
-              <button
-                className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-4 rounded-xl shadow-md border border-orange-300 hover:shadow-orange-200 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
-                onClick={() => navigate("/homePuja/payment-details")}
-              >
-                Proceed to Book <ChevronRight size={20} />
-              </button>
-              <p className="text-center text-[10px] md:text-xs text-gray-400 mt-4">Free cancellation up to 24 hours before</p>
             </div>
-          </div>
-
         </div>
-      </div>
-    </div>
-  );
+    );
 };
 
-const BenefitCard = ({ icon, title, desc }) => (
-  <div className="bg-[#F9F5F0] p-4 rounded-xl flex items-start gap-4 border border-orange-200 hover:bg-white hover:shadow-sm transition-all">
-    <div className="p-2 bg-orange-100 text-orange-600 rounded-lg shrink-0 border border-orange-200/30">{icon}</div>
-    <div>
-      <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-      <p className="text-gray-500 text-xs mt-1 leading-relaxed">{desc}</p>
+// --- HELPER COMPONENTS ---
+
+const SectionTitle = ({ icon, title }) => (
+    <div className="flex items-center gap-2 mb-4 text-orange-600 font-bold text-lg uppercase tracking-tight">
+        {React.cloneElement(icon, { size: 22 })}
+        <h3 className="font-serif">{title}</h3>
     </div>
-  </div>
+);
+
+const BenefitCard = ({ icon, title, desc }) => (
+    <div className="bg-white p-5 rounded-2xl flex items-start gap-4 border border-orange-200 hover:border-orange-500 transition-all duration-300 shadow-sm group">
+        <div className="p-3 bg-orange-50 text-orange-500 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all border border-orange-100">{icon}</div>
+        <div>
+            <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
+            <p className="text-gray-500 text-xs mt-1 leading-relaxed">{desc}</p>
+        </div>
+    </div>
+);
+
+const FAQItem = ({ q, a }) => (
+    <details className="group bg-white rounded-xl border border-orange-200 hover:border-orange-500 transition-all p-4 list-none shadow-sm">
+        <summary className="font-bold cursor-pointer flex justify-between items-center text-sm text-gray-700">
+            {q} <ChevronRight size={16} className="group-open:rotate-90 transition-transform text-orange-400" />
+        </summary>
+        <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-orange-50">{a}</p>
+    </details>
 );
 
 export default HomePujaBooking;
