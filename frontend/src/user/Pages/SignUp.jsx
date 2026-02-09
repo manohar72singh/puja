@@ -11,7 +11,8 @@ const SignUp = () => {
         gotra: '',
         email: '',
         phone: '',
-        otp: ''
+        otp: '',
+        role:'users'
     });
 
     const navigate = useNavigate();
@@ -42,24 +43,47 @@ const SignUp = () => {
     };
 
     const handleFinalVerify = async (e) => {
-        e.preventDefault();
-        if(formData.otp.length !== 6) { setError("Please enter the 6-digit sacred code."); return; }
-        setIsLoading(true);
-        setError("");
-        try {
-            const response = await fetch("http://localhost:5000/user/signup-verify", { 
-                method: "POST",
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: formData.phone, otp: formData.otp })
-            });
-            const data = await response.json();
-            if (response.ok) {
-                localStorage.setItem('token', data.token);
-                navigate('/'); 
-            } else { setError(data.message || "The code does not match."); }
-        } catch (error) { setError("Verification failed. Try again."); }
-        finally { setIsLoading(false); }
-    };
+    if (e) e.preventDefault();
+
+    if (formData.otp.length !== 6) { 
+        setError("Please enter the 6-digit sacred code."); 
+        return; 
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+        const signupData = {
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            gotra: formData.gotra,
+            otp: formData.otp,
+            role: 'user', // Default role
+            address: formData.address,
+            city: formData.city,
+            state: formData.state
+        };
+        const response = await fetch("http://localhost:5000/user/signup-verify", {
+            method: "POST",
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(signupData)
+        });
+        const data = await response.json();
+        if (response.ok) {
+            localStorage.setItem('token', data.token);
+            navigate('/'); 
+        } else { 
+            setError(data.message || "Verification failed. Please check the OTP."); 
+        }
+    } catch (error) { 
+        console.error("Signup Error:", error);
+        setError("Network error. Could not connect to server."); 
+    } finally { 
+        setIsLoading(false); 
+    }
+};
 
     return (
         <div className="min-h-screen bg-[#FFF4E1]

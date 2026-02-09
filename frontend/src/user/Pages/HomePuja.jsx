@@ -103,7 +103,7 @@ const upcomingPujas = [
   { id: 103, title: "Holika Dahan Shanti Path", date: "March 24, 2026", img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b" },
 ];
 
-export default function Puja() {
+export default function HomePuja() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -117,7 +117,7 @@ export default function Puja() {
   return (
     // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
-      
+
       {/* 1. HERO SECTION (Adjusted for same bg) */}
       <section className="bg-[#FFF4E1]py-12 pt-5 px-6">
         <div className="max-w-3xl mx-auto text-center">
@@ -127,47 +127,12 @@ export default function Puja() {
           <h1 className="text-3xl md:text-5xl font-serif text-[#3b2a1a] leading-tight">
             Sacred Rituals & <span className="text-orange-500 italic">Temple Pujas</span>
           </h1>
-          <p className="mt-4 text-gray-600 text-sm max-w-lg mx-auto">
+          <p className="mt-4 mb-4 text-gray-600 text-sm max-w-lg mx-auto">
             Authentic Vedic rituals by verified priests at India’s holiest shrines.
           </p>
         </div>
       </section>
 
-
-      {/* 3. UPCOMING PUJA SLIDER (35% Height) */}
-      <div className="max-w-7xl mx-auto px-6 mb-12 bg-[#FFF4E1]
-">
-        <div className="relative h-[35vh] w-full rounded-[32px] overflow-hidden shadow-xl bg-gray-900 border-4 border-white/50">
-          {upcomingPujas.map((slide, idx) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
-            >
-              <img src={slide.img} className="w-full h-full object-cover opacity-70" alt={slide.title} />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              
-              <div className="absolute bottom-8 left-8 text-white max-w-md">
-                <p className="text-orange-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-2">Upcoming Ritual</p>
-                <h2 className="text-2xl md:text-3xl font-serif mb-2">{slide.title}</h2>
-                <div className="flex items-center gap-2 text-gray-300 text-xs">
-                  <Calendar size={14} className="text-orange-500" /> {slide.date}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Navigation Dots */}
-          <div className="absolute bottom-6 right-8 flex gap-2">
-            {upcomingPujas.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentSlide(i)}
-                className={`h-1.5 rounded-full transition-all duration-300 ${i === currentSlide ? "w-8 bg-orange-500" : "w-2 bg-white/40"}`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
 
       {/* 2. SEARCH INPUT */}
       <div className="max-w-7xl mx-auto px-6 py-6 bg-[#FFF4E1]
@@ -180,7 +145,7 @@ export default function Puja() {
             className="w-full pl-12 pr-4 py-4 bg-white border border-orange-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-[#3b2a1a]"
           />
         </div>
-      </div>      
+      </div>
 
       {/* 4. SERVICES GRID */}
       <section className="max-w-7xl mx-auto px-6 pb-20 bg-[#FFF4E1]">
@@ -237,9 +202,9 @@ export default function Puja() {
                 </div>
 
                 <div className="mt-4 flex justify-end">
-                  <button 
+                  <button
                     className="flex items-center gap-2 bg-[#3b2a1a] text-white px-5 py-2.5 rounded-xl text-[11px] font-bold uppercase hover:bg-orange-600 transition-all group/btn"
-                    onClick={() => navigate(`/puja/${service.id}`)}
+                    onClick={() => navigate(`/homePuja/${service.id}`)}
                   >
                     Book Now
                     <ArrowRight size={14} className="group-hover/btn:translate-x-1 transition-transform" />

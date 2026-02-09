@@ -60,13 +60,13 @@ export default function Home() {
 
             <div className="flex flex-wrap gap-4 mt-10">
               <button className="bg-gradient-to-r from-orange-500 to-orange-600 text-white font-medium px-6 lg:px-8 py-3.5 rounded-xl shadow-lg hover:-translate-y-1 transition-all active:scale-95 whitespace-nowrap"
-                onClick={() => navigate("/puja")}
+                onClick={() => navigate("/homePuja")}
               >
-                Book Offline Puja
+                Book Home Puja
               </button>
               <button className="bg-white text-orange-500 font-medium px-6 lg:px-8 py-3.5 rounded-xl border border-orange-300 shadow-md hover:bg-orange-50 transition-all active:scale-95 whitespace-nowrap"
-                onClick={() => navigate("/puja")}>
-                Book Online Puja
+                onClick={() => navigate("/templePuja")}>
+                Book Temple Puja
               </button>
             </div>
 

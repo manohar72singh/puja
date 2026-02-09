@@ -25,8 +25,6 @@ app.get("/", (req, res) => {
 app.use('/user', authRouter); // Yahan '/user' hona zaroori hai
 
 
-
-
 // 🔥 DATABASE CHECK + SERVER START
 (async () => {
   try {

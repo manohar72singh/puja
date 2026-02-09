@@ -60,9 +60,9 @@ const Navbar = () => {
 
   const navItems = [
     { to: "/", label: "Home", icon: <Home size={18} /> },
-    { to: "/puja", label: "Puja", icon: <Globe size={18} /> },
-    { to: "/katha", label: "Katha", icon: <User size={18} /> },
-    { to: "/products", label: "Products", icon: <Settings size={18} /> },
+    { to: "/homepuja", label: "Home-Puja", icon: <Globe size={18} /> },
+    { to: "/templepuja", label: "Temple-Puja", icon: <User size={18} /> },
+    { to: "/mybooking", label: "My-Booking", icon: <Settings size={18} /> },
     { to: "/pind_dan", label: "Pind Dan", icon: <ShieldCheck size={18} /> },
   ];
 
@@ -168,10 +168,14 @@ const Navbar = () => {
                       >
                         <User size={18} className="text-gray-400" /> My Profile
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors">
+                      <button 
+                        onClick={() => { navigate("/manageSankalp"); setProfileOpen(false); }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors">
                         <ShieldCheck size={18} className="text-gray-400" /> Manage Sankalp
                       </button>
-                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors">
+                      <button className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors"
+                        onClick={() => { navigate("/savedAddresses"); setProfileOpen(false); }}
+                      >
                         <MapPin size={18} className="text-gray-400" /> Saved Addresses
                       </button>
                       <button
@@ -200,7 +204,8 @@ const Navbar = () => {
                 >
                   Sign In
                 </button>
-                <button className="px-6 py-2 rounded-xl bg-[#2D1B0B] text-white font-bold text-sm shadow-md">
+                <button className="px-6 py-2 rounded-xl bg-[#2D1B0B] text-white font-bold text-sm shadow-md"
+                  onClick={()=>navigate("/partnerSignIn")}>
                   Partner Login
                 </button>
               </div>

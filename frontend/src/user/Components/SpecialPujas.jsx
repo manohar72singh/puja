@@ -43,11 +43,11 @@ export default function SpecialPujas() {
         </div>
 
         {/* CARDS GRID - Added gap-10 for better breathing room between cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid  grid-cols-1  md:grid-cols-2 lg:grid-cols-3 gap-10">
           {pujas.map((puja) => (
             <div
               key={puja.id}
-              className="bg-white rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group"
+              className="bg-white rounded-3xl border border-orange-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col group"
             >
               <div className="relative overflow-hidden">
                 <img
