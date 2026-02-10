@@ -64,33 +64,47 @@ export const getAllBookingDetails = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    const [rows] = await db.execute(
+    // 1️⃣ Booking details (single / multiple bookings)
+    const [bookings] = await db.execute(
       `
       SELECT 
-        u.name,
-        ua.address_line,
-        ua.city,
-        ua.state,
-        ua.pincode,
+        b.id,
         b.puja_name,
         b.price,
         b.puja_time,
         b.puja_date
-      FROM users AS u
-      JOIN user_addresses AS ua
-        ON u.id = ua.user_id
-      JOIN booking_details AS b
-        ON u.id = b.user_id
-      WHERE u.id = ?
+      FROM booking_details b
+      WHERE b.user_id = ?
       `,
       [userId]
     );
 
-    if (!rows.length) {
-      return res.status(404).json({ message: "No booking details found" });
+    if (!bookings.length) {
+      return res.status(404).json({ message: "No booking found" });
     }
 
-    res.status(200).json(rows);
+    // 2️⃣ User info
+    const [[user]] = await db.execute(
+      `SELECT id, name FROM users WHERE id = ?`,
+      [userId]
+    );
+
+    // 3️⃣ All addresses
+    const [addresses] = await db.execute(
+      `
+      SELECT address_line, city, state, pincode
+      FROM user_addresses
+      WHERE user_id = ?
+      `,
+      [userId]
+    );
+
+    res.status(200).json({
+      user,
+      bookings,
+      addresses
+    });
+
   } catch (error) {
     console.error("ERROR:", error);
     res.status(500).json({ message: error.message });

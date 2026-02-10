@@ -5,27 +5,36 @@ import {
   Clock,
   User,
   MapPin,
-  ArrowRight
+  ArrowRight,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const MyBookings = () => {
   const navigate = useNavigate();
+
   const [bookings, setBookings] = useState([]);
+  const [user, setUser] = useState(null);
+  const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch("http://localhost:5000/user/booking/allBookings", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const res = await fetch(
+          "http://localhost:5000/user/booking/allBookings",
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
 
         const data = await res.json();
-        setBookings(data); // 👈 DIRECT backend data
-      
+        console.log("API DATA:", data);
+
+        setBookings(data.bookings || []);
+        setUser(data.user || null);
+        setAddresses(data.addresses || []);
       } catch (err) {
         console.error("Error fetching bookings:", err);
       } finally {
@@ -39,7 +48,7 @@ const MyBookings = () => {
   return (
     <div className="min-h-screen bg-[#FFF4E1] text-[#2D2D2D] font-sans">
       <main className="px-4 sm:px-8 py-8 md:py-12 max-w-6xl mx-auto">
-        {/* Header */}
+        {/* HEADER */}
         <div className="flex flex-col md:flex-row justify-between items-end gap-4 mb-10">
           <div>
             <button
@@ -62,14 +71,14 @@ const MyBookings = () => {
           </button>
         </div>
 
-        {/* Loading */}
+        {/* LOADING */}
         {loading && (
           <p className="text-center text-gray-400 font-medium">
             Loading bookings...
           </p>
         )}
 
-        {/* Empty */}
+        {/* EMPTY */}
         {!loading && bookings.length === 0 && (
           <p className="text-center text-gray-400 font-medium">
             No bookings found
@@ -78,12 +87,12 @@ const MyBookings = () => {
 
         {/* BOOKINGS LIST */}
         <div className="space-y-5">
-          {bookings.map((item, index) => (
+          {bookings.map((item) => (
             <div
-              key={index}
+              key={item.id}
               className="bg-white rounded-2xl border border-orange-200 shadow-sm p-6 hover:border-orange-300 transition"
             >
-              {/* Puja Name */}
+              {/* PUJA NAME */}
               <div className="flex items-center gap-3 mb-5">
                 <div className="h-10 w-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center font-serif text-xl">
                   ॐ
@@ -95,7 +104,7 @@ const MyBookings = () => {
 
               {/* DETAILS */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-10">
-                {/* Date */}
+                {/* DATE */}
                 <div className="flex items-center gap-3 text-gray-600">
                   <Calendar size={18} className="text-orange-300" />
                   <span className="text-sm font-medium">
@@ -108,7 +117,7 @@ const MyBookings = () => {
                   </span>
                 </div>
 
-                {/* Time */}
+                {/* TIME */}
                 <div className="flex items-center gap-3 text-gray-600">
                   <Clock size={18} className="text-orange-300" />
                   <span className="text-sm font-medium">
@@ -116,24 +125,28 @@ const MyBookings = () => {
                   </span>
                 </div>
 
-                {/* Devotee */}
+                {/* USER */}
                 <div className="flex items-center gap-3 text-gray-600">
                   <User size={18} className="text-orange-300" />
                   <span className="text-sm font-medium">
-                    {item.name}
+                    {user?.name}
                   </span>
                 </div>
 
-                {/* Address */}
-                <div className="flex items-center gap-3 text-gray-600 md:col-span-2">
-                  <MapPin size={18} className="text-orange-300" />
-                  <span className="text-sm font-medium">
-                    {item.address_line}, {item.city}, {item.state} -{" "}
-                    {item.pincode}
-                  </span>
-                </div>
+                {/* ADDRESS */}
+                {addresses[0] && (
+                  <div className="flex items-center gap-3 text-gray-600 md:col-span-2">
+                    <MapPin size={18} className="text-orange-300" />
+                    <span className="text-sm font-medium">
+                      {addresses[0].address_line},{" "}
+                      {addresses[0].city},{" "}
+                      {addresses[0].state} -{" "}
+                      {addresses[0].pincode}
+                    </span>
+                  </div>
+                )}
 
-                {/* Price */}
+                {/* PRICE */}
                 <div className="text-right md:text-left">
                   <span className="text-2xl font-serif font-bold text-orange-600">
                     ₹{Number(item.price).toLocaleString("en-IN")}
