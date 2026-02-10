@@ -17,7 +17,7 @@ const MyBookings = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
-        const res = await fetch("http://localhost:5000/user/booking/allbookings", {
+        const res = await fetch("http://localhost:5000/user/booking/allBookings", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
