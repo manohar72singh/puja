@@ -161,7 +161,7 @@ export default function HomePuja() {
           {services.map((service) => (
             <div
               key={service.id}
-              className="group flex flex-col md:flex-row bg-white rounded-[28px] overflow-hidden border border-orange-100/50 shadow-sm hover:shadow-lg transition-all duration-300 h-auto md:h-64"
+              className="group flex flex-col md:flex-row  bg-white rounded-[28px] overflow-hidden border border-orange-300 shadow-sm hover:shadow-lg transition-all duration-300 h-auto md:h-64"
             >
               {/* Image Container */}
               <div className="relative w-full md:w-[45%] h-52 md:h-full shrink-0 overflow-hidden">
@@ -172,7 +172,7 @@ export default function HomePuja() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <p className="text-[9px] font-bold opacity-80 uppercase mb-0.5">Dakshina</p>
+                  <p className="text-sm font-bold opacity-80 uppercase mb-0.5">Dakshina</p>
                   <p className="text-xl font-bold">{service.price}</p>
                 </div>
               </div>

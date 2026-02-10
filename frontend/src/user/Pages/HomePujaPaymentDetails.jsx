@@ -20,18 +20,15 @@ import { useNavigate } from "react-router-dom";
 
 const HomePujaPaymentDetails = () => {
   const navigate = useNavigate();
-  //const { id } = useParams();
 
   const dharmicRef = useRef(null);
-
-  // 1. Service Details
+  const isSamagriSelected = location.state?.isSamagriSelected || false;
   const service = {
     title: "Satyanarayan Katha",
     price: 1500,
-    samagriPrice: 600,
+    samagriPrice: isSamagriSelected ? 600 : 0,
   };
 
-  // 2. State Management
   const [formData, setFormData] = useState({
     date: "",
     time: "",
@@ -49,7 +46,6 @@ const HomePujaPaymentDetails = () => {
     temple: false,
   });
 
-  // 3. Data Options
   const contributionOptions = [
     {
       id: "vastra",
@@ -128,7 +124,6 @@ const HomePujaPaymentDetails = () => {
         );
 
         const data = res.data;
-        console.log("Fetched Address Data:", res.data);
 
         // 🔥 Auto-fill form
         setFormData({
@@ -148,43 +143,40 @@ const HomePujaPaymentDetails = () => {
     fetchUserAddress();
   }, []);
 
-const handlePay = async () => {
-  if (!formData.date || !formData.time) {
-    alert("Please select puja date & time");
-    return;
-  }
+  const handlePay = async () => {
+    if (!formData.date || !formData.time) {
+      alert("Please select puja date & time");
+      return;
+    }
 
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    const payload = {
-      puja_name: service.title,
-      puja_date: formData.date,
-      puja_time: formData.time,
-      price: grandTotal,
-    };
+      const payload = {
+        puja_name: service.title,
+        puja_date: formData.date,
+        puja_time: formData.time,
+        price: grandTotal,
+      };
 
-    const res = await axios.post(
-      "http://localhost:5000/user/booking/bookings",
-      payload,
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+      const res = await axios.post(
+        "http://localhost:5000/user/booking/bookings",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
 
-    const bookingId = res.data.bookingId;
+      const bookingId = res.data.bookingId;
 
-    console.log("Booking created:", bookingId);
-
-    // next step (payment page / success page)
-    alert("Booking successful! Booking ID: " + bookingId);
-  } catch (err) {
-    console.error(err);
-    alert("Booking failed");
-  }
-};
+      alert("Booking successful! Booking ID: " + bookingId);
+    } catch (err) {
+      console.error(err);
+      alert("Booking failed");
+    }
+  };
 
 
   return (
@@ -344,11 +336,10 @@ const handlePay = async () => {
                   <div
                     key={option.id}
                     onClick={() => toggleDonation(option.id)}
-                    className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border-2 ${
-                      donations[option.id]
+                    className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border-2 ${donations[option.id]
                         ? "border-orange-500 bg-orange-50/30"
                         : "border-orange-200 hover:border-orange-200"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-4">
                       <div
@@ -376,11 +367,10 @@ const handlePay = async () => {
               {/* Gau Seva Section */}
               <div
                 onClick={() => toggleDonation("gau")}
-                className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border ${
-                  donations.gau
+                className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border ${donations.gau
                     ? "border-orange-500 bg-orange-50/30"
                     : "border-orange-200 hover:border-orange-200 bg-white"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-4">
                   <div
@@ -514,7 +504,7 @@ const handlePay = async () => {
                   </div>
 
                   <button className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
-                  onClick={handlePay}>
+                    onClick={handlePay}>
                     <span className="text-sm flex items-center gap-2">
                       <ArrowRight size={16} /> Pay ₹{grandTotal}
                     </span>

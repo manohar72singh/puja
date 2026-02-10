@@ -1,5 +1,4 @@
 import db from "../config/db.js";
-import jwt from "jsonwebtoken";
 
 export const userBookingDetailController = async (req, res) => {
   try {
@@ -33,7 +32,8 @@ export const userBookingDetailController = async (req, res) => {
 };
 
 export const bookings = async (req, res) => {
-    try {
+
+  try {
     const userId = req.user.id;
 
     const {
@@ -57,5 +57,42 @@ export const bookings = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Booking failed" });
+  }
+};
+
+export const getAllBookingDetails = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [rows] = await db.execute(
+      `
+      SELECT 
+        u.name,
+        ua.address_line,
+        ua.city,
+        ua.state,
+        ua.pincode,
+        b.puja_name,
+        b.price,
+        b.puja_time,
+        b.puja_date
+      FROM users AS u
+      JOIN user_addresses AS ua
+        ON u.id = ua.user_id
+      JOIN booking_details AS b
+        ON u.id = b.user_id
+      WHERE u.id = ?
+      `,
+      [userId]
+    );
+
+    if (!rows.length) {
+      return res.status(404).json({ message: "No booking details found" });
+    }
+
+    res.status(200).json(rows);
+  } catch (error) {
+    console.error("ERROR:", error);
+    res.status(500).json({ message: error.message });
   }
 };
