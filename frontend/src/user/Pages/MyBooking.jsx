@@ -25,6 +25,7 @@ const MyBookings = () => {
 
         const data = await res.json();
         setBookings(data); // 👈 DIRECT backend data
+      
       } catch (err) {
         console.error("Error fetching bookings:", err);
       } finally {
