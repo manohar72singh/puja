@@ -21,9 +21,9 @@ import MyBookings from "./user/Pages/MyBooking";
 import { RightFloatingMenu } from "./user/Components/RightFloatingMenu";
 import PartnerSignIn from "./user/Pages/PartnerSignIn";
 import PartnerSignUp from "./user/Pages/PartnerSignUp";
-import PartnerDashboard from "./user/Pages/PartnerDashboard";
 import UserAddressForm from "./user/Pages/UserAddressFrom"
 import AddFamilyMemberForm from "./user/Pages/AddFamilyMemberForm";
+import PartnerDashboard from "./user/Pages/PartnerDashboard";
 
 function App() {
   const location = useLocation();
@@ -44,7 +44,7 @@ function App() {
             <Route path=":id" element={<HomePujaBooking />} />
             <Route path="payment-details" element={<HomePujaPaymentDetails />} />
           </Route>
-          
+
           <Route path="/templePuja" element={<TemplePuja />} />
           <Route path="/templePuja/:id" element={<TemplePujaBooking />} />
           <Route path="/mybooking" element={<MyBookings />} />
@@ -73,7 +73,12 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/partnerSignIn" element={<PartnerSignIn />} />
         <Route path="/partnerSignUp" element={<PartnerSignUp />} />
-        <Route path="/partnerDashboard" element={<PartnerDashboard />} />
+
+        {/* Partner Routes */}
+        <Route path="/partner">
+          <Route path="dashboard" element={<PartnerDashboard />} />
+          {/* <Route path="profile" element={<PartnerProfile />} /> Aapka Profile Edit Page */}
+        </Route>
       </Routes>
 
       {/* Floating menu logic */}

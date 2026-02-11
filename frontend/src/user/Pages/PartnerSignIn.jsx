@@ -67,7 +67,7 @@ const PartnerSignIn = () => {
         
         // Final role check redirection ke liye
         if (data.role === 'pandit') {
-            navigate('/partnerDashboard');
+            navigate('/partner/dashboard');
         } else {
             setError("You don't have Acharya permissions.");
         }

@@ -31,7 +31,10 @@ export const signupRequest = async (req, res) => {
 export const signupVerify = async (req, res) => {
     let connection;
     try {
-        const { phone, otp, role, address, city, state, gotra, email, name } = req.body; 
+        // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
+        const { phone, otp, role, address, city, state, gotra, email, name, pincode, address_type } = req.body;
+        
+        console.log("controller data:", req.body);
         const session = otpStore[phone];
 
         if (!session || session.type !== 'SIGNUP' || session.otp.toString() !== otp.toString()) {
@@ -40,21 +43,24 @@ export const signupVerify = async (req, res) => {
 
         connection = await db.getConnection();
         await connection.beginTransaction();
-
+        
+        // User Insert
         const [userResult] = await connection.query(
             "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
             [name, phone, email || null, gotra || null, role || "user"]
         );
-
+        
         const newUserId = userResult.insertId;
-
+        console.log("New User ID:", newUserId);
+        
         if (address) {
+            // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
             await connection.query(
-                "INSERT INTO user_addresses (user_id, address_line, city, state, is_default) VALUES (?, ?, ?, ?, ?)",
-                [newUserId, address, city || null, state || null, 1]
+                "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                [newUserId, address, city, state, address_type || "home", pincode || null, 1]
             );
         }
-
+        
         await connection.commit();
         delete otpStore[phone];
 
@@ -67,6 +73,7 @@ export const signupVerify = async (req, res) => {
         res.status(201).json({ message: "Verified Successfully!", token, role: role || "user" });
 
     } catch (error) {
+        console.error("Signup Error:", error); // Console mein error check karne ke liye
         if (connection) await connection.rollback();
         res.status(500).json({ message: "Error saving data", error: error.message });
     } finally {

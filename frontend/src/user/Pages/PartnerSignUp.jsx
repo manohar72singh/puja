@@ -77,7 +77,7 @@ const PartnerSignUp = () => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData) 
         });
-
+        console.log(formData)
         const data = await response.json();
 
         if (response.ok) {

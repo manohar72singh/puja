@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import axios from "axios";
 import {
   Calendar,
   Clock,
@@ -109,74 +108,7 @@ const HomePujaPaymentDetails = () => {
   const labelClass =
     "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-700 mb-2 ml-1";
 
-  useEffect(() => {
-    const fetchUserAddress = async () => {
-      try {
-        const token = localStorage.getItem("token");
-
-        const res = await axios.get(
-          "http://localhost:5000/user/booking/details",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
-
-        const data = res.data;
-
-        // 🔥 Auto-fill form
-        setFormData({
-          date: "",
-          time: "",
-          location: data.address_line
-            ? `${data.address_line}, ${data.city || ""}, ${data.state || ""}, ${data.pincode || ""}`
-            : "",
-          devoteeName: data.name || "",
-          gotra: data.gotra || "",
-        });
-      } catch (err) {
-        console.error("Failed to load address", err);
-      }
-    };
-
-    fetchUserAddress();
-  }, []);
-
-  const handlePay = async () => {
-    if (!formData.date || !formData.time) {
-      alert("Please select puja date & time");
-      return;
-    }
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const payload = {
-        puja_name: service.title,
-        puja_date: formData.date,
-        puja_time: formData.time,
-        price: grandTotal,
-      };
-
-      const res = await axios.post(
-        "http://localhost:5000/user/booking/bookings",
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      const bookingId = res.data.bookingId;
-
-      alert("Booking successful! Booking ID: " + bookingId);
-    } catch (err) {
-      console.error(err);
-      alert("Booking failed");
-    }
-  };
+ 
 
 
   return (
@@ -503,8 +435,7 @@ const HomePujaPaymentDetails = () => {
                     </span>
                   </div>
 
-                  <button className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
-                    onClick={handlePay}>
+                  <button className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all">
                     <span className="text-sm flex items-center gap-2">
                       <ArrowRight size={16} /> Pay ₹{grandTotal}
                     </span>
