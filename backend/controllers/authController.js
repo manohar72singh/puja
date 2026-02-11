@@ -56,7 +56,7 @@ export const signupVerify = async (req, res) => {
         if (address) {
             // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
             await connection.query(
-                "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO addresses (user_id, address_line11, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [newUserId, address, city, state, address_type || "home", pincode || null, 1]
             );
         }
@@ -141,11 +141,8 @@ export const verifyOtp = async (req, res) => {
 //5.add-address
 
 export const addAddress = async (req, res) => {
-
     try {
-
-        const userId = req.user.id;
-
+        const userId = req.user.id;        
         const {
             address_line,
             city,
@@ -161,14 +158,14 @@ export const addAddress = async (req, res) => {
 
         if (is_default) {
             await db.query(
-                "UPDATE user_addresses SET is_default = 0 WHERE user_id = ?",
+                "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
                 [userId]
             );
         }
 
         const [result] = await db.query(
-            `INSERT INTO user_addresses
-            (user_id, address_line, city, state, pincode, address_type, is_default)
+            `INSERT INTO addresses
+            (user_id, address_line1, city, state, pincode, address_type, is_default)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 userId,
@@ -200,7 +197,7 @@ export const getUserAddresses = async (req, res) => {
     const userId = req.user.id;
 
     const [rows] = await db.query(
-      "SELECT * FROM user_addresses WHERE user_id = ? ORDER BY is_default DESC",
+      "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC",
       [userId]
     );
 
@@ -222,7 +219,7 @@ export const getSingleAddress = async (req, res) => {
         const { id } = req.params;
 
         const [rows] = await db.query(
-            "SELECT * FROM user_addresses WHERE id = ?",
+            "SELECT * FROM addresses WHERE id = ?",
             [id]
         );
 
@@ -241,13 +238,13 @@ export const setDefaultAddress = async (req, res) => {
 
     // Remove previous default
     await db.query(
-      "UPDATE user_addresses SET is_default = 0 WHERE user_id = ?",
+      "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
       [userId]
     );
 
     // Set new default
     await db.query(
-      "UPDATE user_addresses SET is_default = 1 WHERE id = ? AND user_id = ?",
+      "UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?",
       [addressId, userId]
     );
 
@@ -277,14 +274,14 @@ export const updateAddress = async (req, res) => {
 
         if (is_default) {
             await db.query(
-                "UPDATE user_addresses SET is_default = 0 WHERE user_id = ?",
+                "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
                 [userId]
             );
         }
 
         await db.query(
-            `UPDATE user_addresses 
-             SET address_line=?, city=?, state=?, pincode=?, address_type=?, is_default=?
+            `UPDATE addresses 
+             SET address_line1=?, city=?, state=?, pincode=?, address_type=?, is_default=?
              WHERE id=? AND user_id=?`,
             [
                 address_line,
@@ -313,7 +310,7 @@ export const deleteAddress = async (req, res) => {
 
     // Pehle check karein ki ye address isi user ka hai ya nahi
     const [address] = await db.execute(
-      "SELECT * FROM user_addresses WHERE id = ? AND user_id = ?",
+      "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
       [id, userId]
     );
 
@@ -326,7 +323,7 @@ export const deleteAddress = async (req, res) => {
     // Agar address default hai, toh delete karne se pehle sochna hoga 
     // (Optional: Aap prevent kar sakte hain ya delete karne de sakte hain)
 
-    await db.execute("DELETE FROM user_addresses WHERE id = ?", [id]);
+    await db.execute("DELETE FROM addresses WHERE id = ?", [id]);
 
     res.status(200).json({ message: "Address deleted successfully" });
   } catch (error) {

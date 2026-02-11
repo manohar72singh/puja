@@ -120,7 +120,7 @@ const UserAddressForm = () => {
                 <textarea
                   name="address_line"
                   required
-                  value={formData.address_line}
+                  value={formData.address_line1}
                   onChange={handleChange}
                   placeholder="House No, Street, Landmark..."
                   className={`${inputClass} min-h-[100px] resize-none`}

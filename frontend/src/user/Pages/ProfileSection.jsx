@@ -1,13 +1,18 @@
 import React, { useState } from 'react';
 import { Camera, ChevronLeft, User, Phone, Mail, Save, ShieldCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import {jwtDecode }from "jwt-decode";
+
 
 const ProfileSection = () => {
   const navigate = useNavigate();
+  const token = localStorage.getItem("token");
+  const decoded = jwtDecode(token);
+  
   const [formData, setFormData] = useState({
-    fullName: 'Blocked User',
-    mobile: '9696969696',
-    email: 'demo@srivedicpuja.com'
+    fullName: decoded.name,
+    mobile: decoded.phone,
+    email: decoded.email
   });
 
   // Keep your original size but use a wrapping container for alignment
