@@ -4,8 +4,6 @@ import { useState, useEffect } from "react";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 
-
-
 const upcomingPujas = [
   { id: 101, title: "Maha Shivratri Special Rudrabhishek", date: "Feb 26, 2026", img: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg" },
   { id: 102, title: "Grand Ayodhya Aarti Deepotsav", date: "March 15, 2026", img: "https://images.unsplash.com/photo-1605640840605-14ac1855827b" },
@@ -16,8 +14,6 @@ export default function HomePuja() {
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([])
-
-  const token = localStorage.getItem("token")
 
   useEffect(() => {
     const getSevices = async () => {
@@ -41,8 +37,8 @@ export default function HomePuja() {
     getSevices();
   }, [])
 
-  console.log(services)
 
+  
 
   useEffect(() => {
     const timer = setInterval(() => {
