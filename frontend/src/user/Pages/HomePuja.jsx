@@ -17,13 +17,12 @@ export default function HomePuja() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([])
 
-  const token = localStorage.getItem("token")
 
   useEffect(() => {
     const getSevices = async () => {
       const token = localStorage.getItem("token")
       try {
-        const response = await fetch(`http://localhost:5000/puja/allServices`, {
+        const response = await fetch(`${API_BASE_URL}/puja/allServices`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -41,8 +40,6 @@ export default function HomePuja() {
     getSevices();
   }, [])
 
-  console.log(services)
-
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -50,6 +47,7 @@ export default function HomePuja() {
     }, 4000);
     return () => clearInterval(timer);
   }, []);
+
 
   return (
     // FULL PAGE BACKGROUND COLOR SET HERE
@@ -143,7 +141,7 @@ export default function HomePuja() {
                       {service.date}
                     </div>
 
-                    <button className="flex items-center gap-2 text-orange-600 font-bold uppercase text-xs tracking-wider group-hover:gap-3 transition-all">
+                    <button  className="flex items-center gap-2 text-orange-600 font-bold uppercase text-xs tracking-wider group-hover:gap-3 transition-all">
                       Book Now
                       <ArrowRight size={14} />
                     </button>

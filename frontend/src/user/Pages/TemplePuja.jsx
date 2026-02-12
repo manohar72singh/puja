@@ -1,101 +1,101 @@
 import { MapPin, Calendar, ArrowRight, Search, ChevronLeft, ChevronRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
-
-const services = [
-  {
-    id: 1,
-    title: "Satyanarayan Katha",
-    temple: "Ayodhya Ram Mandir",
-    category: "Dosha",
-    date: "Thursday",
-    rating: 4.9,
-    reviews: 180,
-    price: "₹1500",
-    image: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
-    badge: "Popular",
-  },
-  {
-    id: 2,
-    title: "Griha Pravesh Puja",
-    temple: "Haridwar",
-    category: "Marriage",
-    date: "Auspicious Day",
-    rating: 4.7,
-    reviews: 92,
-    price: "₹4100",
-    image: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg",
-  },
-  {
-    id: 3,
-    title: "Maha Mrityunjaya Jaap",
-    temple: "Kashi Vishwanath",
-    category: "Shiv Puja",
-    date: "Monday",
-    rating: 5.0,
-    reviews: 256,
-    price: "₹5100",
-    image: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
-    badge: "Highly Rated"
-  },
-  {
-    id: 4,
-    title: "Rahu–Ketu Shanti Puja",
-    temple: "Srikalahasti",
-    category: "Navgraha",
-    date: "Next Week",
-    rating: 4.6,
-    reviews: 110,
-    price: "₹2700",
-    image: "https://images.unsplash.com/photo-1508672019048-805c876b67e2",
-  },
-  {
-    id: 5,
-    title: "Kaal Sarp Dosha Puja",
-    temple: "Trimbakeshwar, Nashik",
-    category: "Dosha",
-    date: "Tomorrow",
-    rating: 4.8,
-    reviews: 124,
-    price: "₹2100",
-    image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b",
-    badge: "Most Booked",
-  },
-  {
-    id: 6,
-    title: "Manglik Dosha Nivaran",
-    temple: "Ujjain Mahakal",
-    category: "Marriage",
-    date: "Amavasya",
-    rating: 4.7,
-    reviews: 98,
-    price: "₹2500",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaIc1BqS_aDmS26-3x3JSSotU2p0Dr2InktA&s",
-    badge: "Recommended",
-  },
-  {
-    id: 7,
-    title: "Navgraha Shanti Puja",
-    temple: "Kashi Vishwanath",
-    category: "Navgraha",
-    date: "This Week",
-    rating: 4.9,
-    reviews: 210,
-    price: "₹3100",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN4BqbvT9jy2Jgqr3gQY-Q9bWELVO3eyyS6A&s",
-  },
-  {
-    id: 8,
-    title: "Rudrabhishek",
-    temple: "Somnath Temple",
-    category: "Shiv Puja",
-    date: "Monday",
-    rating: 4.6,
-    reviews: 76,
-    price: "₹1100",
-    image: "https://static.wixstatic.com/media/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg/v1/fill/w_568,h_378,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg",
-  },
-];
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+// const services = [
+//   {
+//     id: 1,
+//     title: "Satyanarayan Katha",
+//     temple: "Ayodhya Ram Mandir",
+//     category: "Dosha",
+//     date: "Thursday",
+//     rating: 4.9,
+//     reviews: 180,
+//     price: "₹1500",
+//     image: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
+//     badge: "Popular",
+//   },
+//   {
+//     id: 2,
+//     title: "Griha Pravesh Puja",
+//     temple: "Haridwar",
+//     category: "Marriage",
+//     date: "Auspicious Day",
+//     rating: 4.7,
+//     reviews: 92,
+//     price: "₹4100",
+//     image: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg",
+//   },
+//   {
+//     id: 3,
+//     title: "Maha Mrityunjaya Jaap",
+//     temple: "Kashi Vishwanath",
+//     category: "Shiv Puja",
+//     date: "Monday",
+//     rating: 5.0,
+//     reviews: 256,
+//     price: "₹5100",
+//     image: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
+//     badge: "Highly Rated"
+//   },
+//   {
+//     id: 4,
+//     title: "Rahu–Ketu Shanti Puja",
+//     temple: "Srikalahasti",
+//     category: "Navgraha",
+//     date: "Next Week",
+//     rating: 4.6,
+//     reviews: 110,
+//     price: "₹2700",
+//     image: "https://images.unsplash.com/photo-1508672019048-805c876b67e2",
+//   },
+//   {
+//     id: 5,
+//     title: "Kaal Sarp Dosha Puja",
+//     temple: "Trimbakeshwar, Nashik",
+//     category: "Dosha",
+//     date: "Tomorrow",
+//     rating: 4.8,
+//     reviews: 124,
+//     price: "₹2100",
+//     image: "https://images.unsplash.com/photo-1544367567-0f2fcb009e0b",
+//     badge: "Most Booked",
+//   },
+//   {
+//     id: 6,
+//     title: "Manglik Dosha Nivaran",
+//     temple: "Ujjain Mahakal",
+//     category: "Marriage",
+//     date: "Amavasya",
+//     rating: 4.7,
+//     reviews: 98,
+//     price: "₹2500",
+//     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRaIc1BqS_aDmS26-3x3JSSotU2p0Dr2InktA&s",
+//     badge: "Recommended",
+//   },
+//   {
+//     id: 7,
+//     title: "Navgraha Shanti Puja",
+//     temple: "Kashi Vishwanath",
+//     category: "Navgraha",
+//     date: "This Week",
+//     rating: 4.9,
+//     reviews: 210,
+//     price: "₹3100",
+//     image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN4BqbvT9jy2Jgqr3gQY-Q9bWELVO3eyyS6A&s",
+//   },
+//   {
+//     id: 8,
+//     title: "Rudrabhishek",
+//     temple: "Somnath Temple",
+//     category: "Shiv Puja",
+//     date: "Monday",
+//     rating: 4.6,
+//     reviews: 76,
+//     price: "₹1100",
+//     image: "https://static.wixstatic.com/media/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg/v1/fill/w_568,h_378,al_c,q_80,usm_0.66_1.00_0.01,enc_avif,quality_auto/6642a4_8930a82d27434739a6aeaf5fc2d4e2fe~mv2.jpg",
+//   },
+// ];
 
 const upcomingPujas = [
   { id: 101, title: "Maha Shivratri Special Rudrabhishek", date: "Feb 26, 2026", img: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg" },
@@ -104,6 +104,7 @@ const upcomingPujas = [
 ];
 
 export default function HomePuja() {
+  const [services, setServices] = useState([])
   const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -114,6 +115,27 @@ export default function HomePuja() {
     return () => clearInterval(timer);
   }, []);
 
+  useEffect(() => {
+    const getSevices = async () => {
+      const token = localStorage.getItem("token")
+      try {
+        const response = await fetch(`${API_BASE_URL}/puja/allServices`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        })
+        const data = await response.json();
+        // console.log(data)
+        setServices(data)
+      } catch (error) {
+        console.log("Error", error)
+      }
+    }
+
+    getSevices();
+  }, [])
   return (
     // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
@@ -193,7 +215,8 @@ export default function HomePuja() {
         </div>
 
         <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
-          {services.map((service) => (
+          {services.filter(service => service.puja_type === "temple_puja")
+          .map((service) => (
             <div
               key={service.id}
               className="group flex flex-col md:flex-row bg-white rounded-[28px] overflow-hidden border border-orange-100/50 shadow-sm hover:shadow-lg transition-all duration-300 h-auto md:h-64"
@@ -201,8 +224,8 @@ export default function HomePuja() {
               {/* Image Container */}
               <div className="relative w-full md:w-[45%] h-52 md:h-full shrink-0 overflow-hidden">
                 <img
-                  src={service.image}
-                  alt={service.title}
+                  src={`${API_BASE_URL}/uploads/${service.image_url}`}
+                  alt={service.puja_name}
                   className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
