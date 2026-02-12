@@ -129,6 +129,7 @@ export default function HomePuja() {
         const data = await response.json();
         // console.log(data)
         setServices(data)
+        console.log(data)
       } catch (error) {
         console.log("Error", error)
       }

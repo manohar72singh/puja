@@ -19,7 +19,7 @@ export default function HomePuja() {
     const getSevices = async () => {
       const token = localStorage.getItem("token")
       try {
-        const response = await fetch(`${API_BASE_URL}/puja/allServices`, {
+        const response = await fetch(`${API_BASE_URL}/puja/allServices/home_puja`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -28,7 +28,7 @@ export default function HomePuja() {
         })
         const data = await response.json();
         // console.log(data)
-        setServices(data)
+        setServices(data.services)
       } catch (error) {
         console.log("Error", error)
       }
@@ -36,7 +36,6 @@ export default function HomePuja() {
 
     getSevices();
   }, [])
-
 
 
 
@@ -109,61 +108,61 @@ export default function HomePuja() {
         {/* The Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {services
-  .filter((service) => service.puja_type === "home_puja")
-  .map((service) => (
-    <div
-      key={service.id}
-      onClick={() => navigate(`/homePuja/${service.id}`)}
-      className="group relative bg-white rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(234,88,12,0.2)] border border-orange-200 cursor-pointer"
-    >
-      {/* Image Container - Height reduced slightly from h-72 to h-60 */}
-      <div className="relative h-60 overflow-hidden">
-        <img
-          src={`${API_BASE_URL}/uploads/${service.image_url}`}
-          alt={service.puja_name}
-          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
-        />
+            .map((service) => (
+              <div
+                key={service.id}
+                onClick={() => navigate(`/homePuja/${service.id}`)}
+                className="group relative bg-white rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(234,88,12,0.2)] border border-orange-200 cursor-pointer"
+              >
+                {/* Image Container - Height reduced slightly from h-72 to h-60 */}
+                <div className="relative h-60 overflow-hidden">
+                  <img
+                    src={`${API_BASE_URL}/uploads/${service.image_url}`}
+                    alt={service.puja_name}
+                    className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+                  />
 
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70"></div>
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70"></div>
 
-        {/* Price Badge - Slightly smaller padding */}
-        <div className="absolute top-4 right-4 backdrop-blur-md bg-black/20 border border-white/30 px-3 py-1.5 rounded-xl">
-          <span className="text-white font-bold text-base">₹{service.price}</span>
-        </div>
+                  {/* Price Badge - Slightly smaller padding */}
+                  <div className="absolute top-4 right-4 backdrop-blur-md bg-orange-100 border border-orange-500 px-3 py-1.5 rounded-xl">
+                    <span className="text-black font-bold text-base">₹{service.standard_price
+}</span>
+                  </div>
 
-        {/* Floating Tag */}
-        <div className="absolute bottom-4 left-4">
-          <span className="bg-orange-500 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">
-            Verified Pandit
-          </span>
-        </div>
-      </div>
+                  {/* Floating Tag */}
+                  <div className="absolute bottom-4 left-4">
+                    <span className="bg-orange-500 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">
+                      Verified Pandit
+                    </span>
+                  </div>
+                </div>
 
-      {/* Content Section - Reduced from p-8 to p-5 */}
-      <div className="p-5">
-        <div className="mb-2">
-          <h3 className="text-xl font-serif text-[#3b2a1a] leading-snug group-hover:text-orange-600 transition-colors line-clamp-1">
-            {service.title || service.puja_name}
-          </h3>
-          <div className="flex items-center text-gray-500 text-[13px] gap-1.5 mt-1">
-            <Calendar size={14} className="text-orange-500" />
-            <span>Available Daily</span>
-          </div>
-        </div>
+                {/* Content Section - Reduced from p-8 to p-5 */}
+                <div className="p-5">
+                  <div className="mb-2">
+                    <h3 className="text-xl font-serif text-[#3b2a1a] leading-snug group-hover:text-orange-600 transition-colors line-clamp-1">
+                      {service.title || service.puja_name}
+                    </h3>
+                    <div className="flex items-center text-gray-500 text-[13px] gap-1.5 mt-1">
+                      <Calendar size={14} className="text-orange-500" />
+                      <span>Available Daily</span>
+                    </div>
+                  </div>
 
-        {/* Action Section - Tighter border and padding */}
-        <div className="pt-3 mt-3 border-t border-orange-100 flex items-center justify-between">
-          <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider">
-            Book Ritual
-          </span>
-          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
-            <ArrowRight size={16} />
-          </div>
-        </div>
-      </div>
-    </div>
-  ))}
+                  {/* Action Section - Tighter border and padding */}
+                  <div className="pt-3 mt-3 border-t border-orange-100 flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider">
+                      Book Ritual
+                    </span>
+                    <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+                      <ArrowRight size={16} />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
         </div>
       </section>
 

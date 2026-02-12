@@ -1,11 +1,11 @@
 import express from "express";
 import { verifyToken } from "../middleware/auth.js";
-import { allServices, bookPuja } from "../controllers/servicesController.js";
+import { bookPuja, getServicesByType } from "../controllers/servicesController.js";
 
 const router = express.Router();
 
 
-router.get('/allServices',verifyToken,allServices)
+router.get('/allServices/:type',verifyToken,getServicesByType)
 router.get('/bookPuja/:id', verifyToken, bookPuja)
 
 
