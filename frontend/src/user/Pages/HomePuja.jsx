@@ -15,15 +15,11 @@ export default function HomePuja() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([])
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 9067e108de9d7a76a4b9b71eace6375af01b28fe
   useEffect(() => {
     const getSevices = async () => {
       const token = localStorage.getItem("token")
       try {
-        const response = await fetch(`${API_BASE_URL}/puja/allServices`, {
+        const response = await fetch(`${API_BASE_URL}/puja/allServices/home_puja`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -31,7 +27,7 @@ export default function HomePuja() {
           }
         })
         const data = await response.json();
-        // console.log(data)
+        console.log(data)
         setServices(data)
       } catch (error) {
         console.log("Error", error)
@@ -41,11 +37,8 @@ export default function HomePuja() {
     getSevices();
   }, [])
 
-<<<<<<< HEAD
-=======
 
   
->>>>>>> 9067e108de9d7a76a4b9b71eace6375af01b28fe
 
   useEffect(() => {
     const timer = setInterval(() => {
