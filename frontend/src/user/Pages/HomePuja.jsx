@@ -15,10 +15,6 @@ export default function HomePuja() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([])
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 9067e108de9d7a76a4b9b71eace6375af01b28fe
   useEffect(() => {
     const getSevices = async () => {
       const token = localStorage.getItem("token")
@@ -41,11 +37,8 @@ export default function HomePuja() {
     getSevices();
   }, [])
 
-<<<<<<< HEAD
-=======
 
-  
->>>>>>> 9067e108de9d7a76a4b9b71eace6375af01b28fe
+
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -89,75 +82,88 @@ export default function HomePuja() {
       </div>
 
       {/* 4. SERVICES GRID */}
+
       <section className="relative max-w-7xl mx-auto px-6 pb-28">
+        {/* Decorative Background Elements */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
+          <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-300 rounded-full blur-[120px]"></div>
+          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-amber-200 rounded-full blur-[150px]"></div>
+        </div>
 
-        {/* Background Glow */}
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(255,170,0,0.15),_transparent_70%)]"></div>
-
-        <div className="flex flex-col mb-14 text-center">
-          <span className="text-xs tracking-[4px] uppercase text-orange-500 font-semibold mb-2">
-            Sacred Luxury Rituals
-          </span>
-          <h2 className="text-5xl font-serif text-[#2f1e12]">
-            Divine <span className="text-orange-500 italic">Home Pujas</span>
+        <div className="flex flex-col mb-16 text-center">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="h-[1px] w-12 bg-orange-300"></div>
+            <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
+              Sacred Luxury Rituals
+            </span>
+            <div className="h-[1px] w-12 bg-orange-300"></div>
+          </div>
+          <h2 className="text-4xl md:text-6xl font-serif text-[#2f1e12] mb-4">
+            Divine <span className="text-orange-600 italic">Home Pujas</span>
           </h2>
-          <p className="mt-3 text-gray-600 text-sm max-w-xl mx-auto">
-            Experience authentic Vedic rituals performed by learned priests in the comfort of your home.
+          <p className="mt-2 text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
+            Bring the sanctity of the temple to your doorstep with authentic Vedic ceremonies performed by master priests.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-12">
+        {/* The Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {services
-            .filter(service => service.puja_type === "home_puja")
-            .map((service) => (
-              <div
-                key={service.id}
-                onClick={() => navigate(`/homePuja/${service.id}`)}
-                className="group relative bg-white/70 backdrop-blur-xl border border-orange-200 rounded-[36px] overflow-hidden shadow-xl hover:shadow-[0_25px_60px_rgba(249,115,22,0.25)] hover:-translate-y-3 transition-all duration-700 cursor-pointer"
-              >
-                {/* Image Section */}
-                <div className="relative h-64 overflow-hidden">
-                  <img
-                    src={`${API_BASE_URL}/uploads/${service.image_url}`}
-                    alt={service.puja_name}
-                    className="w-full h-full object-cover"
-                  />
+  .filter((service) => service.puja_type === "home_puja")
+  .map((service) => (
+    <div
+      key={service.id}
+      onClick={() => navigate(`/homePuja/${service.id}`)}
+      className="group relative bg-white rounded-[24px] overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_-12px_rgba(234,88,12,0.2)] border border-orange-200 cursor-pointer"
+    >
+      {/* Image Container - Height reduced slightly from h-72 to h-60 */}
+      <div className="relative h-60 overflow-hidden">
+        <img
+          src={`${API_BASE_URL}/uploads/${service.image_url}`}
+          alt={service.puja_name}
+          className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+        />
 
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+        {/* Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-70"></div>
 
-                  {/* Price Luxury Badge */}
-                  <div className="absolute top-5 right-5 bg-gradient-to-r from-orange-500 to-amber-400 text-white px-5 py-1.5 rounded-full text-xs font-bold shadow-lg tracking-wide">
-                    ₹ {service.price}
-                  </div>
-                </div>
+        {/* Price Badge - Slightly smaller padding */}
+        <div className="absolute top-4 right-4 backdrop-blur-md bg-black/20 border border-white/30 px-3 py-1.5 rounded-xl">
+          <span className="text-white font-bold text-base">₹{service.price}</span>
+        </div>
 
-                {/* Content */}
-                <div className="p-8">
-                  <h3 className="text-2xl font-serif text-[#3b2a1a] mb-3 group-hover:text-orange-600 transition-colors">
-                    {service.title}
-                  </h3>
+        {/* Floating Tag */}
+        <div className="absolute bottom-4 left-4">
+          <span className="bg-orange-500 text-white text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-md">
+            Verified Pandit
+          </span>
+        </div>
+      </div>
 
-                  <p className="text-sm text-gray-500 mb-5 font-medium">
-                    {service.puja_name}
-                  </p>
+      {/* Content Section - Reduced from p-8 to p-5 */}
+      <div className="p-5">
+        <div className="mb-2">
+          <h3 className="text-xl font-serif text-[#3b2a1a] leading-snug group-hover:text-orange-600 transition-colors line-clamp-1">
+            {service.title || service.puja_name}
+          </h3>
+          <div className="flex items-center text-gray-500 text-[13px] gap-1.5 mt-1">
+            <Calendar size={14} className="text-orange-500" />
+            <span>Available Daily</span>
+          </div>
+        </div>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center gap-2">
-                      <Calendar size={14} className="text-orange-400" />
-                      {service.date}
-                    </div>
-
-                    <button  className="flex items-center gap-2 text-orange-600 font-bold uppercase text-xs tracking-wider group-hover:gap-3 transition-all">
-                      Book Now
-                      <ArrowRight size={14} />
-                    </button>
-                  </div>
-                </div>
-
-                {/* Golden Border Glow Effect */}
-                <div className="absolute inset-0 rounded-[36px] border border-transparent group-hover:border-orange-400/50 transition-all duration-700"></div>
-              </div>
-            ))}
+        {/* Action Section - Tighter border and padding */}
+        <div className="pt-3 mt-3 border-t border-orange-100 flex items-center justify-between">
+          <span className="text-[11px] font-bold text-orange-400 uppercase tracking-wider">
+            Book Ritual
+          </span>
+          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+            <ArrowRight size={16} />
+          </div>
+        </div>
+      </div>
+    </div>
+  ))}
         </div>
       </section>
 
