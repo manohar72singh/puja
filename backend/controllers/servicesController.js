@@ -43,7 +43,24 @@ export const bookPuja = async (req, res) => {
   try {
     // console.log(req.params);
     const { id } = req.params;
-    const [data] = await db.query("SELECT * FROM services WHERE id = ?", [id]);
+    // const [data] = await db.query("SELECT * FROM services WHERE id = ?", [id]);
+    const [data] = await db.query(`
+        SELECT 
+          s.id,
+          s.puja_name,
+          s.puja_type,
+          s.description,
+          s.image_url,
+
+          MAX(CASE WHEN p.pricing_type = 'standard' THEN p.price END) AS standard_price,
+          MAX(CASE WHEN p.pricing_type = 'single' THEN p.price END) AS single_price,
+          MAX(CASE WHEN p.pricing_type = 'couple' THEN p.price END) AS couple_price,
+          MAX(CASE WHEN p.pricing_type = 'family' THEN p.price END) AS family_price
+
+      FROM services s
+      LEFT JOIN service_prices p ON s.id = p.service_id
+      WHERE s.id = ?
+      `, [id]);
     res.status(200).json(data);
   } catch (error) {
     res
@@ -51,3 +68,11 @@ export const bookPuja = async (req, res) => {
       .json({ message: "Failed to book puja", error: error.message });
   }
 };
+
+export const bookingDetails = async(req,res) =>{
+    try{
+        console.log(req.body)
+    }catch(error){
+
+    }
+}

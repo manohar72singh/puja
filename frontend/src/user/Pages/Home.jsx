@@ -49,12 +49,12 @@ export default function Home() {
               ✨ Your Faith Partner
             </span>
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl leading-tight font-serif text-[#3b2a1a]">
+            <h1 className="text-3xl font-medium font-weight-900 sm:text-4xl playfair-semibold lg:text-5xl xl:text-6xl leading-tight font-serif text-[#3b2a1a]">
               Sacred Rituals, <br />
               <span className="text-orange-500">Modern Convenience</span>
             </h1>
 
-            <p className="mt-6 text-gray-600 text-base lg:text-lg leading-relaxed max-w-md">
+            <p className="mt-6 text-gray-600  text-base lg:text-lg leading-relaxed max-w-md">
               Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
             </p>
 

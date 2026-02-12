@@ -15,18 +15,44 @@ import {
   Coffee,
   CheckCircle,
 } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useParams } from "react-router-dom";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const HomePujaPaymentDetails = () => {
   const navigate = useNavigate();
+  const { id } = useParams();
+  const [puja,setPuja] = useState([])
 
   const dharmicRef = useRef(null);
   const isSamagriSelected = location.state?.isSamagriSelected || false;
   const service = {
-    title: "Satyanarayan Katha",
-    price: 1500,
+    title: puja?.puja_name,
+    price: puja?.standard_price,
     samagriPrice: isSamagriSelected ? 600 : 0,
   };
+
+  useEffect(() => {
+      const bookPuja = async (id) => {
+        const token = localStorage.getItem("token");
+        try {
+          const response = await fetch(`${API_BASE_URL}/puja/bookPuja/${id}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            },
+          });
+          const data = await response.json();
+          setPuja(data);
+        } catch (error) {
+          console.log("Error booking puja:", error);
+        }
+      };
+      bookPuja(id);
+    }, [id]);
+
+    console.log(puja)
 
   const [formData, setFormData] = useState({
     date: "",

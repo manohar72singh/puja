@@ -32,7 +32,6 @@ const HomePujaBooking = () => {
     faqs: useRef(null),
   };
 
-
   useEffect(() => {
     const bookPuja = async (id) => {
       const token = localStorage.getItem("token");
@@ -45,6 +44,7 @@ const HomePujaBooking = () => {
           },
         });
         const data = await response.json();
+
         setService(data[0]);
       } catch (error) {
         console.log("Error booking puja:", error);
@@ -285,7 +285,7 @@ const HomePujaBooking = () => {
                     Base Service Fee
                   </span>
                   <span className="text-gray-900 font-bold">
-                    ₹{service?.price}
+                    ₹{service?.standard_price}
                   </span>
                 </div>
                 {samagriEnabled && (
