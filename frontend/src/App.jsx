@@ -42,12 +42,12 @@ function App() {
           <Route path="/homePuja">
             <Route index element={<HomePuja />} />
             <Route path=":id" element={<HomePujaBooking />} />
-            <Route path="payment-details" element={<HomePujaPaymentDetails />} />
+            <Route path="payment-details/:id" element={<HomePujaPaymentDetails />} />
           </Route>
 
           <Route path="/templePuja" element={<TemplePuja />} />
           <Route path="/templePuja/:id" element={<TemplePujaBooking />} />
-          <Route path="/mybooking" element={<MyBookings />} />
+          <Route path="/my-booking" element={<MyBookings />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/pind_dan" element={<Pind_Dan />} />
         </Route>

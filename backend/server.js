@@ -3,6 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import authRouter from "./routes/authRouter.js";
 import servicesRouter from "./routes/servicesRoutes.js";
+import partnerRouter from "./routes/partnerRouter.js";
 import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 // 3. Routes
 app.use('/user', authRouter);
 app.use('/puja', servicesRouter);
+app.use('/partner', partnerRouter);
 
 // 4. 🔥 DATABASE CONNECTION + SERVER START
 // Is IIFE (async function) se pehle semicolon lagana best practice hai

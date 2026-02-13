@@ -1,150 +1,129 @@
-import React from 'react';
-import { ChevronLeft, Calendar, Clock, User, Package, MapPin, XCircle, ArrowRight, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from "react";
+import { Calendar, Clock, MapPin, CheckCircle, Timer, XCircle, Info } from "lucide-react";
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const MyBookings = () => {
-  const navigate = useNavigate();
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Dynamic Data Array
-  const bookings = [
-    {
-      id: 1,
-      pujaName: "Navgrah Shanti Havan",
-      date: "Tuesday, 3 February 2026",
-      time: "11:50 PM",
-      devotee: "mahek (singh Gotra)",
-      kitIncluded: true,
-      location: "jhb",
-      price: "5,953",
-      status: "Cancelled",
-      color: "indigo"
-    },
-    {
-      id: 2,
-      pujaName: "Satyanarayan Puja",
-      date: "Thursday, 5 February 2026",
-      time: "09:00 AM",
-      devotee: "Sankalp Sharma",
-      kitIncluded: true,
-      location: "Haridwar",
-      price: "3,100",
-      status: "Confirmed",
-      color: "orange"
-    }
-  ];
+  useEffect(() => {
+    const fetchMyBookings = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await fetch(`${API_BASE_URL}/puja/my-bookings`, {
+          headers: { "Authorization": `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (data.success) setBookings(data.bookings);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMyBookings();
+  }, []);
 
-  // Design System
-  const containerWidth = "w-full max-w-6xl mx-auto";
-  // Added border-orange-200 to the main wrapper div
-  const mainWrapperStyle = "bg-white rounded-[2rem] border border-orange-200 shadow-sm p-6 md:p-10";
-  const bookingCardStyle = "bg-white rounded-[1.5rem] border border-orange-100 shadow-sm p-6 mb-5 relative overflow-hidden hover:border-orange-300 transition-colors";
-  const primaryBtnStyle = "bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3 px-6 rounded-xl shadow-md border border-orange-300 flex items-center gap-2 active:scale-[0.98] text-sm";
+  if (loading) return <div className="text-center py-20 text-orange-600 font-bold">Loading Bookings...</div>;
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1] text-[#2D2D2D] font-sans antialiased">
-      <main className="px-4 sm:px-8 py-8 md:py-12">
-        
-        {/* Main Div with Orange-200 Border */}
-        <div className={`${containerWidth} ${mainWrapperStyle}`}>
-          
-          {/* Header Row */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-10">
-            <div className="text-left">
-              <button 
-                onClick={() => navigate(-1)} 
-                className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-orange-600 mb-6 transition-colors group"
-              >
-                <ChevronLeft className="group-hover:-translate-x-1 transition-transform" size={18} /> 
-                <span>Back</span>
-              </button>
-              
-              <h1 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 leading-tight">
-                My Bookings
-              </h1>
-              <p className="text-[12px] font-bold text-gray-400 uppercase tracking-[0.18em] mt-1.5">
-                Track and manage your puja bookings
-              </p>
-            </div>
+    <div className="min-h-screen bg-[#FFF4E1] p-6">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-serif text-[#3b2a1a] mb-8">My Sacred <span className="text-orange-500 italic">Bookings</span></h2>
 
-            <button className={primaryBtnStyle}>
-              Book New Puja <ArrowRight size={16} />
-            </button>
+        {bookings.length === 0 ? (
+          <div className="bg-white p-10 rounded-3xl text-center shadow-sm">
+            <p className="text-gray-500 font-medium">Abhi tak koi booking nahi ki gayi hai.</p>
           </div>
+        ) : (
+          <div className="space-y-4">
+            {bookings.map((b) => {
+              // --- LOGIC: Identify if it's a Temple Puja ---
+              const isTemplePuja = b.address && b.address.includes("Ticket:");
 
-          {/* Dynamic Mapping of Bookings */}
-          <div className="space-y-2">
-            {bookings.map((booking) => (
-              <div key={booking.id} className={bookingCardStyle}>
-                
-                {/* Status Tag */}
-                <div className="absolute top-6 right-6 md:right-8">
-                  <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full border ${
-                    booking.status === 'Cancelled' 
-                    ? 'bg-red-50 text-red-500 border-red-100' 
-                    : 'bg-green-50 text-green-600 border-green-100'
+              return (
+                <div key={b.id} className={`relative overflow-hidden bg-white rounded-3xl p-5 shadow-sm border transition-all hover:shadow-md ${
+                  isTemplePuja ? 'border-orange-300 bg-orange-50/20' : 'border-gray-100'
+                } flex flex-col md:flex-row gap-6 mb-4`}>
+
+                  {/* Category Ribbon / Badge */}
+                  <div className={`absolute top-0 right-0 px-4 py-1 text-[10px] font-black uppercase tracking-widest text-white ${
+                    isTemplePuja ? 'bg-orange-500' : 'bg-blue-500'
                   }`}>
-                    {booking.status === 'Cancelled' ? <XCircle size={14} /> : <CheckCircle2 size={14} />}
-                    <span className="text-[10px] font-black uppercase tracking-wider">{booking.status}</span>
+                    {isTemplePuja ? 'Temple Ceremony' : 'Home Ritual'}
+                  </div>
+
+                  {/* Puja Image */}
+                  <div className="w-full md:w-32 h-32 shrink-0">
+                    <img
+                      src={`${API_BASE_URL}/uploads/${b.image_url}`}
+                      className="w-full h-full object-cover rounded-2xl shadow-sm"
+                      alt={b.puja_name}
+                    />
+                  </div>
+
+                  {/* Content Section */}
+                  <div className="flex-1">
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                      {b.puja_name}
+                      {isTemplePuja && <span className="text-sm">⛩️</span>}
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-y-2 gap-x-4 mt-3">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar size={14} className="text-orange-500" />
+                        {new Date(b.preferred_date).toLocaleDateString('en-IN')}
+                      </div>
+
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Clock size={14} className="text-orange-500" />
+                        {b.preferred_time}
+                      </div>
+
+                      {/* Location Logic */}
+                      <div className="flex items-start gap-2 text-sm text-gray-600 md:col-span-2">
+                        <MapPin size={14} className="text-orange-500 shrink-0 mt-1" />
+                        <span className="italic text-gray-500 leading-tight">
+                          {isTemplePuja 
+                            ? `Temple Location: ${b.city}, ${b.state}` 
+                            : `Home Address: ${b.address}`}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Special Details for Temple Puja (Extracting Ticket & Donations) */}
+                    {isTemplePuja && (
+                      <div className="mt-4 p-3 bg-white/60 rounded-xl border border-orange-100">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Info size={12} className="text-orange-500" />
+                          <span className="text-[10px] font-bold text-orange-600 uppercase tracking-wider">Booking Details</span>
+                        </div>
+                        <div className="text-xs text-gray-700 font-medium leading-relaxed">
+                          {/* Humne address format rakha tha: Ticket: X | Donations: Y */}
+                          {b.address}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Status Section */}
+                  <div className="flex flex-col justify-center items-end border-l border-gray-100 pl-6 hidden md:flex min-w-[120px]">
+                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
+                      b.status === 'pending' ? 'bg-orange-100 text-orange-600 border border-orange-200' : 'bg-green-100 text-green-600 border border-green-200'
+                    }`}>
+                      {b.status}
+                    </div>
+                    <p className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                      ID: #P{b.id}
+                    </p>
                   </div>
                 </div>
-
-                {/* Puja Title */}
-                <div className="flex items-center gap-3 mb-6">
-                  <div className={`h-10 w-10 rounded-lg flex items-center justify-center font-serif text-xl ${
-                    booking.color === 'indigo' ? 'bg-indigo-100 text-indigo-600' : 'bg-orange-100 text-orange-600'
-                  }`}>
-                    ॐ
-                  </div>
-                  <h2 className="text-xl font-serif font-bold text-gray-800">{booking.pujaName}</h2>
-                </div>
-
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-4 gap-x-12">
-                  
-                  {/* Column 1: Date & Time */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <Calendar size={18} className="text-orange-300" />
-                      <span className="text-sm font-medium">{booking.date}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <Clock size={18} className="text-orange-300" />
-                      <span className="text-sm font-medium">{booking.time}</span>
-                    </div>
-                  </div>
-
-                  {/* Column 2: Devotee & Samagri */}
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <User size={18} className="text-orange-300" />
-                      <span className="text-sm font-medium">{booking.devotee}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <Package size={18} className="text-orange-300" />
-                      <span className="text-sm font-medium">
-                        {booking.kitIncluded ? "Samagri Kit Included" : "No Kit Included"}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Column 3: Location & Price */}
-                  <div className="flex flex-col justify-between">
-                    <div className="flex items-center gap-3 text-gray-500">
-                      <MapPin size={18} className="text-orange-300" />
-                      <span className="text-sm font-medium uppercase">{booking.location}</span>
-                    </div>
-                    <div className="mt-4 md:mt-0 md:text-right">
-                      <span className="text-2xl font-serif font-bold text-orange-600">₹{booking.price}</span>
-                    </div>
-                  </div>
-
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
-
-        </div>
-      </main>
+        )}
+      </div>
     </div>
   );
 };

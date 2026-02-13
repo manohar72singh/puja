@@ -56,7 +56,7 @@ export const signupVerify = async (req, res) => {
         if (address) {
             // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
             await connection.query(
-                "INSERT INTO addresses (user_id, address_line11, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
                 [newUserId, address, city, state, address_type || "home", pincode || null, 1]
             );
         }
@@ -138,198 +138,112 @@ export const verifyOtp = async (req, res) => {
 };
 
 
-//5.add-address
-
+// 1. Naya Address Add Karna
 export const addAddress = async (req, res) => {
     try {
-        const userId = req.user.id;        
-        const {
-            address_line,
-            city,
-            state,
-            pincode,
-            address_type,
-            is_default
-        } = req.body;
+        const userId = req.user.id;
+        const { address_line1, city, state, pincode, address_type, is_default } = req.body;
 
-        if (!address_line) {
-            return res.status(400).json({ message: "Address is required" });
+        if (!address_line1 || !city || !state || !pincode) {
+            return res.status(400).json({ message: "All fields are required" });
         }
 
+        // Agar naya address default hai, toh baaki purane addresses ko default se hatao
         if (is_default) {
-            await db.query(
-                "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
-                [userId]
-            );
+            await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
         }
 
         const [result] = await db.query(
-            `INSERT INTO addresses
-            (user_id, address_line1, city, state, pincode, address_type, is_default)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-                userId,
-                address_line,
-                city,
-                state,
-                pincode,
-                address_type,
-                is_default ? 1 : 0
-            ]
+            `INSERT INTO addresses (user_id, address_line1, city, state, pincode, address_type, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [userId, address_line1, city, state, pincode, address_type, is_default ? 1 : 0]
         );
 
-        res.status(201).json({
-            message: "Address added successfully",
-            addressId: result.insertId
-        });
-
+        res.status(201).json({ message: "Address added successfully", id: result.insertId });
     } catch (error) {
-        res.status(500).json({
-            message: "Failed to add address",
-            error: error.message
-        });
+        res.status(500).json({ message: "Failed to add address", error: error.message });
     }
 };
 
-// 6.users ka profile mai sara address dikhana
+// 2. Saare Addresses Get Karna (Listing)
 export const getUserAddresses = async (req, res) => {
-  try {
-    const userId = req.user.id;
-
-    const [rows] = await db.query(
-      "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC",
-      [userId]
-    );
-
-    res.status(200).json(rows);
-  } catch (error) {
-    res.status(500).json({
-      message: "Failed to fetch addresses",
-      error: error.message
-    });
-  }
+    try {
+        const userId = req.user.id;
+        const [rows] = await db.query(
+            "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC", 
+            [userId]
+        );
+        res.json(rows);
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching addresses", error: error.message });
+    }
 };
 
-
-//7.get single address
+// 3. Ek Single Address Get Karna (Edit Form ke liye)
 export const getSingleAddress = async (req, res) => {
-
     try {
-
         const { id } = req.params;
-
-        const [rows] = await db.query(
-            "SELECT * FROM addresses WHERE id = ?",
-            [id]
-        );
-
+        const userId = req.user.id;
+        const [rows] = await db.query("SELECT * FROM addresses WHERE id = ? AND user_id = ?", [id, userId]);
+        
+        if (rows.length === 0) return res.status(404).json({ message: "Address not found" });
         res.json(rows[0]);
-
     } catch (error) {
         res.status(500).json({ message: "Error fetching address" });
     }
 };
 
-//8. set default address
-export const setDefaultAddress = async (req, res) => {
-  try {
-    const userId = req.user.id;
-    const addressId = req.params.id;
-
-    // Remove previous default
-    await db.query(
-      "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
-      [userId]
-    );
-
-    // Set new default
-    await db.query(
-      "UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?",
-      [addressId, userId]
-    );
-
-    res.json({ message: "Default address updated" });
-
-  } catch (error) {
-    res.status(500).json({ message: "Error updating default address" });
-  }
-};
-
-//9.updated arddress
+// 4. Address Update Karna
 export const updateAddress = async (req, res) => {
-
     try {
-
         const { id } = req.params;
         const userId = req.user.id;
-
-        const {
-            address_line,
-            city,
-            state,
-            pincode,
-            address_type,
-            is_default
-        } = req.body;
+        const { address_line1, city, state, pincode, address_type, is_default } = req.body;
 
         if (is_default) {
-            await db.query(
-                "UPDATE addresses SET is_default = 0 WHERE user_id = ?",
-                [userId]
-            );
+            await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
         }
 
         await db.query(
-            `UPDATE addresses 
-             SET address_line1=?, city=?, state=?, pincode=?, address_type=?, is_default=?
-             WHERE id=? AND user_id=?`,
-            [
-                address_line,
-                city,
-                state,
-                pincode,
-                address_type,
-                is_default ? 1 : 0,
-                id,
-                userId
-            ]
+            `UPDATE addresses SET address_line1=?, city=?, state=?, pincode=?, address_type=?, is_default=? WHERE id=? AND user_id=?`,
+            [address_line1, city, state, pincode, address_type, is_default ? 1 : 0, id, userId]
         );
 
-        res.json({ message: "Address Updated" });
-
+        res.json({ message: "Address Updated successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Update failed" });
+        res.status(500).json({ message: "Update failed", error: error.message });
     }
 };
 
-// DELETE a saved address
+// 5. Address Delete Karna
 export const deleteAddress = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const userId = req.user.id; // Token se login user ki ID li
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
 
-    // Pehle check karein ki ye address isi user ka hai ya nahi
-    const [address] = await db.execute(
-      "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
-      [id, userId]
-    );
+        const [result] = await db.query("DELETE FROM addresses WHERE id = ? AND user_id = ?", [id, userId]);
 
-    if (address.length === 0) {
-      return res.status(404).json({ 
-        message: "Address not found or you don't have permission" 
-      });
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: "Address not found" });
+        }
+        res.json({ message: "Address deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Delete failed", error: error.message });
     }
+};
 
-    // Agar address default hai, toh delete karne se pehle sochna hoga 
-    // (Optional: Aap prevent kar sakte hain ya delete karne de sakte hain)
+// 6. Default Status Toggle Karna
+export const setDefaultAddress = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id;
 
-    await db.execute("DELETE FROM addresses WHERE id = ?", [id]);
+        await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
+        await db.query("UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?", [id, userId]);
 
-    res.status(200).json({ message: "Address deleted successfully" });
-  } catch (error) {
-    console.error("Delete Address Error:", error);
-    res.status(500).json({ message: "Internal server error" });
-  }
+        res.json({ message: "Default address updated" });
+    } catch (error) {
+        res.status(500).json({ message: "Failed to set default" });
+    }
 };
 
 //10.add family member

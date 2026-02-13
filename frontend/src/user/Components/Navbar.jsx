@@ -64,7 +64,7 @@ const Navbar = () => {
     { to: "/", label: "Home", icon: <Home size={18} /> },
     { to: "/homepuja", label: "Home-Puja", icon: <Globe size={18} /> },
     { to: "/templepuja", label: "Temple-Puja", icon: <User size={18} /> },
-    { to: "/mybooking", label: "My-Booking", icon: <Settings size={18} /> },
+    { to: "/my-booking", label: "My-Booking", icon: <Settings size={18} /> },
     { to: "/pind_dan", label: "Pind Dan", icon: <ShieldCheck size={18} /> },
   ];
 

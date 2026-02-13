@@ -26,18 +26,14 @@ router.post('/signup-verify', signupVerify);
 router.post('/login-request', loginRequest);
 router.post('/verify-otp', verifyOtp);
 
-// -------- ADDRESS --------
+// -------- ADDRESS MANAGEMENT ROUTES --------
+
 router.post('/add-address', verifyToken, addAddress);
-
 router.get('/get-addresses', verifyToken, getUserAddresses);
-
-router.put('/set-default/:id', verifyToken, setDefaultAddress);
-
 router.get('/address/:id', verifyToken, getSingleAddress);
-
 router.put('/update-address/:id', verifyToken, updateAddress);
-
-router.delete("/delete-address/:id", verifyToken, deleteAddress);
+router.delete('/delete-address/:id', verifyToken, deleteAddress);
+router.put('/set-default/:id', verifyToken, setDefaultAddress);
 
 // -------------ADD-Members-------------------
 router.post('/add-member',verifyToken,addMember)
