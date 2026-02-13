@@ -44,7 +44,6 @@ const HomePujaBooking = () => {
           },
         });
         const data = await response.json();
-
         setService(data[0]);
       } catch (error) {
         console.log("Error booking puja:", error);
@@ -303,13 +302,13 @@ const HomePujaBooking = () => {
                 <span className="text-3xl font-serif font-bold text-orange-500 tracking-tighter">
                   ₹
                   {samagriEnabled
-                    ? Number(service?.price) + 600
+                    ? Number(service?.standard_price) + 600
                     : service?.price}
                 </span>
               </div>
               <button
                 onClick={() =>
-                  navigate("/homePuja/payment-details", {
+                  navigate(`/homePuja/payment-details/${id}`, {
                     state: { isSamagriSelected: samagriEnabled },
                   })
                 }
