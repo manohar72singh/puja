@@ -29,8 +29,9 @@ const MyBookings = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF4E1] p-6">
-      <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl font-serif text-[#3b2a1a] mb-8">My Sacred <span className="text-orange-500 italic">Bookings</span></h2>
+      <div className="max-w-6xl mx-auto">
+        <h2 className="text-4xl font-serif text-[#3b2a1a] mb-2">My Sacred <span className="text-orange-500 italic">Bookings</span></h2>
+        <p className="text-1rem text-gray-700 mb-10">Track and manage your puja bookings.</p>
 
         {bookings.length === 0 ? (
           <div className="bg-white p-10 rounded-3xl text-center shadow-sm">

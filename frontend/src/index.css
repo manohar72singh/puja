@@ -1,15 +1,10 @@
 @import "tailwindcss";
 
-/* @keyframes heroSlide {
-  0% {
-    transform: translateX(-50%);
-  }
-  100% {
-    transform: translateX(0%);
-  }
+/* index.css ya App.css */
+.app-container {
+  width: 100%;
+  max-width: 1440px; /* Aapki design ki maximum width */
+  margin: 0 auto;    /* Ye content ko center kar dega */
+  display: flex;
+  flex-direction: column;
 }
-
-.animate-hero-slide {
-  animation: heroSlide 35s linear infinite;
-}
- */

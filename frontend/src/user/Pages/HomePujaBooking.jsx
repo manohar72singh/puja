@@ -1,22 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
+
 import {
-  Clock, Shield, Heart, Briefcase, Users, Box, ChevronRight, Zap, House,
-  MessageCircle, ChevronLeft, Star, HelpCircle, Info, ClipboardList,
+  ChevronRight, ChevronLeft, Star, HelpCircle, Info, Box,
+  Heart, Shield, Zap, Users, ShieldCheck, CheckCircle, MessageSquare, MapPin, Sparkles
 } from "lucide-react";
+
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const HomePujaBooking = () => {
+
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
 
-  // FIX: Checks if we returned from payment page to keep the toggle state
   const [samagriEnabled, setSamagriEnabled] = useState(
-    location.state?.isSamagriSelected !== undefined 
-      ? location.state.isSamagriSelected 
-      : true
+    location.state?.isSamagriSelected !== undefined ? location.state.isSamagriSelected : true
   );
 
   const [activeTab, setActiveTab] = useState("about");
@@ -25,7 +25,7 @@ const HomePujaBooking = () => {
   const sections = {
     about: useRef(null),
     benefits: useRef(null),
-    faqs: useRef(null),
+    faqs: useRef(null)
   };
 
   useEffect(() => {
@@ -33,28 +33,24 @@ const HomePujaBooking = () => {
       const token = localStorage.getItem("token");
       try {
         const response = await fetch(`${API_BASE_URL}/puja/bookPuja/${id}`, {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${token}`,
-          },
+          headers: { "Authorization": `Bearer ${token}` },
         });
         const data = await response.json();
-        // Database se aksar array aata hai, isliye data[0]
         setService(Array.isArray(data) ? data[0] : data);
-      } catch (error) {
-        console.log("Error booking puja:", error);
-      }
+      } catch (error) { console.log("Error:", error); }
     };
     if (id) bookPuja(id);
   }, [id]);
 
   useEffect(() => {
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 150;
+      const scrollPosition = window.scrollY + 180;
       for (const [key, ref] of Object.entries(sections)) {
-        if (ref.current && scrollPosition >= ref.current.offsetTop && 
-            scrollPosition < ref.current.offsetTop + ref.current.offsetHeight) {
+        if (
+          ref.current &&
+          scrollPosition >= ref.current.offsetTop &&
+          scrollPosition < ref.current.offsetTop + ref.current.offsetHeight
+        ) {
           setActiveTab(key);
         }
       }
@@ -74,117 +70,228 @@ const HomePujaBooking = () => {
     }
   };
 
-  // --- CALCULATION LOGIC ---
   const basePrice = Number(service?.standard_price || 0);
   const totalAmount = samagriEnabled ? basePrice + 600 : basePrice;
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-8 font-sans text-gray-800">
+    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800">
       <div className="max-w-6xl mx-auto">
-        <button onClick={() => navigate(-1)} className="flex items-center gap-2 text-sm font-bold text-gray-600 hover:text-orange-600 mb-6 transition-colors group">
-          <ChevronLeft size={18} strokeWidth={2.5} className="group-hover:-translate-x-1 transition-transform" />
-          <span>Back to All Pujas</span>
+
+        <button
+          onClick={() => navigate(-1)}
+          className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-orange-700 mb-5 hover:opacity-70 transition-all"
+        >
+          <ChevronLeft size={18} /> Back to Selection
         </button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-t-[2rem] overflow-hidden border-t border-x border-orange-200 shadow-sm">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+          <div className="lg:col-span-8 space-y-5">
+
+            {/* HERO SECTION */}
+            <div className="bg-white rounded-2xl overflow-hidden border border-orange-200 shadow-sm">
               <div className="relative h-64 md:h-80">
-                <img src={`${API_BASE_URL}/uploads/${service?.image_url}`} alt={service?.puja_name} className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
-                <div className="absolute bottom-6 left-6 text-white">
-                  <h1 className="text-2xl md:text-4xl font-serif font-bold mb-1">{service?.puja_name}</h1>
-                  <p className="text-orange-200 text-sm flex items-center gap-2 font-medium">
-                    <Star size={14} fill="currentColor" /> {service?.rating || "4.9"} | Certified Vedic Pandits
-                  </p>
+                <img
+                  src={`${API_BASE_URL}/uploads/${service?.image_url}`}
+                  className="w-full h-full object-cover"
+                  alt="Puja"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-6 left-6">
+                  <h1 className="text-3xl md:text-4xl font-serif font-bold text-white leading-tight">
+                    {service?.puja_name}
+                  </h1>
+                  <div className="flex items-center">
+                    <span className="text-white text-[13px] font-bold uppercase tracking-wider">
+                      Certified Vedic Ritual
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <nav className="sticky top-[64px] z-[40] bg-white border border-orange-200 shadow-lg flex overflow-x-auto no-scrollbar rounded-b-2xl mb-8">
-              {["about", "benefits", "faqs"].map((tab) => (
-                <button key={tab} onClick={() => scrollToSection(tab)}
-                  className={`flex-1 px-4 py-4 text-xs md:text-sm font-extrabold capitalize transition-all border-b-4 ${activeTab === tab ? "border-orange-500 text-orange-600 bg-orange-50/50" : "border-transparent text-gray-400"}`}>
-                  {tab}
-                </button>
-              ))}
+            {/* ✅ FIXED STICKY TAB HEADER */}
+            <nav className="sticky top-[76px] z-40 bg-white border border-orange-200 rounded-xl shadow-md mb-4">
+              <div className="flex overflow-x-auto no-scrollbar">
+                {["about", "benefits", "faqs"].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => scrollToSection(tab)}
+                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
+                      ? "text-orange-600 bg-orange-50/50"
+                      : "text-gray-400"
+                      }`}
+                  >
+                    {tab}
+                    {activeTab === tab && (
+                      <span className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 rounded-t-full" />
+                    )}
+                  </button>
+                ))}
+              </div>
             </nav>
 
-            <div className="space-y-6">
-              <div className="bg-white rounded-2xl p-6 border border-orange-200 hover:border-orange-500 transition-all duration-300 flex items-center justify-between shadow-sm group">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-orange-50 rounded-xl text-orange-500 group-hover:bg-orange-500 group-hover:text-white transition-colors"><Box size={24} /></div>
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-800">Add Complete Samagri Kit</h3>
-                    <p className="text-gray-500 text-sm">Pure ghee, flowers, and all ritual items included.</p>
-                  </div>
-                </div>
-                <div className="flex flex-col items-end gap-1">
-                  <button onClick={() => setSamagriEnabled(!samagriEnabled)}
-                    className={`w-14 h-7 flex items-center rounded-full p-1 transition-colors ${samagriEnabled ? "bg-orange-500" : "bg-gray-300"}`}>
-                    <div className={`bg-white w-5 h-5 rounded-full shadow-md transform duration-300 ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`}></div>
-                  </button>
-                  <span className="text-[10px] font-bold text-orange-600">+₹600</span>
+            <div className="bg-white rounded-xl p-5 border border-orange-200 flex items-center justify-between shadow-sm group hover:border-orange-400 transition-colors">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-all"><Box size={24} /></div>
+                <div>
+                  <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">Add Complete Samagri Kit</h3>
+                  <p className="text-gray-500 text-[13px]">Pure ghee, flowers, and all ritual items included.</p>
                 </div>
               </div>
-
-              <section ref={sections.about} className="scroll-mt-32 pt-2">
-                <SectionTitle icon={<Info />} title="About the Ritual" />
-                <div className="bg-white p-6 rounded-2xl border border-orange-200 text-gray-600 leading-relaxed shadow-sm">
-                  {service?.description}
-                </div>
-              </section>
-
-              <section ref={sections.benefits} className="scroll-mt-32">
-                <SectionTitle title="Spiritual Benefits" icon={<Zap size={18} />} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <BenefitCard icon={<Heart size={20} />} title="Spiritual Upliftment" desc="Divine energy channelled from sacred temples to your home." />
-                  <BenefitCard icon={<Shield size={20} />} title="Divine Protection" desc="Sought-after blessings to safeguard your family." />
-                  <BenefitCard icon={<Box size={20} />} title="Prosperity & Wealth" desc="Attract abundance and success in your life." />
-                  <BenefitCard icon={<Users size={20} />} title="Family Harmony" desc="Strengthens bonds and brings peace among family." />
-                </div>
-              </section>
-
-              <section ref={sections.faqs} className="pb-10 scroll-mt-32 pt-2">
-                <SectionTitle icon={<HelpCircle />} title="Frequently Asked Questions" />
-                <div className="space-y-3">
-                  <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras." />
-                  <FAQItem q="I don't know my Gotra?" a="You can use 'Kashyap' as it is the root Gotra for all." />
-                  <FAQItem q="Will I get Prasad?" a="Yes, Prasad will be delivered to your registered address." />
-                </div>
-              </section>
+              <div className="flex items-center gap-4">
+                <span className="text-[15px] font-bold text-orange-600">+₹600</span>
+                <button onClick={() => setSamagriEnabled(!samagriEnabled)}
+                  className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-300"}`}>
+                  <div className={`bg-white w-5 h-5 rounded-full shadow transition-transform ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`} />
+                </button>
+              </div>
             </div>
+
+            {/* CONTENT CONTAINER */}
+            <div className="bg-white rounded-2xl border border-orange-200 overflow-hidden shadow-sm">
+              <div className="p-7 space-y-12">
+
+                {/* SECTION: About */}
+                <section ref={sections.about} className="scroll-mt-32 space-y-5">
+                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
+                    <Info size={20} /> About The Ritual
+                  </div>
+                  <p className="text-[15px] text-gray-600 leading-relaxed text-justify">
+                    {service?.description}
+                  </p>
+                </section>
+
+                <div className="border-t border-orange-50" />
+
+                {/* SECTION: Benefits (Image-style Layout) */}
+                <section ref={sections.benefits} className="scroll-mt-32 space-y-6">
+                  <h3 className="text-2xl font-serif font-bold text-gray-800">Benefits of {service?.puja_name}</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
+                    <BenefitSmall icon={<Shield />} title="Protection & Blessings" desc="Divine protection for family" />
+                    <BenefitSmall icon={<Zap />} title="Prosperity & Success" desc="Remove obstacles from your path" />
+                    <BenefitSmall icon={<Users />} title="Family Harmony" desc="Strengthen family bonds" />
+                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify home with mantras" />
+                    <BenefitSmall icon={<MapPin />} title="Vastu Benefits" desc="Harmonize living space" />
+                  </div>
+                </section>
+
+                <div className="border-t border-orange-50" />
+
+                {/* What's Included */}
+                <div className="space-y-6">
+                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
+                    <CheckCircle size={20} /> What's Included
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    {["Expert Pandit", "Sankalp", "Puja Samagri", "Digital Aarti"].map((item) => (
+                      <div key={item} className="flex items-center gap-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
+                        <CheckCircle size={16} className="text-green-600 shrink-0" />
+                        <span className="text-[13px] font-bold text-gray-700">{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* WhatsApp Highlighting (Image Style) */}
+                <div className="bg-[#FFFCEB] rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
+                  <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
+                  <div>
+                    <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
+                    <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* SECTION: FAQs */}
+            <section ref={sections.faqs} className="bg-white p-7 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
+              <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-6">
+                <HelpCircle size={20} /> Frequently Asked Questions
+              </div>
+              <div className="space-y-4">
+                <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
+                <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
+                <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits who are well-versed in Shastras and certified for performing complex rituals will conduct your puja." />
+                <FAQItem q="What will be done in this Puja?" a="The puja includes the main ritual (Katha/Havan), Ganesh Pujan, Sankalp, and Aarti. All steps are followed as per Vedic traditions." />
+                <FAQItem q="How will I know the Puja has been done in my name?" a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja, dedicated specifically to your family." />
+                <FAQItem q="What will I get after the Puja is done?" a="After completion, you will receive the divine blessings, sacred Prasad (if samagri is selected), and a peaceful spiritual environment in your home." />
+                <FAQItem q="Do I need to arrange any utensils?" a="Just basic household utensils (Kalash, Plates) are needed. All ritual items are provided if Samagri kit is selected." />
+              </div>
+            </section>
+
           </div>
 
-          <aside className="lg:col-span-1 lg:sticky lg:top-[90px] z-30">
-            <div className="bg-white rounded-3xl shadow-xl border border-orange-200 p-6">
-              <h2 className="text-xl font-bold mb-6 text-gray-800 border-b border-orange-100 pb-2">Booking Summary</h2>
-              <div className="space-y-4 mb-6 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500 font-medium">Base Service Fee</span>
-                  <span className="text-gray-900 font-bold">₹{basePrice}</span>
+          {/* SIDEBAR SUMMARY */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-[100px] self-start">
+            <div className="bg-white rounded-2xl border border-orange-200 p-8 shadow-sm space-y-8">
+              {/* Header with Progress Line */}
+              <div>
+                <h2 className="text-[15px] font-bold uppercase tracking-[0.2em] text-gray-700 mb-2">
+                  Booking Summary
+                </h2>
+                <div className="flex gap-1">
+                  <div className="h-1 w-12 bg-orange-500 rounded-full" />
+                  <div className="h-1 w-4 bg-orange-100 rounded-full" />
                 </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="space-y-5">
+                <div className="flex justify-between text-[15px] font-bold">
+                  <span className="text-gray-600 uppercase tracking-tighter">Service Fee</span>
+                  <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
+                </div>
+
                 {samagriEnabled && (
-                  <div className="flex justify-between text-orange-600 font-semibold">
-                    <span>Samagri Kit Charge</span>
-                    <span>+₹600</span>
+                  <div className="flex justify-between text-[15px] font-bold text-orange-600 border-t border-orange-50">
+                    <span className="uppercase tracking-tighter flex items-center gap-2">
+                      <Box size={18} className="text-orange-400" />
+                      Samagri Kit
+                    </span>
+                    <span className="bg-orange-50 px-2 py-0.5 rounded text-sm">+₹600</span>
                   </div>
                 )}
+
+                {/* Total Amount Section */}
+                <div className="pt-6 border-t border-dashed border-orange-200">
+                  <div className="flex justify-between items-end">
+                    <div className="flex flex-col">
+                      <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">
+                        Total Amount
+                      </span>
+                      <span className="text-[10px] text-green-600 font-bold flex items-center gap-1 mt-1">
+                        <Shield size={10} /> Inclusive of all taxes
+                      </span>
+                    </div>
+                    <span className="text-4xl font-serif font-bold text-orange-600 tracking-tighter">
+                      ₹{totalAmount}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="border-t border-dashed border-orange-200 my-4"></div>
-              <div className="flex justify-between items-center mb-8">
-                <span className="text-gray-800 font-bold text-lg">Payable Amount</span>
-                <span className="text-3xl font-serif font-bold text-orange-500 tracking-tighter">
-                  ₹{totalAmount}
-                </span>
+
+              {/* CTA Button & Security Badge */}
+              <div className="space-y-4">
+                <button
+                  onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+                  className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-bold py-5 rounded-xl shadow-xl shadow-orange-100 hover:shadow-orange-200 hover:-translate-y-0.5 transition-all duration-300 uppercase tracking-[0.2em] text-[13px] active:scale-95 flex items-center justify-center gap-2"
+                >
+                  Proceed to Book <ChevronRight size={18} strokeWidth={3} />
+                </button>
+
+                <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 py-3 rounded-lg border border-gray-100">
+                  <ShieldCheck size={14} className="text-green-500" />
+                  Secure 256-bit SSL Payment
+                </div>
               </div>
-              <button
-                onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
-                className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-2xl shadow-lg active:scale-95 transition-all uppercase tracking-wide"
-              >
-                Book This Puja
-              </button>
             </div>
+
+            {/* Helpful Note Below Sidebar */}
+            <p className="mt-4 px-4 text-[11px] text-gray-400 leading-relaxed text-center italic">
+              *Booking confirms your slot with our certified Vedic Pandits. You can reschedule up to 24 hours before the ritual.
+            </p>
           </aside>
         </div>
       </div>
@@ -192,32 +299,26 @@ const HomePujaBooking = () => {
   );
 };
 
-// --- HELPER COMPONENTS ---
-const SectionTitle = ({ icon, title }) => (
-  <div className="flex items-center gap-2 mb-4 text-orange-600 font-bold text-lg uppercase tracking-tight">
-    {React.cloneElement(icon, { size: 22 })}
-    <h3 className="font-serif">{title}</h3>
-  </div>
-);
-
-const BenefitCard = ({ icon, title, desc }) => (
-  <div className="bg-white p-5 rounded-2xl flex items-start gap-4 border border-orange-200 shadow-sm group">
-    <div className="p-3 bg-orange-50 text-orange-500 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all">
-      {icon}
+// --- HELPER: BENEFIT CARD ---
+const BenefitSmall = ({ icon, title, desc }) => (
+  <div className="flex items-center gap-4 bg-[#FFFDF8] p-5 rounded-xl border border-orange-50 group border-orange-200 transition-all shadow-sm">
+    <div className="p-3 bg-white text-orange-500 rounded-xl shadow-sm group-hover:bg-orange-500 group-hover:text-white transition-all">
+      {React.cloneElement(icon, { size: 20 })}
     </div>
     <div>
-      <h4 className="font-bold text-gray-800 text-sm">{title}</h4>
-      <p className="text-gray-500 text-xs mt-1 leading-relaxed">{desc}</p>
+      <h4 className="text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
+      <p className="text-[13px] text-gray-500 mt-2 leading-tight font-medium">{desc}</p>
     </div>
   </div>
 );
 
+// --- HELPER: FAQ ITEM ---
 const FAQItem = ({ q, a }) => (
-  <details className="group bg-white rounded-xl border border-orange-200 p-4 list-none shadow-sm">
-    <summary className="font-bold cursor-pointer flex justify-between items-center text-sm text-gray-700">
-      {q} <ChevronRight size={16} className="group-open:rotate-90 transition-transform text-orange-400" />
+  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-5 list-none cursor-pointer">
+    <summary className="font-bold flex justify-between items-center text-[15px] text-gray-700">
+      {q} <ChevronRight size={20} className="group-open:rotate-90 transition-transform text-orange-400" />
     </summary>
-    <p className="text-xs text-gray-500 mt-3 pt-3 border-t border-orange-50">{a}</p>
+    <p className="text-[14px] text-gray-500 mt-4 pt-4 border-t border-orange-100 leading-relaxed font-medium">{a}</p>
   </details>
 );
 

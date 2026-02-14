@@ -87,8 +87,15 @@ export const bookingDetails = async (req, res) => {
 
     const userId = req.user.id;
 
+    // Format date for MySQL
+    const formattedDate = date
+      ? new Date(date).toISOString().split('T')[0]
+      : new Date().toISOString().split('T')[0];
+
+
     // Smart Address Logic: Check karein ki Temple puja hai ya Home puja
     let fullAddress = "";
+
     if (ticket_type) {
       // Temple Puja format
       fullAddress = `Ticket: ${ticket_type} | Donations: ${donations || 'None'} | Devotee: ${devoteeName || 'User'}`;
@@ -104,11 +111,14 @@ export const bookingDetails = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
     `;
 
+
+
     // Query execute karein
     const [result] = await db.query(query, [
       userId,
       puja_id,
-      date || new Date().toISOString().split('T')[0],
+      // date || new Date().toISOString().split('T')[0],
+      formattedDate,
       time || 'Morning Slot',
       fullAddress,
       city || 'N/A',
@@ -195,6 +205,57 @@ export const templePuja = async (req, res) => {
 
       GROUP BY s.id, t.id
     `);
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
+export const templePujaSingle = async (req, res) => {
+  const { id } = req.params
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        s.id AS service_id,
+        s.puja_name,
+        s.puja_type,
+        s.description,
+        s.image_url,
+        s.created_at AS service_created_at,
+
+        t.id AS temple_id,
+        t.about,
+        t.address,
+        t.dateOfStart,
+        t.created_at AS temple_created_at,
+
+        MAX(CASE WHEN p.pricing_type = 'standard' THEN p.price END) AS standard_price,
+        MAX(CASE WHEN p.pricing_type = 'single' THEN p.price END) AS single_price,
+        MAX(CASE WHEN p.pricing_type = 'couple' THEN p.price END) AS couple_price,
+        MAX(CASE WHEN p.pricing_type = 'family' THEN p.price END) AS family_price
+
+      FROM services s
+
+      LEFT JOIN temples t 
+        ON s.id = t.service_id
+
+      LEFT JOIN service_prices p 
+        ON s.id = p.service_id
+
+      WHERE s.id = ?
+
+      GROUP BY s.id, t.id
+    `,[id]);    
 
     res.status(200).json({
       success: true,

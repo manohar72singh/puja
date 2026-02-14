@@ -1,11 +1,18 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import UserLayout from "./user/Layout/UserLayout";
 
-import Home from "./user/Pages/Home";
 import HomePuja from "./user/Pages/HomePuja";
 import HomePujaBooking from "./user/Pages/HomePujaBooking";
+import HomePujaPaymentDetails from "./user/Pages/HomePujaPaymentDetails";
+
 import TemplePuja from "./user/Pages/TemplePuja";
 import TemplePujaBooking from "./user/Pages/TemplePujaBooking";
+
+import KathaPuja from "./user/Pages/KathaPuja"
+import KathaPujaBooking from "./user/Pages/KathaPujaBooking"
+import KathaPujaBookingDetails from "./user/Pages/KathaPujaBookingDetails"
+
+import Home from "./user/Pages/Home";
 import Gallery from "./user/Pages/Gallery";
 import Pind_Dan from "./user/Pages/Pind_Dan";
 import SignIn from "./user/Pages/SignIn";
@@ -13,7 +20,6 @@ import SignUp from "./user/Pages/SignUp";
 import NavbarOnlyLayout from "./user/Layout/NavbarOnlyLayout"
 import ProfileSection from "./user/Pages/ProfileSection"
 import HelpSupportSection from "./user/Pages/HelpSupportSection"
-import HomePujaPaymentDetails from "./user/Pages/HomePujaPaymentDetails";
 import ManageSankalp from "./user/Pages/ManageSankalp";
 import SavedAddresses from "./user/Pages/SavedAddresses";
 
@@ -45,8 +51,16 @@ function App() {
             <Route path="payment-details/:id" element={<HomePujaPaymentDetails />} />
           </Route>
 
-          <Route path="/templePuja" element={<TemplePuja />} />
-          <Route path="/templePuja/:id" element={<TemplePujaBooking />} />
+          <Route path="/katha-jaap">
+            <Route index element={<KathaPuja />} />
+            <Route path=":id" element={<KathaPujaBooking />} />
+            <Route path="payment-details/:id" element={<KathaPujaBookingDetails />} />
+          </Route>
+
+          <Route path="/temple-puja">
+            <Route index element={<TemplePuja />} />
+            <Route path=":id" element={<TemplePujaBooking />} />
+          </Route>
           <Route path="/my-booking" element={<MyBookings />} />
           <Route path="/gallery" element={<Gallery />} />
           <Route path="/pind_dan" element={<Pind_Dan />} />
@@ -79,6 +93,9 @@ function App() {
           <Route path="dashboard" element={<PartnerDashboard />} />
           {/* <Route path="profile" element={<PartnerProfile />} /> Aapka Profile Edit Page */}
         </Route>
+        <Route path="*" element={<h1>Not Found</h1>}/>
+
+
       </Routes>
 
       {/* Floating menu logic */}

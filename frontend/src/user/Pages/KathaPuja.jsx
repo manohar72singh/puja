@@ -1,39 +1,16 @@
-import {
-  MapPin,
-  Calendar,
-  ArrowRight,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Search, Video } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const upcomingPujas = [
-  {
-    id: 101,
-    title: "Maha Shivratri Special Rudrabhishek",
-    date: "Feb 26, 2026",
-    img: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg",
-  },
-  {
-    id: 102,
-    title: "Grand Ayodhya Aarti Deepotsav",
-    date: "March 15, 2026",
-    img: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
-  },
-  {
-    id: 103,
-    title: "Holika Dahan Shanti Path",
-    date: "March 24, 2026",
-    img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
-  },
+  { id: 101, title: "Maha Shivratri Special Rudrabhishek", date: "Feb 26, 2026", img: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg" },
+  { id: 102, title: "Grand Ayodhya Aarti Deepotsav", date: "March 15, 2026", img: "https://images.unsplash.com/photo-1605640840605-14ac1855827b" },
+  { id: 103, title: "Holika Dahan Shanti Path", date: "March 24, 2026", img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b" },
 ];
 
-export default function HomePuja() {
+export default function KathaPuja() {
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -41,32 +18,20 @@ export default function HomePuja() {
     const getSevices = async () => {
       const token = localStorage.getItem("token");
       try {
-        const response = await fetch(
-          `${API_BASE_URL}/puja/allServices/home_puja`,
-          {
-            method: "GET",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          },
-        );
+        const response = await fetch(`${API_BASE_URL}/puja/allServices/katha`, {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          }
+        });
         const data = await response.json();
-        // console.log(data)
         setServices(data.services);
       } catch (error) {
         console.log("Error", error);
       }
     };
-
     getSevices();
-  }, []);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % upcomingPujas.length);
-    }, 4000);
-    return () => clearInterval(timer);
   }, []);
 
   const filteredServices = services.filter((service) => {
@@ -75,9 +40,7 @@ export default function HomePuja() {
   });
 
   return (
-    // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
-
       <section className="relative max-w-7xl mx-auto p-10">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
@@ -85,6 +48,7 @@ export default function HomePuja() {
           <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-amber-200 rounded-full blur-[150px]"></div>
         </div>
 
+        {/* HEADER SECTION */}
         <div className="flex flex-col mb-16 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-[1px] w-12 bg-orange-300"></div>
@@ -94,38 +58,32 @@ export default function HomePuja() {
             <div className="h-[1px] w-12 bg-orange-300"></div>
           </div>
           <h2 className="text-4xl md:text-6xl font-serif text-[#2f1e12] mb-4">
-            Divine <span className="text-orange-600 italic">Home Pujas</span>
+            Divine <span className="text-orange-600 italic">Katha & Jaap</span>
           </h2>
           <p className="mt-2 text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
-            Bring the sanctity of the temple to your doorstep with authentic
-            Vedic ceremonies performed by master priests.
+            Authentic Vedic rituals and sacred narrations by master priests, 
+            bringing peace and prosperity to your spiritual journey.
           </p>
         </div>
 
-        {/* 2. SEARCH INPUT */}
-
-        <div
-          className="max-w-7xl mx-auto px-6 pb-16 bg-[#FFF4E1]">
-          <div className="relative w-full max-w-2xl mx-auto">
-            <Search
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500"
-              size={20}
-            />
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="Search for Temple, God or Dosha..."
-              className="w-full pl-12 pr-4 py-4 bg-white border border-orange-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-[#3b2a1a]"
-            />
-          </div>
+        {/* SEARCH INPUT */}
+        <div className="relative w-full max-w-2xl mx-auto mb-20">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
+          <input
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search for Katha, Jaap or Devta..."
+            className="w-full pl-12 pr-4 py-4 bg-white border border-orange-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-[#3b2a1a]"
+          />
         </div>
 
+        {/* SERVICES GRID */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {filteredServices.map((service) => (
             <div
               key={service.id}
-              onClick={() => navigate(`/homePuja/${service.id}`)}
+              onClick={() => navigate(`/katha-jaap/${service.id}`)}
               className="group relative bg-white rounded-[20px] overflow-hidden transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(234,88,12,0.15)] border border-orange-300 cursor-pointer flex flex-col hover:-translate-y-2 active:scale-[0.98]"
             >
               {/* Image Container */}
@@ -136,9 +94,9 @@ export default function HomePuja() {
                   className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                 />
 
-                {/* Visible Luxury Badge */}
+                {/* Visible Luxury Price Badge */}
                 <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-white/90 backdrop-blur-md border border-orange-200 px-4 py-1 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col items-end">
+                  <div className="bg-white/95 backdrop-blur-md border border-orange-200 px-4 py-1.5 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col items-end">
                     <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">
                       Starting From
                     </span>
@@ -164,10 +122,10 @@ export default function HomePuja() {
                   <div className="flex items-center text-gray-400 text-xs font-medium gap-2">
                     <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-md">
                       <Calendar size={12} className="text-orange-500" />
-                      <span className="text-orange-700">Available Daily</span>
+                      <span className="text-orange-700 font-bold">Vedic Path</span>
                     </div>
                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                    <span>At Home</span>
+                    <span>Verified Pandit</span>
                   </div>
                 </div>
 
