@@ -29,152 +29,141 @@ export default function Home() {
     <div className="w-full overflow-x-hidden bg-[#FFF4E1] flex flex-col items-center">
 
       {/* ================= HERO SECTION ================= */}
-      <section className="w-full px-4 md:px-8 lg:px-12 py-10 md:py-16">
-        {/* items-start ensures both boxes start at the same top line */}
-        <div className="flex flex-col md:flex-row items-start gap-8 lg:gap-12 max-w-[1250px] mx-auto">
+<section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-10 md:py-16 overflow-hidden">
+  <div className="flex flex-col lg:flex-row items-start gap-10 lg:gap-12 max-w-[1250px] mx-auto">
 
-          {/* LEFT SIDE - Heading size increased */}
-          <div className="w-full md:w-[50%] flex flex-col pt-2">
-            <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold mb-6 w-fit uppercase tracking-widest">
-              ✨ Your Faith Partner
-            </span>
+    {/* LEFT SIDE */}
+    <div className="w-full lg:w-1/2 flex flex-col">
 
-            {/* Heading size increased to text-5xl/text-6xl for more impact */}
-            <h1 className="text-4xl md:text-5xl lg:text-[54px] font-black leading-[1.1] font-serif text-[#3b2a1a]">
-              Sacred Rituals, <br />
-              <span className="text-orange-500">Modern Convenience</span>
-            </h1>
+      <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold mb-5 w-fit uppercase tracking-widest">
+        ✨ Your Faith Partner
+      </span>
 
-            {/* Paragraph section updated for 2 lines */}
-            <p className="mt-6 text-gray-600 text-base md:text-lg leading-relaxed max-w-lg">
-              Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
+      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black leading-tight font-serif text-[#3b2a1a]">
+        Sacred Rituals,
+        <br className="hidden sm:block" />
+        <span className="text-orange-500">Modern Convenience</span>
+      </h1>
+
+      <p className="mt-5 text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-full sm:max-w-lg">
+        Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
+      </p>
+
+      {/* ✅ Buttons - Always Side by Side */}
+      <div className="flex gap-3 mt-8 w-full">
+        <button
+          className="flex-1 bg-orange-500 text-white font-bold px-4 py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 text-sm sm:text-base"
+          onClick={() => navigate("/homePuja")}
+        >
+          Book Home Puja
+        </button>
+
+        <button
+          className="flex-1 bg-white text-orange-500 font-bold px-4 py-3 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 text-sm sm:text-base"
+          onClick={() => navigate("/temple-puja")}
+        >
+          Temple Puja
+        </button>
+      </div>
+
+      {/* ✅ Stats - Hidden on Mobile */}
+      <div className="hidden md:flex items-center gap-10 mt-12">
+
+        {/* Families */}
+        <div className="flex items-center gap-3">
+          <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
+            <Users size={24} strokeWidth={2.5} />
+          </div>
+          <div>
+            <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
+              5,000+
             </p>
-
-            <div className="flex gap-4 mt-10">
-              <button
-                className="bg-orange-500 text-white font-bold px-8 py-3.5 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 whitespace-nowrap"
-                onClick={() => navigate("/homePuja")}
-              >
-                Book Home Puja
-              </button>
-
-              <button
-                className="bg-white text-orange-500 font-bold px-8 py-3.5 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 whitespace-nowrap"
-                onClick={() => navigate("/temple-puja")}
-              >
-                Book Temple Puja
-              </button>
-            </div>
-
-            <div className="flex items-center gap-10 mt-12">
-              {/* Families Stat */}
-              <div className="flex items-center gap-3">
-                <div className="bg-[#fee4c4] border border-none p-2 rounded-lg text-orange-400">
-                  <Users size={24} strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xl font-serif font-bold  text-[#3b2a1a] leading-none">5,000+</p>
-                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Happy Families</p>
-                </div>
-              </div>
-
-
-              {/* Rating Stat */}
-              <div className="flex items-center gap-3">
-                <div className="bg-[#fee4c4] border border-none p-2 rounded-lg text-orange-400">
-                  <Star size={24} fill="currentColor" strokeWidth={2.5} />
-                </div>
-                <div>
-                  <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">4.9★</p>
-                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Average Rating</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="w-full max-w-md h-[1px] bg-gray-200/60 mt-3 mb-8"></div>
-
-            <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
-                <ShieldCheck size={16} className="text-orange-600" />
-                <span className="text-xs md:text-sm font-semibold text-gray-600">Verified Pandits</span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
-                <Box size={16} className="text-orange-600" />
-                <span className="text-xs md:text-sm font-semibold text-gray-600">Samagri Included</span>
-              </div>
-
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
-                <Sparkles size={16} className="text-orange-600" />
-                <span className="text-xs md:text-sm font-semibold text-gray-600">Fixed Pricing</span>
-              </div>
-            </div>
+            <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
+              Happy Families
+            </p>
           </div>
-
-          {/* RIGHT SIDE - Increased width to 50% (approx 8% up from 42%) */}
-          <div className="relative w-full md:w-[45%] h-[500px] md:h-[540px] rounded-[20px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-zinc-900 group">
-
-            {/* Modern Floating Live Badge */}
-            <div className="absolute top-6 left-6 z-50">
-              <div className="bg-black/20 backdrop-blur-xl border border-white/20 text-white px-4 py-1.5 rounded-full text-[10px] font-bold flex items-center gap-2 tracking-widest transition-transform group-hover:scale-105">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-                </span>
-                LIVE
-              </div>
-            </div>
-
-            {/* Ken Burns Slider Logic */}v
-            {rituals.map((item, i) => (
-              <div
-                key={i}
-                className={`absolute inset-0 transition-all duration-[1500ms] ease-in-out ${i === index ? "opacity-100 scale-100 z-20" : "opacity-0 scale-110 z-10"
-                  }`}
-              >
-                <img
-                  src={item.img}
-                  alt={item.title}
-                  className={`w-full h-full object-cover transition-transform duration-[6000ms] ${i === index ? "scale-110" : "scale-100"
-                    }`}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-              </div>
-            ))}
-
-            {/* Indicators - Now at Bottom Right (Above Info Card) */}
-            <div className="absolute bottom-8 right-8 z-50 flex items-center gap-1.5 bg-white/10 backdrop-blur-md p-2 rounded-full border border-white/5">
-              {rituals.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-1 rounded-full transition-all duration-500 ease-out ${i === index ? "w-8 bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.5)]" : "w-2 bg-white/30"
-                    }`}
-                />
-              ))}
-            </div>
-
-            {/* Premium Info Card Overlay - Width adjusted to content */}
-            <div className="absolute bottom-8 left-6 z-40">
-              <div className="w-fit max-w-[100%] bg-white/5 backdrop-blur-md border border-white/10 p-4 rounded-[28px] transform transition-all duration-500 group-hover:-translate-y-2">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="h-[1px] w-4 bg-orange-500"></span>
-                  <span className="text-orange-400 text-[10px] font-black uppercase tracking-[0.2em]">Ceremony</span>
-                </div>
-
-                <h3 className="text-2xl md:text-3xl font-serif text-white font-bold leading-tight mb-2 whitespace-nowrap">
-                  {rituals[index].title}
-                </h3>
-
-                <p className="text-white/60 text-sm leading-relaxed max-w-[300px]">
-                  {rituals[index].desc}
-                </p>
-
-              </div>
-            </div>
-          </div>
-
         </div>
-      </section>
+
+        {/* Rating */}
+        <div className="flex items-center gap-3">
+          <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
+            <Star size={24} fill="currentColor" strokeWidth={2.5} />
+          </div>
+          <div>
+            <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
+              4.9★
+            </p>
+            <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
+              Average Rating
+            </p>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Feature Tags */}
+      <div className="flex flex-wrap gap-3 mt-8">
+        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+          <ShieldCheck size={14} className="text-orange-600" />
+          <span className="text-xs font-semibold text-gray-600">Verified Pandits</span>
+        </div>
+
+        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+          <Box size={14} className="text-orange-600" />
+          <span className="text-xs font-semibold text-gray-600">Samagri Included</span>
+        </div>
+
+        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+          <Sparkles size={14} className="text-orange-600" />
+          <span className="text-xs font-semibold text-gray-600">Fixed Pricing</span>
+        </div>
+      </div>
+
+    </div>
+
+    {/* RIGHT SIDE */}
+    <div className="relative w-full lg:w-1/2 h-[350px] sm:h-[420px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-zinc-900 group">
+
+      {rituals.map((item, i) => (
+        <div
+          key={i}
+          className={`absolute inset-0 transition-all duration-[1200ms] ${
+            i === index ? "opacity-100 scale-100 z-20" : "opacity-0 scale-110 z-10"
+          }`}
+        >
+          <img
+            src={item.img}
+            alt={item.title}
+            className={`w-full h-full object-cover transition-transform duration-[6000ms] ${
+              i === index ? "scale-110" : "scale-100"
+            }`}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+        </div>
+      ))}
+
+      {/* Info Card */}
+      <div className="absolute bottom-5 left-5 right-5 sm:right-auto sm:max-w-[90%] z-40">
+        <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
+          <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">
+            Ceremony
+          </span>
+
+          <h3 className="text-lg sm:text-xl md:text-2xl font-serif text-white font-bold mt-1">
+            {rituals[index].title}
+          </h3>
+
+          <p className="text-white/70 text-xs sm:text-sm mt-1">
+            {rituals[index].desc}
+          </p>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
 
       {/* EXPERIENCE SECTION */}
       <section className="w-full bg-[#FFF4E1] py-12 px-6 flex justify-center">

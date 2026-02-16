@@ -111,7 +111,7 @@ const MyBookings = () => {
                   {/* Status Section */}
                   <div className="flex flex-col justify-center items-end border-l border-gray-100 pl-6 hidden md:flex min-w-[120px]">
                     <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      b.status === 'pending' ? 'bg-orange-100 text-orange-600 border border-orange-200' : 'bg-green-100 text-green-600 border border-green-200'
+                      b.status === 'pending' ? 'bg-orange-100 text-orange-600 border border-orange-200' : b.status === 'declined'?'text-red-500 bg-red-100 border border-red-200':'bg-green-100 text-green-600 border border-green-200'
                     }`}>
                       {b.status}
                     </div>

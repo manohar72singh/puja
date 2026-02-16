@@ -40,8 +40,6 @@ const PartnerDashboard = () => {
         headers: { Authorization: `Bearer ${token}` }
       });
 
-
-
       // Agar status 401 hai, matlab token expire ya invalid hai
       if (res1.status === 401) {
         handleLogout();
