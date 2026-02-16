@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import axios from "axios"
 import {
   MapPin, Calendar, Heart, ShieldCheck, ChevronLeft, Sparkles, ArrowRight,
   Shirt, Coffee, Flame, UtensilsCrossed, Loader2, Users, Shield, Lock,
@@ -37,11 +38,31 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
+        // console.log(data);
+        
       } catch (err) { console.error(err); }
       finally { setLoading(false); }
     };
     fetchService();
   }, [id]);
+
+
+  const handleSubmit = async() =>{
+    try{
+      const token = localStorage.getItem("token")
+      // fetch(`${API_BASE_URL}/puja/booking-templepuja`,{
+      //   method:"POST",
+      //   headers
+      // })
+      axios.post(`${API_BASE_URL}/puja/booking-templepuja`,{
+        
+      })
+    }catch(error){
+
+    }
+  }
+
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -74,9 +95,9 @@ const TemplePujaBooking = () => {
   ];
 
   const tickets = [
-    { label: "Single", price: Number(service?.single_price || 251), icon: <Users size={18} /> },
-    { label: "Couple", price: Number(service?.couple_price || 452), icon: <Heart size={18} /> },
-    { label: "Family", price: Number(service?.family_price || 628), icon: <Shield size={18} /> }
+    { label: "Single",person:"1 person", price: Number(service?.single_price || 251), icon: <Users size={18} /> },
+    { label: "Couple",person:"2 person", price: Number(service?.couple_price || 452), icon: <Heart size={18} /> },
+    { label: "Family",person:"Up to 5", price: Number(service?.family_price || 628), icon: <Shield size={18} /> }
   ];
 
   const calculateTotal = () => {
@@ -264,6 +285,7 @@ const TemplePujaBooking = () => {
                     <span className="text-[10px] font-black uppercase tracking-wider text-gray-700">
                       {t.label}
                     </span>
+                    <span className='text-[10px]'>{t.person}</span>
                     <span className="text-[11px] font-bold text-orange-600">
                       ₹{t.price}
                     </span>
@@ -373,11 +395,11 @@ const BenefitSmall = ({ icon, title, desc }) => (
 );
 
 const FAQItem = ({ q, a }) => (
-  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-5 list-none cursor-pointer transition-all hover:border-orange-300">
-    <summary className="font-bold flex justify-between items-center text-[15px] text-gray-700 list-none">
+  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-2 list-none cursor-pointer">
+    <summary className="font-bold flex justify-between items-center text-[15px] text-gray-700">
       {q} <ChevronRight size={20} className="group-open:rotate-90 transition-transform text-orange-400" />
     </summary>
-    <p className="text-[14px] text-gray-500 mt-4 pt-4 border-t border-orange-200 leading-relaxed font-medium">{a}</p>
+    <p className="text-[14px] text-gray-500 mt-2 pt-2 border-t border-orange-100 leading-relaxed font-medium">{a}</p>
   </details>
 );
 

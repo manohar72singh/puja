@@ -150,7 +150,7 @@ const HomePujaBooking = () => {
 
             {/* CONTENT CONTAINER */}
             <div className="bg-white rounded-2xl border border-orange-200 overflow-hidden shadow-sm">
-              <div className="p-7 space-y-12">
+              <div className="p-7 space-y-4">
 
                 {/* SECTION: About */}
                 <section ref={sections.about} className="scroll-mt-32 space-y-5">
@@ -179,29 +179,18 @@ const HomePujaBooking = () => {
 
                 <div className="border-t border-orange-50" />
 
-                {/* What's Included */}
-                <div className="space-y-6">
-                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
-                    <CheckCircle size={20} /> What's Included
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    {["Expert Pandit", "Sankalp", "Puja Samagri", "Digital Aarti"].map((item) => (
-                      <div key={item} className="flex items-center gap-3 bg-orange-50 p-4 rounded-xl border border-orange-200">
-                        <CheckCircle size={16} className="text-green-600 shrink-0" />
-                        <span className="text-[13px] font-bold text-gray-700">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
 
-                {/* WhatsApp Highlighting (Image Style) */}
-                <div className="bg-[#FFFCEB] rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
-                  <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
-                  <div>
-                    <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
-                    <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.</p>
-                  </div>
-                </div>
+
+              </div>
+
+            </div>
+
+            {/* WhatsApp Highlighting (Image Style) */}
+            <div className="bg-white rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
+              <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
+              <div>
+                <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
+                <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.</p>
               </div>
             </div>
 
@@ -237,37 +226,39 @@ const HomePujaBooking = () => {
                 </div>
               </div>
 
-              {/* Price Breakdown */}
-              <div className="space-y-5">
-                <div className="flex justify-between text-[15px] font-bold">
-                  <span className="text-gray-600 uppercase tracking-tighter">Service Fee</span>
+              <div className="space-y-4">
+                {/* Base Price Row */}
+                <div className="flex justify-between items-center text-[15px] font-bold">
+                  <span className="text-gray-500 uppercase tracking-wider">Base Price</span>
                   <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
                 </div>
 
+                {/* Samagri Kit Row - Tabhi dikhega jab enabled ho */}
                 {samagriEnabled && (
-                  <div className="flex justify-between text-[15px] font-bold text-orange-600 border-t border-orange-50">
-                    <span className="uppercase tracking-tighter flex items-center gap-2">
-                      <Box size={18} className="text-orange-400" />
-                      Samagri Kit
-                    </span>
-                    <span className="bg-orange-50 px-2 py-0.5 rounded text-sm">+₹600</span>
+                  <div className="flex justify-between items-center text-[15px] font-bold pt-4 border-t border-orange-50">
+                    <span className="text-gray-500 uppercase tracking-wider">Samagri Kit</span>
+                    <span className=" tracking-tight">+₹600</span>
                   </div>
                 )}
 
                 {/* Total Amount Section */}
-                <div className="pt-6 border-t border-dashed border-orange-200">
-                  <div className="flex justify-between items-end">
+                <div className="pt-6 mt-2 border-t border-dashed border-orange-200">
+                  <div className="flex justify-between items-center">
                     <div className="flex flex-col">
-                      <span className="text-[11px] font-black uppercase text-gray-400 tracking-widest">
+                      <span className="text-[11px] font-black uppercase text-gray-400 tracking-[0.15em] leading-none">
                         Total Amount
                       </span>
-                      <span className="text-[10px] text-green-600 font-bold flex items-center gap-1 mt-1">
-                        <Shield size={10} /> Inclusive of all taxes
+                      <span className="text-[10px] text-green-600 font-bold flex items-center gap-1 mt-1.5">
+                        <Shield size={10} className="stroke-[3]" /> Inclusive of all taxes
                       </span>
                     </div>
-                    <span className="text-4xl font-serif font-bold text-orange-600 tracking-tighter">
-                      ₹{totalAmount}
-                    </span>
+
+                    {/* Price Alignment: Right Side */}
+                    <div className="text-right">
+                      <span className="text-4xl font-serif font-bold text-orange-600 tracking-tighter">
+                        ₹{totalAmount}
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -281,9 +272,8 @@ const HomePujaBooking = () => {
                   Proceed to Book <ChevronRight size={18} strokeWidth={3} />
                 </button>
 
-                <div className="flex items-center justify-center gap-2 text-[11px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50 py-3 rounded-lg border border-gray-100">
-                  <ShieldCheck size={14} className="text-green-500" />
-                  Secure 256-bit SSL Payment
+                <div className="flex items-center justify-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-wides py-3 rounded-lg">
+                  Free cancellation up to 24 hours before.
                 </div>
               </div>
             </div>
@@ -301,7 +291,7 @@ const HomePujaBooking = () => {
 
 // --- HELPER: BENEFIT CARD ---
 const BenefitSmall = ({ icon, title, desc }) => (
-  <div className="flex items-center gap-4 bg-[#FFFDF8] p-5 rounded-xl border border-orange-50 group border-orange-200 transition-all shadow-sm">
+  <div className="flex items-center gap-4 bg-[#FFFDF8] p-2 rounded-xl border border-orange-50 group border-orange-200 transition-all shadow-sm">
     <div className="p-3 bg-white text-orange-500 rounded-xl shadow-sm group-hover:bg-orange-500 group-hover:text-white transition-all">
       {React.cloneElement(icon, { size: 20 })}
     </div>
@@ -314,11 +304,11 @@ const BenefitSmall = ({ icon, title, desc }) => (
 
 // --- HELPER: FAQ ITEM ---
 const FAQItem = ({ q, a }) => (
-  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-5 list-none cursor-pointer">
+  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-2 list-none cursor-pointer">
     <summary className="font-bold flex justify-between items-center text-[15px] text-gray-700">
       {q} <ChevronRight size={20} className="group-open:rotate-90 transition-transform text-orange-400" />
     </summary>
-    <p className="text-[14px] text-gray-500 mt-4 pt-4 border-t border-orange-100 leading-relaxed font-medium">{a}</p>
+    <p className="text-[14px] text-gray-500 mt-2 pt-2 border-t border-orange-100 leading-relaxed font-medium">{a}</p>
   </details>
 );
 

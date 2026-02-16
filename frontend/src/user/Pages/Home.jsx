@@ -69,26 +69,24 @@ export default function Home() {
             <div className="flex items-center gap-10 mt-12">
               {/* Families Stat */}
               <div className="flex items-center gap-3">
-                <div className="bg-white border border-orange-300 p-2 rounded-lg text-orange-600">
+                <div className="bg-[#fee4c4] border border-none p-2 rounded-lg text-orange-400">
                   <Users size={24} strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-[#3b2a1a] leading-none">5,000+</p>
-                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Families</p>
+                  <p className="text-xl font-serif font-bold  text-[#3b2a1a] leading-none">5,000+</p>
+                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Happy Families</p>
                 </div>
               </div>
 
-              {/* Vertical Divider */}
-              <div className="w-[1px] h-10 bg-orange-200"></div>
 
               {/* Rating Stat */}
               <div className="flex items-center gap-3">
-                <div className="bg-white border border-orange-300 p-2 rounded-lg text-orange-600">
+                <div className="bg-[#fee4c4] border border-none p-2 rounded-lg text-orange-400">
                   <Star size={24} fill="currentColor" strokeWidth={2.5} />
                 </div>
                 <div>
-                  <p className="text-2xl font-black text-[#3b2a1a] leading-none">4.9★</p>
-                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Rating</p>
+                  <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">4.9★</p>
+                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">Average Rating</p>
                 </div>
               </div>
             </div>
@@ -96,17 +94,17 @@ export default function Home() {
             <div className="w-full max-w-md h-[1px] bg-gray-200/60 mt-3 mb-8"></div>
 
             <div className="flex flex-wrap gap-4">
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-full border border-orange-300 shadow-sm">
+              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
                 <ShieldCheck size={16} className="text-orange-600" />
                 <span className="text-xs md:text-sm font-semibold text-gray-600">Verified Pandits</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-full border border-orange-300 shadow-sm">
+              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
                 <Box size={16} className="text-orange-600" />
                 <span className="text-xs md:text-sm font-semibold text-gray-600">Samagri Included</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-full border border-orange-300 shadow-sm">
+              <div className="flex items-center gap-2 bg-gray-100/50 px-4 py-2 rounded-xl shadow-sm">
                 <Sparkles size={16} className="text-orange-600" />
                 <span className="text-xs md:text-sm font-semibold text-gray-600">Fixed Pricing</span>
               </div>
@@ -114,7 +112,7 @@ export default function Home() {
           </div>
 
           {/* RIGHT SIDE - Increased width to 50% (approx 8% up from 42%) */}
-          <div className="relative w-full md:w-[45%] h-[500px] md:h-[540px] rounded-[40px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-zinc-900 group">
+          <div className="relative w-full md:w-[45%] h-[500px] md:h-[540px] rounded-[20px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] bg-zinc-900 group">
 
             {/* Modern Floating Live Badge */}
             <div className="absolute top-6 left-6 z-50">
@@ -127,7 +125,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Ken Burns Slider Logic */}
+            {/* Ken Burns Slider Logic */}v
             {rituals.map((item, i) => (
               <div
                 key={i}
@@ -179,7 +177,7 @@ export default function Home() {
       </section>
 
       {/* EXPERIENCE SECTION */}
-      <section className="w-full bg-[#FFF4E1] py-20 px-6 flex justify-center">
+      <section className="w-full bg-[#FFF4E1] py-12 px-6 flex justify-center">
         <div className="max-w-6xl w-full text-center flex flex-col items-center">
           {/* HEADING - Ab margin-bottom kam kar diya hai */}
           <h2 className="text-xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-4">
@@ -196,7 +194,7 @@ export default function Home() {
           {/* CARDS GRID */}
           <div className="grid md:grid-cols-2 max-w-4xl mx-auto gap-8">
 
-            <div className="group p-8 rounded-[32px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/homePuja")}>
+            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/homePuja")}>
               <div className="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
                 <HomeIcon size={28} />
               </div>
@@ -209,11 +207,11 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="group p-8 rounded-[32px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/temple-puja")}>
+            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/temple-puja")}>
               <div className="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
                 <Video size={28} />
               </div>
-              <h3 className="text-2xl font-bold font-serif mb-3 text-[#1A2B47]">Virtual Puja</h3>
+              <h3 className="text-2xl font-bold font-serif mb-3 text-[#1A2B47]">Book Temple Puja</h3>
               <p className="text-gray-500 text-sm leading-relaxed mb-8">
                 Join live rituals and seek blessings from sacred temples globally via streaming with thousands of devotees worldwide.
               </p>

@@ -27,8 +27,6 @@ import MyBookings from "./user/Pages/MyBooking";
 import { RightFloatingMenu } from "./user/Components/RightFloatingMenu";
 import PartnerSignIn from "./user/Pages/PartnerSignIn";
 import PartnerSignUp from "./user/Pages/PartnerSignUp";
-import UserAddressForm from "./user/Pages/UserAddressFrom"
-import AddFamilyMemberForm from "./user/Pages/AddFamilyMemberForm";
 import PartnerDashboard from "./user/Pages/PartnerDashboard";
 
 function App() {
@@ -70,16 +68,9 @@ function App() {
           <Route path="/profile" element={<ProfileSection />} />
           <Route path="/help" element={<HelpSupportSection />} />
 
-          <Route path="/manageSankalp" >
-            <Route index element={<ManageSankalp />} />
-            <Route path="add" element={<AddFamilyMemberForm />} />
-          </Route>
+          <Route path="/manageSankalp" element={<ManageSankalp />} />
 
-          <Route path="/savedAddresses">
-            <Route index element={<SavedAddresses />} />
-            <Route path="add" element={<UserAddressForm />} />
-            <Route path="edit/:id" element={<UserAddressForm />} />
-          </Route>
+          <Route path="/savedAddresses" element={<SavedAddresses />} />
         </Route>
 
         {/* Auth Pages WITHOUT layout */}

@@ -37,12 +37,12 @@ export default function SpecialPujas() {
         
         {/* HEADER SECTION */}
         <div className="mb-14 flex flex-col items-center text-center">
-          <div className="flex items-center gap-2 bg-white text-orange-600 px-4 py-1.5 rounded-full mb-6 border border-orange-00 shadow-sm transition-all hover:scale-105">
+          <div className="flex items-center gap-2 bg-[#fbf2ca] text-orange-400 px-4 py-1.5 rounded-full mb-6 shadow-sm transition-all hover:scale-105">
             <Video size={14} strokeWidth={3} className="animate-pulse" />
             <span className="text-[10px] font-black uppercase tracking-widest">Live Online Events</span>
           </div>
 
-          <h2 className="text-3xl md:text-5xl font-bold font-serif text-[#3b2a1a] mb-5">
+          <h2 className="text-xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-4 ">
             Upcoming Group Pujas
           </h2>
 

@@ -111,8 +111,6 @@ export const bookingDetails = async (req, res) => {
       VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
     `;
 
-
-
     // Query execute karein
     const [result] = await db.query(query, [
       userId,

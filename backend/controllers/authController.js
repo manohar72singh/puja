@@ -107,25 +107,68 @@ export const loginRequest = async (req, res) => {
 };
 
 // --- 4. VERIFY OTP (Login Complete) ---
+// export const verifyOtp = async (req, res) => {
+//     try {
+//         const { phone, otp } = req.body;
+//         const session = otpStore[phone];
+
+//         if (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString()) {
+//             const [rows] = await db.query("SELECT id, name, phone, email, role FROM users WHERE phone = ?", [phone]);
+//             delete otpStore[phone];
+
+//             const token = jwt.sign({
+//                 id: rows[0].id,
+//                 name: rows[0].name,
+//                 phone: rows[0].phone,
+//                 email: rows[0].email,
+//                 role: rows[0].role // Token mein role hona Dashboard redirection ke liye zaroori hai
+//             }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+
+//             res.status(200).json({ 
+//                 message: "Login success", 
+//                 token, 
+//                 role: rows[0].role 
+//             });
+//         } else {
+//             res.status(400).json({ message: "Invalid OTP" });
+//         }
+//     } catch (error) {
+//         res.status(500).json({ message: "Verification failed" });
+//     }
+// };
+
+// --- 4. VERIFY OTP (Bypass Logic Added) ---
 export const verifyOtp = async (req, res) => {
     try {
         const { phone, otp } = req.body;
         const session = otpStore[phone];
 
-        if (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString()) {
+        // --- BYPASS LOGIC ---
+        // Agar OTP '123456' hai, toh ye bypass ho jayega
+        const isBypass = (otp.toString() === "123456");
+
+        if (isBypass || (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString())) {
+            
             const [rows] = await db.query("SELECT id, name, phone, email, role FROM users WHERE phone = ?", [phone]);
-            delete otpStore[phone];
+            
+            // Check agar bypass use kar rahe hain par user DB mein nahi hai
+            if (rows.length === 0) {
+                return res.status(404).json({ message: "User not found in database." });
+            }
+
+            // Session delete karein agar normal login tha
+            if (session) delete otpStore[phone];
 
             const token = jwt.sign({
                 id: rows[0].id,
                 name: rows[0].name,
                 phone: rows[0].phone,
                 email: rows[0].email,
-                role: rows[0].role // Token mein role hona Dashboard redirection ke liye zaroori hai
+                role: rows[0].role 
             }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
 
             res.status(200).json({ 
-                message: "Login success", 
+                message: isBypass ? "Login success (Bypass Used)" : "Login success", 
                 token, 
                 role: rows[0].role 
             });
@@ -133,10 +176,10 @@ export const verifyOtp = async (req, res) => {
             res.status(400).json({ message: "Invalid OTP" });
         }
     } catch (error) {
+        console.error("Verify OTP Error:", error);
         res.status(500).json({ message: "Verification failed" });
     }
 };
-
 
 // 1. Naya Address Add Karna
 export const addAddress = async (req, res) => {
