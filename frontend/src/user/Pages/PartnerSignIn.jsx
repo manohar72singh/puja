@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Loader2, KeyRound, Briefcase, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-const API_BASE_URL = "http://localhost:5000/partner";
+const API_BASE_URL = "http://localhost:5000";
 
 
 const PartnerSignIn = () => {

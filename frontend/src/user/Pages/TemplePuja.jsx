@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-export default function KathaPuja() {
+export default function TemplePuja() {
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");

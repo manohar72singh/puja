@@ -37,7 +37,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
     try {
       // 1. Fetch Available Pujas
-      console.log("bookoing income ")
       const res1 = await fetch(`${API_BASE_URL}/partner/available-pujas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
@@ -47,19 +46,14 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
         handleLogout();
         return;
       }
-      console.log("bookoing income2 ")
 
       const data1 = await res1.json();
-      setNewRequests(data1.bookings || []);
-      console.log("all::",data1);
-      
-
+      setNewRequests(data1.bookings || []);   
 
       // 2. Fetch My Accepted Pujas
-      const res2 = await fetch(`${API_BASE_URL}/my-accepted-pujas`, {
+      const res2 = await fetch(`${API_BASE_URL}/partner/my-accepted-pujas`, {
         headers: { Authorization: `Bearer ${token}`}
       });
-      console.log("bookoing income3 ")
 
       if (res2.status === 401) {
         handleLogout();
@@ -68,8 +62,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
       const data2 = await res2.json();
       setMySchedule(data2.bookings || []);
-
-      console.log("emepty array",data2)
 
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -82,7 +74,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
   const handleAction = async (bookingId, action) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/update-status`, {
+      const response = await fetch(`${API_BASE_URL}/partner/update-status`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify({ bookingId, action })
