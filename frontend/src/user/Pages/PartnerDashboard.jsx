@@ -13,7 +13,9 @@ const PartnerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [dutyOn, setDutyOn] = useState(true);
 
-  const API_BASE_URL = "http://localhost:5000/partner";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
   const token = localStorage.getItem("token");
 
   const navigate = useNavigate()
@@ -36,7 +38,7 @@ const PartnerDashboard = () => {
     try {
       // 1. Fetch Available Pujas
       console.log("bookoing income ")
-      const res1 = await fetch(`${API_BASE_URL}/available-pujas`, {
+      const res1 = await fetch(`${API_BASE_URL}/partner/available-pujas`, {
         headers: { Authorization: `Bearer ${token}` }
       });
 

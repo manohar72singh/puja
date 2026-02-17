@@ -3,6 +3,8 @@ import { ArrowLeft, User, Mail, Loader2, ShieldCheck,Fingerprint, Flame } from '
 import { Link, useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -29,7 +31,7 @@ const SignUp = () => {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/user/signup-request", { 
+            const res = await fetch(`${API_BASE_URL}/user/signup-request`, { 
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -65,7 +67,7 @@ const SignUp = () => {
             city: formData.city,
             state: formData.state
         };
-        const response = await fetch("http://localhost:5000/user/signup-verify", {
+        const response = await fetch(`${API_BASE_URL}/user/signup-verify`, {
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(signupData)

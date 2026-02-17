@@ -4,7 +4,7 @@ import {
   Menu, X, Home, Globe, User, Settings, 
   ShieldCheck, ChevronDown, LogOut, MapPin, HelpCircle 
 } from "lucide-react";
-import {jwtDecode }from "jwt-decode";
+import { jwtDecode } from "jwt-decode";
 
 const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -58,14 +58,11 @@ const Navbar = () => {
     window.location.reload();
   };
 
-  
-
   const navItems = [
     { to: "/", label: "Home", icon: <Home size={18} /> },
     { to: "/homePuja", label: "Home-Puja", icon: <Globe size={18} /> },
     { to: "/temple-puja", label: "Temple-Puja", icon: <User size={18} /> },
     { to: "/katha-jaap", label: "Katha-Jaap", icon: <User size={18} /> },
-    { to: "/my-booking", label: "My-Booking", icon: <Settings size={18} /> },
     { to: "/pind_dan", label: "Pind Dan", icon: <ShieldCheck size={18} /> },
   ];
 
@@ -74,9 +71,7 @@ const Navbar = () => {
       {/* Navbar */}
       <nav
         className={`fixed top-0 inset-x-0 z-[100] transition-all duration-500 backdrop-blur-xl border-b border-white/20 ${
-          scrolled
-            ? "bg-white/30 shadow-lg"
-            : "bg-white/20"
+          scrolled ? "bg-white/30 shadow-lg" : "bg-white/20"
         }`}
       >
         <div className="max-w-7xl mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-[72px]">
@@ -108,16 +103,28 @@ const Navbar = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `font-bold text-[15px] transition-colors ${
-                    isActive
-                      ? "text-orange-600"
-                      : "text-black hover:text-orange-600"
+                  `font-semibold text-[15px] transition-colors ${
+                    isActive ? "text-orange-600 " : "text-black hover:text-orange-600"
                   }`
                 }
               >
                 {item.label}
               </NavLink>
             ))}
+
+            {/* Show My-Booking only if user is logged in */}
+            {user && (
+              <NavLink
+                to="/my-booking"
+                className={({ isActive }) =>
+                  `font-semibold text-[15px] transition-colors ${
+                    isActive ? "text-orange-600" : "text-black hover:text-orange-600"
+                  }`
+                }
+              >
+                My-Booking
+              </NavLink>
+            )}
 
             {/* Dropdown */}
             <li
@@ -255,6 +262,14 @@ const Navbar = () => {
 
             {user && (
               <>
+                <NavLink
+                  to="/my-booking"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex items-center gap-4 p-4 font-bold text-gray-600 hover:bg-orange-50 rounded-xl"
+                >
+                  <Settings size={18} /> My-Booking
+                </NavLink>
+
                 <div className="border-t my-2"></div>
                 <button
                   onClick={() => { navigate("/profile"); setMenuOpen(false); }}

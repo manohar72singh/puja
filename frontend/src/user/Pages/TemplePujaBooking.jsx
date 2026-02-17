@@ -49,15 +49,16 @@ const TemplePujaBooking = () => {
 
   const handleTemplePayment = async () => {
     const token = localStorage.getItem("token");
-    if (!token) { alert("Please login first!"); return; }
-    console.log("kuch nahi")
+    if (!token) {
+      navigate("/signin");
+      return;
+    }
     setIsBooking(true);
 
     // Donations list formatting
     const selectedDonations = Object.keys(donations)
       .filter(key => donations[key])
       .join(', ');
-    console.log("kuch nahi2")
 
     const bookingData = {
       puja_id: id, // Ye aapke useParams wala id hai
@@ -70,7 +71,6 @@ const TemplePujaBooking = () => {
       ticket_type: selectedTicket,
       donations: selectedDonations
     };
-    console.log("kuch nahi3")
 
     try {
       const response = await fetch(`${ API_BASE_URL }/puja/bookingDetails`, {
@@ -81,7 +81,6 @@ const TemplePujaBooking = () => {
       },
     body: JSON.stringify(bookingData),
     });
-    console.log("kuch nahi4")
 
   // Check if response is not 200/201
   if (!response.ok) {
@@ -90,7 +89,6 @@ const TemplePujaBooking = () => {
   }
 
   const result = await response.json();
-    console.log("kuch nahi5")
 
   if (result.success) {
     alert("🙏 Temple Booking Confirmed!");
@@ -103,7 +101,6 @@ const TemplePujaBooking = () => {
   setIsBooking(false);
 }
 };
-
 
 
 useEffect(() => {

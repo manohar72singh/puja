@@ -248,7 +248,7 @@ const KathaPujaBooking = () => {
 
               <div className="space-y-4">
                 <button
-                  onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+                  onClick={() => navigate(`/katha-jaap/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
                   className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-bold py-5 rounded-xl shadow-xl hover:-translate-y-0.5 transition-all duration-300 uppercase tracking-[0.2em] text-[13px] active:scale-95 flex items-center justify-center gap-2"
                 >
                   Proceed to Book <ChevronRight size={18} strokeWidth={3} />

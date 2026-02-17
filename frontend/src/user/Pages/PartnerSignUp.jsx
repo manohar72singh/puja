@@ -4,6 +4,8 @@ import {
     Fingerprint, MapPin, Globe, Search 
 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const INDIAN_STATES = [
     "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", "Goa", "Gujarat", 
@@ -49,7 +51,7 @@ const PartnerSignUp = () => {
         setIsLoading(true);
         setError("");
         try {
-            const res = await fetch("http://localhost:5000/user/signup-request", { 
+            const res = await fetch(`${API_BASE_URL}/user/signup-request`, { 
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
@@ -72,7 +74,7 @@ const PartnerSignUp = () => {
     setIsLoading(true);
     setError("");
     try {
-        const response = await fetch("http://localhost:5000/user/signup-verify", { 
+        const response = await fetch(`${API_BASE_URL}/user/signup-verify`, { 
             method: "POST",
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData) 

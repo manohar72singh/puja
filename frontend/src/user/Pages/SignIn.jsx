@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ArrowLeft, Loader2, KeyRound, Flame } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const SignIn = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -9,7 +9,13 @@ const SignIn = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
 
+    const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+
     const navigate = useNavigate();
+    const location = useLocation();
+
+    const from = location.state?.from?.pathname || "/";
 
     const handleAction = async () => {
         if (phoneNumber.length !== 10) {
@@ -19,7 +25,7 @@ const SignIn = () => {
         setIsLoading(true);
         setError("");
         try {
-            const response = await fetch('http://localhost:5000/user/login-request', {
+            const response = await fetch(`${API_BASE_URL}/user/login-request`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: phoneNumber }),
@@ -42,7 +48,7 @@ const SignIn = () => {
         setIsLoading(true);
         setError("");
         try {
-            const response = await fetch('http://localhost:5000/user/verify-otp', {
+            const response = await fetch(`${API_BASE_URL}/user/verify-otp`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ phone: phoneNumber, otp: otp }),
@@ -51,7 +57,7 @@ const SignIn = () => {
 
             if (response.ok) {
                 localStorage.setItem('token', data.token);
-                navigate('/');
+                navigate(from, { replace: true })
             } else {
                 setError(data.message || "The code entered is incorrect.");
             }
@@ -64,7 +70,7 @@ const SignIn = () => {
 
     return (
         <div className="min-h-screen bg-[#FFF4E1]
- flex items-center justify-center p-4 md:p-8 font-sans">
+            flex items-center justify-center p-4 md:p-8 font-sans">
             {/* Background Aesthetic Blur */}
             <div className="fixed inset-0 overflow-hidden pointer-events-none">
                 <div className="absolute top-[15%] right-[5%] w-[40%] h-[40%] bg-orange-100/40 rounded-full blur-[120px]" />

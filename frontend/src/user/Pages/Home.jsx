@@ -3,6 +3,7 @@ import ReviewSection from "../Components/ReviewSection";
 import SpecialPujas from "../Components/SpecialPujas";
 import DevotionalStats from "../Components/DevotionalStats";
 import HowItWorks from "../Components/HowItWorks";
+import TrendingPuja from "../Components/TrendingPuja"
 import { useNavigate } from "react-router-dom";
 import { ChevronRight, ShieldCheck, Box, Sparkles, Home as HomeIcon, Star, Users, Video, ArrowRight } from 'lucide-react';
 
@@ -29,144 +30,155 @@ export default function Home() {
     <div className="w-full overflow-x-hidden bg-[#FFF4E1] flex flex-col items-center">
 
       {/* ================= HERO SECTION ================= */}
-<section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-10 md:py-16 overflow-hidden">
-  <div className="flex flex-col lg:flex-row items-start gap-10 lg:gap-12 max-w-[1250px] mx-auto">
+      <section className="w-full px-4 sm:px-6 md:px-8 lg:px-12 py-10 md:py-16 overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-start gap-10 lg:gap-12 max-w-[1250px] mx-auto">
 
-    {/* LEFT SIDE */}
-    <div className="w-full lg:w-1/2 flex flex-col">
+          {/* LEFT SIDE */}
+          <div className="w-full lg:w-1/2 flex flex-col">
 
-      <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold mb-5 w-fit uppercase tracking-widest">
-        ✨ Your Faith Partner
-      </span>
+            <span className="inline-flex items-center gap-2 bg-orange-100 text-orange-600 px-3 py-1 rounded-full text-[10px] font-bold mb-5 w-fit uppercase tracking-widest">
+              ✨ Your Faith Partner
+            </span>
 
-      <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black leading-tight font-serif text-[#3b2a1a]">
-        Sacred Rituals,
-        <br className="hidden sm:block" />
-        <span className="text-orange-500">Modern Convenience</span>
-      </h1>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black leading-tight font-serif text-[#3b2a1a]">
+              Sacred Rituals,
+              <br className="hidden sm:block" />
+              <span className="text-orange-500">Modern Convenience</span>
+            </h1>
 
-      <p className="mt-5 text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-full sm:max-w-lg">
-        Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
-      </p>
-
-      {/* ✅ Buttons - Always Side by Side */}
-      <div className="flex gap-3 mt-8 w-full">
-        <button
-          className="flex-1 bg-orange-500 text-white font-bold px-4 py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 text-sm sm:text-base"
-          onClick={() => navigate("/homePuja")}
-        >
-          Book Home Puja
-        </button>
-
-        <button
-          className="flex-1 bg-white text-orange-500 font-bold px-4 py-3 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 text-sm sm:text-base"
-          onClick={() => navigate("/temple-puja")}
-        >
-          Temple Puja
-        </button>
-      </div>
-
-      {/* ✅ Stats - Hidden on Mobile */}
-      <div className="hidden md:flex items-center gap-10 mt-12">
-
-        {/* Families */}
-        <div className="flex items-center gap-3">
-          <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
-            <Users size={24} strokeWidth={2.5} />
-          </div>
-          <div>
-            <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
-              5,000+
+            <p className="mt-5 text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-full sm:max-w-lg">
+              Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
             </p>
-            <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
-              Happy Families
-            </p>
+
+            {/* ✅ Buttons - Always Side by Side */}
+            <div className="flex gap-3 mt-8 w-full">
+              <button
+                className="flex-1 bg-orange-500 text-white font-bold px-4 py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 text-sm sm:text-base"
+                onClick={() => navigate("/homePuja")}
+              >
+                Book Home Puja
+              </button>
+
+              <button
+                className="flex-1 bg-white text-orange-500 font-bold px-4 py-3 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 text-sm sm:text-base"
+                onClick={() => navigate("/temple-puja")}
+              >
+                Book Temple Puja
+              </button>
+            </div>
+
+            {/* ✅ Stats - Hidden on Mobile */}
+            <div className="hidden md:flex items-center gap-10 mt-12">
+
+              {/* Families */}
+              <div className="flex items-center gap-3">
+                <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
+                  <Users size={24} strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
+                    5,000+
+                  </p>
+                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
+                    Happy Families
+                  </p>
+                </div>
+              </div>
+
+              {/* Rating */}
+              <div className="flex items-center gap-3">
+                <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
+                  <Star size={24} fill="currentColor" strokeWidth={2.5} />
+                </div>
+                <div>
+                  <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
+                    4.9★
+                  </p>
+                  <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
+                    Average Rating
+                  </p>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Feature Tags */}
+            <div className="flex flex-wrap gap-3 mt-8">
+              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+                <ShieldCheck size={14} className="text-orange-600" />
+                <span className="text-xs font-semibold text-gray-600">Verified Pandits</span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+                <Box size={14} className="text-orange-600" />
+                <span className="text-xs font-semibold text-gray-600">Samagri Included</span>
+              </div>
+
+              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+                <Sparkles size={14} className="text-orange-600" />
+                <span className="text-xs font-semibold text-gray-600">Fixed Pricing</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* RIGHT SIDE */}
+          <div className="relative w-full lg:w-1/2 h-[350px] sm:h-[420px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-zinc-900 group">
+
+            {rituals.map((item, i) => (
+              <div
+                key={i}
+                className={`absolute inset-0 transition-all duration-[1200ms] ${i === index ? "opacity-100 scale-100 z-20" : "opacity-0 scale-110 z-10"
+                  }`}
+              >
+                <img
+                  src={item.img}
+                  alt={item.title}
+                  className={`w-full h-full object-cover transition-transform duration-[6000ms] ${i === index ? "scale-110" : "scale-100"
+                    }`}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+              </div>
+            ))}
+
+            {/* Info Card */}
+            <div className="absolute bottom-5 left-5 right-5 sm:right-auto sm:max-w-[90%] z-40">
+              <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
+                <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">
+                  Ceremony
+                </span>
+
+                <h3 className="text-lg sm:text-xl md:text-2xl font-serif text-white font-bold mt-1">
+                  {rituals[index].title}
+                </h3>
+
+                <p className="text-white/70 text-xs sm:text-sm mt-1">
+                  {rituals[index].desc}
+                </p>
+              </div>
+            </div>
+
+            {/* Tablet & Desktop slider dots */}
+            <div className="hidden md:flex absolute bottom-5 right-4 -translate-x-1/2 z-50 gap-3">
+              {rituals.map((_, i) => (
+                <span
+                  key={i}
+                  onClick={() => setIndex(i)}
+                  className={`
+                   w-2 h-2 rounded-full cursor-pointer 
+                   transition-transform transition-colors duration-300 ease-in-out
+                   ${i === index ? "bg-orange-300 scale-125 px-3" : "bg-white/50 scale-100"}
+                 `}
+                ></span>
+              ))}
+            </div>                  
           </div>
         </div>
-
-        {/* Rating */}
-        <div className="flex items-center gap-3">
-          <div className="bg-[#fee4c4] p-2 rounded-lg text-orange-400">
-            <Star size={24} fill="currentColor" strokeWidth={2.5} />
-          </div>
-          <div>
-            <p className="text-xl font-serif font-bold text-[#3b2a1a] leading-none">
-              4.9★
-            </p>
-            <p className="text-[11px] text-gray-500 uppercase font-bold tracking-widest mt-1">
-              Average Rating
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Feature Tags */}
-      <div className="flex flex-wrap gap-3 mt-8">
-        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
-          <ShieldCheck size={14} className="text-orange-600" />
-          <span className="text-xs font-semibold text-gray-600">Verified Pandits</span>
-        </div>
-
-        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
-          <Box size={14} className="text-orange-600" />
-          <span className="text-xs font-semibold text-gray-600">Samagri Included</span>
-        </div>
-
-        <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
-          <Sparkles size={14} className="text-orange-600" />
-          <span className="text-xs font-semibold text-gray-600">Fixed Pricing</span>
-        </div>
-      </div>
-
-    </div>
-
-    {/* RIGHT SIDE */}
-    <div className="relative w-full lg:w-1/2 h-[350px] sm:h-[420px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-zinc-900 group">
-
-      {rituals.map((item, i) => (
-        <div
-          key={i}
-          className={`absolute inset-0 transition-all duration-[1200ms] ${
-            i === index ? "opacity-100 scale-100 z-20" : "opacity-0 scale-110 z-10"
-          }`}
-        >
-          <img
-            src={item.img}
-            alt={item.title}
-            className={`w-full h-full object-cover transition-transform duration-[6000ms] ${
-              i === index ? "scale-110" : "scale-100"
-            }`}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-        </div>
-      ))}
-
-      {/* Info Card */}
-      <div className="absolute bottom-5 left-5 right-5 sm:right-auto sm:max-w-[90%] z-40">
-        <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
-          <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">
-            Ceremony
-          </span>
-
-          <h3 className="text-lg sm:text-xl md:text-2xl font-serif text-white font-bold mt-1">
-            {rituals[index].title}
-          </h3>
-
-          <p className="text-white/70 text-xs sm:text-sm mt-1">
-            {rituals[index].desc}
-          </p>
-        </div>
-      </div>
-
-    </div>
-
-  </div>
-</section>
+      </section>
 
 
       {/* EXPERIENCE SECTION */}
-      <section className="w-full bg-[#FFF4E1] py-12 px-6 flex justify-center">
+      <section className="w-full bg-[#FFF4E1] py-12 px-6 pt-20 flex justify-center">
         <div className="max-w-6xl w-full text-center flex flex-col items-center">
           {/* HEADING - Ab margin-bottom kam kar diya hai */}
           <h2 className="text-xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-4">
@@ -216,6 +228,7 @@ export default function Home() {
       {/* FOOTER COMPONENTS */}
       <div className="w-full">
         <SpecialPujas />
+        <TrendingPuja/>
         <DevotionalStats />
         <HowItWorks />
         <ReviewSection />

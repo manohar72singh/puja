@@ -5,12 +5,12 @@ import { bookPuja, getServicesByType, bookingDetails, getUserBookings, templePuj
 const router = express.Router();
 
 
-router.get('/allServices/:type', verifyToken, getServicesByType)
-router.get('/bookPuja/:id', verifyToken, bookPuja)
-router.post('/bookingDetails', verifyToken, bookingDetails);
-router.get('/my-bookings', verifyToken, getUserBookings);
-router.get("/temple-puja", verifyToken, templePuja);
-router.get("/temple-puja/:id", verifyToken, templePujaSingle);
+router.get('/allServices/:type',  getServicesByType)
+router.get('/bookPuja/:id', bookPuja)
+router.post('/bookingDetails',verifyToken, bookingDetails);
+router.get('/my-bookings',verifyToken, getUserBookings);
+router.get("/temple-puja", templePuja);
+router.get("/temple-puja/:id", templePujaSingle);
 
 
 export default router;

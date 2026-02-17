@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { ChevronLeft, Users, Plus, ShieldCheck, User, Trash2, X, Calendar, Moon, Heart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
 const ManageSankalp = () => {
   const navigate = useNavigate();
@@ -21,7 +23,7 @@ const ManageSankalp = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/user/get-members", {
+      const res = await fetch(`${API_BASE_URL}/user/get-members`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -45,7 +47,7 @@ const ManageSankalp = () => {
     e.preventDefault();
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/user/add-member", {
+      const res = await fetch(`${API_BASE_URL}/user/add-member`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -68,7 +70,7 @@ const ManageSankalp = () => {
     if (!window.confirm("Are you sure you want to remove this family member?")) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/user/delete-member/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/user/delete-member/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

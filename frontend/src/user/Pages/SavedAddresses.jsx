@@ -6,6 +6,9 @@ const SavedAddresses = () => {
   const navigate = useNavigate();
   const [addresses, setAddresses] = useState([]);
   const [loading, setLoading] = useState(false);
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   
   // Modal aur Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,7 +26,7 @@ const SavedAddresses = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:5000/user/get-addresses", {
+      const res = await fetch(`${API_BASE_URL}/user/get-addresses`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
@@ -63,8 +66,8 @@ const SavedAddresses = () => {
     };
 
     const url = editingId 
-      ? `http://localhost:5000/user/update-address/${editingId}` 
-      : `http://localhost:5000/user/add-address`;
+      ? `${API_BASE_URL}/user/update-address/${editingId}` 
+      : `${API_BASE_URL}/user/add-address`;
     
     try {
       const res = await fetch(url, {
@@ -88,7 +91,7 @@ const SavedAddresses = () => {
     if (!window.confirm("Are you sure you want to delete this address?")) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/user/delete-address/${id}`, {
+      const res = await fetch(`${API_BASE_URL}/user/delete-address/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` }
       });

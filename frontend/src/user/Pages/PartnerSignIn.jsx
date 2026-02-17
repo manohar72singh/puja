@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { ArrowLeft, Loader2, KeyRound, Briefcase, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
+const API_BASE_URL = "http://localhost:5000/partner";
+
 
 const PartnerSignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -20,7 +22,7 @@ const PartnerSignIn = () => {
     setError("");
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/user/login-request", {
+      const res = await fetch(`${API_BASE_URL}/user/login-request`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
@@ -55,7 +57,7 @@ const PartnerSignIn = () => {
     setIsLoading(true);
     try {
       // Backend route /login-verify se match kar diya
-      const res = await fetch("http://localhost:5000/user/verify-otp", {
+      const res = await fetch(`${API_BASE_URL}/user/verify-otp`, {
         method: "POST",
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ phone: phoneNumber, otp: otp })
