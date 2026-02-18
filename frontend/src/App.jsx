@@ -30,16 +30,19 @@ import PartnerSignIn from "./user/Pages/PartnerSignIn";
 import PartnerSignUp from "./user/Pages/PartnerSignUp";
 import PartnerDashboard from "./user/Pages/PartnerDashboard";
 
+import CustomerCareSignIn from "./admin/pages/CustomerCareSignIn";
+
 import ScrollToTop from "./user/Components/ScrollToTop";
 
 import { RightFloatingMenu } from "./user/Components/RightFloatingMenu";
+import CustomerCareDashboard from "./admin/pages/CustomerCareDashboard";
 
 function App() {
   const location = useLocation();
 
   const hideFloatingMenu =
     ["/signin", "/signup", "/profile", "/help",'/manageSankalp',"/savedAddresses","/partnerSignIn"
-      ,"/partnerSignUp","/partner/dashboard"
+      ,"/partnerSignUp","/partner/dashboard","/customerCare/signIn"
     ]
     .includes(location.pathname);
 
@@ -120,6 +123,9 @@ function App() {
         <Route element={<ProtectedLayout />}>
           <Route path="/partner/dashboard" element={<PartnerDashboard />} />
         </Route>
+
+        <Route path='/customerCare/signIn' element={<CustomerCareSignIn/>}/>
+        <Route path="/customerCare/dashboard" element={<CustomerCareDashboard/>}/>
 
         {/* ================= 404 ================= */}
         <Route path="*" element={<h1>Not Found</h1>} />

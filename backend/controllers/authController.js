@@ -106,37 +106,6 @@ export const loginRequest = async (req, res) => {
     }
 };
 
-// --- 4. VERIFY OTP (Login Complete) ---
-// export const verifyOtp = async (req, res) => {
-//     try {
-//         const { phone, otp } = req.body;
-//         const session = otpStore[phone];
-
-//         if (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString()) {
-//             const [rows] = await db.query("SELECT id, name, phone, email, role FROM users WHERE phone = ?", [phone]);
-//             delete otpStore[phone];
-
-//             const token = jwt.sign({
-//                 id: rows[0].id,
-//                 name: rows[0].name,
-//                 phone: rows[0].phone,
-//                 email: rows[0].email,
-//                 role: rows[0].role // Token mein role hona Dashboard redirection ke liye zaroori hai
-//             }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
-
-//             res.status(200).json({ 
-//                 message: "Login success", 
-//                 token, 
-//                 role: rows[0].role 
-//             });
-//         } else {
-//             res.status(400).json({ message: "Invalid OTP" });
-//         }
-//     } catch (error) {
-//         res.status(500).json({ message: "Verification failed" });
-//     }
-// };
-
 // --- 4. VERIFY OTP (Bypass Logic Added) ---
 export const verifyOtp = async (req, res) => {
     try {
