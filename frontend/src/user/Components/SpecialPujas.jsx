@@ -1,4 +1,4 @@
-import { MapPin, Calendar, ArrowRight } from "lucide-react";
+import { MapPin, Calendar, ArrowRight ,Ticket} from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -67,19 +67,7 @@ export default function SpecialPujas() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1A1108]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
 
-                  {/* PRICE BADGE */}
-                  <div className="absolute top-5 left-5 z-20">
-                    <div className="bg-white/95 backdrop-blur-md border border-orange-100 px-4 py-1.5 rounded-2xl shadow-xl flex flex-col items-start transform group-hover:scale-105 transition-transform duration-500">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">
-                        Starting Ticket
-                      </span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xl font-black text-[#1A1108] tracking-tighter">
-                          ₹{service.single_price}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  
                 </div>
 
                 {/* CONTENT */}
@@ -140,13 +128,14 @@ export default function SpecialPujas() {
 
                   {/* Footer Bar */}
                   <div className="flex items-center justify-between pt-5 border-t border-orange-50 mt-auto">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">
-                        Ritual
-                      </span>
-                      <span className="text-[11px] font-bold text-green-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Booking Open
-                      </span>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center gap-1.5  py-1  ">
+                        <Ticket size={14} className="text-orange-600" />
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[18px] font-serif font-bold text-orange-600">₹{service.single_price}</span>
+                          <span className="text-[16px] font-semibold text-gray-500">/ticket</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-4">

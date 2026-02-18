@@ -35,7 +35,7 @@ const Footer = () => {
   return (
     <footer className="bg-orange-200 border-t border-orange-100">
       {/* MAIN FOOTER SPACE */}
-      <div className="max-w-7xl mx-auto px-6 pt-20 pb-12">
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
           
           {/* 1. BRAND SECTION (4 columns) */}
@@ -100,10 +100,10 @@ const Footer = () => {
           </div>
 
           {/* 3. CONTACT SECTION (3 columns) */}
-          <div className="lg:col-span-3 flex flex-col space-y-6">
+          <div className="lg:col-span-3 flex flex-col space-y-3">
             <h4 className="font-bold text-[#3b2a1a] mb-2">Get in Touch</h4>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 text-sm text-gray-600">
+            <div className="space-y-6">
+              <div className="flex items-start gap-3 pt-3 text-sm text-gray-600">
                 <MapPin size={18} className="text-orange-500 shrink-0" />
                 <span>123 Spiritual Way, Vedic Valley, <br />Haridwar, Uttarakhand</span>
               </div>
@@ -132,14 +132,10 @@ const Footer = () => {
         </div>
 
         {/* BOTTOM COPYRIGHT AREA */}
-        <div className="mt-20 pt-8 border-t border-orange-100 flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-gray-400">
+        <div className="mt-10 pt-6 border-t border-orange-100 flex-center flex-col md:flex-row justify-between items-center gap-4">
+          <p className="text-xs text-gray-600">
             © 2026 Pooja Mandir. All rights reserved. Made with ❤️ for the spiritual community.
           </p>
-          <div className="flex gap-6">
-            <button className="text-xs text-gray-400 hover:text-[#3b2a1a]">Terms of Service</button>
-            <button className="text-xs text-gray-400 hover:text-[#3b2a1a]">Cookie Policy</button>
-          </div>
         </div>
       </div>
     </footer>

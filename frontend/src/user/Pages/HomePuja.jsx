@@ -2,35 +2,15 @@ import {
   Calendar,
   ArrowRight,
   Search,
+  Sparkles
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-const upcomingPujas = [
-  {
-    id: 101,
-    title: "Maha Shivratri Special Rudrabhishek",
-    date: "Feb 26, 2026",
-    img: "https://i.pinimg.com/736x/f4/7f/a6/f47fa60b150368934020c210c8c49d0d.jpg",
-  },
-  {
-    id: 102,
-    title: "Grand Ayodhya Aarti Deepotsav",
-    date: "March 15, 2026",
-    img: "https://images.unsplash.com/photo-1605640840605-14ac1855827b",
-  },
-  {
-    id: 103,
-    title: "Holika Dahan Shanti Path",
-    date: "March 24, 2026",
-    img: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
-  },
-];
 
 export default function HomePuja() {
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -59,12 +39,6 @@ export default function HomePuja() {
     getSevices();
   }, []);
 
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % upcomingPujas.length);
-    }, 4000);
-    return () => clearInterval(timer);
-  }, []);
 
   const filteredServices = services.filter((service) => {
     const name = service.title || service.puja_name || "";
@@ -75,14 +49,14 @@ export default function HomePuja() {
     // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
 
-      <section className="relative max-w-7xl mx-auto p-10">
+      <section className="relative max-w-7xl mx-auto p-8">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-300 rounded-full blur-[120px]"></div>
           <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-amber-200 rounded-full blur-[150px]"></div>
         </div>
 
-        <div className="flex flex-col mb-16 text-center">
+        <div className="flex flex-col mb-10 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-[1px] w-12 bg-orange-300"></div>
             <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
@@ -93,7 +67,7 @@ export default function HomePuja() {
           <h2 className="text-4xl md:text-6xl font-serif text-[#2f1e12] mb-4">
             Divine <span className="text-orange-600 italic">Home Pujas</span>
           </h2>
-          <p className="mt-2 text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
+          <p className=" text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
             Bring the sanctity of the temple to your doorstep with authentic
             Vedic ceremonies performed by master priests.
           </p>
@@ -118,7 +92,7 @@ export default function HomePuja() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredServices.map((service) => (
             <div
               key={service.id}
@@ -133,18 +107,13 @@ export default function HomePuja() {
                   className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                 />
 
-                {/* Visible Luxury Badge */}
-                <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-white/90 backdrop-blur-md border border-orange-200 px-4 py-1 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col items-end">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">
-                      Starting From
+                {/* Visible Luxury Price Badge */}
+                <div className="absolute top-3 right-4 z-20">
+                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
+                    <Sparkles size={12} fill="white" className="text-white" />
+                    <span className="text-[13px] font-semibold tracking-wide">
+                      Trending
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold text-[#2f1e12]">₹</span>
-                      <span className="text-xl font-black text-[#2f1e12] tracking-tight">
-                        {service.standard_price}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -170,11 +139,17 @@ export default function HomePuja() {
 
                 {/* Action Bar */}
                 <div className="mt-auto pt-5 border-t border-orange-50 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ritual Status</span>
-                    <span className="text-xs font-bold text-green-600 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Booking Open
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-[0.15em] mb-0.5">
+                      Dakshina
                     </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-bold text-gray-900">₹</span>
+                      <span className="text-2xl font-serif font-black text-[#3D2B1D] tracking-tighter">
+                        {service.standard_price}
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-400 ml-0.5">/-</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">

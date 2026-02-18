@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   ChevronRight, ChevronLeft, HelpCircle, Info, Box,
-  Heart, Shield, Zap, Users, CheckCircle, MessageSquare, MapPin, Sparkles
+  Heart, Shield, Zap, Users, Download, MessageSquare, MapPin, Sparkles
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 
@@ -128,21 +128,46 @@ const KathaPujaBooking = () => {
               </div>
             </nav>
 
-            {/* SAMAGRI TOGGLE BOX */}
-            <div className="bg-white rounded-xl p-5 border border-orange-200 flex items-center justify-between shadow-sm group hover:border-orange-400 transition-colors">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-orange-50 text-orange-600 rounded-lg group-hover:bg-orange-500 group-hover:text-white transition-all"><Box size={24} /></div>
-                <div>
-                  <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">Add Complete Samagri Kit</h3>
-                  <p className="text-gray-500 text-[13px]">Pure ghee, flowers, and all ritual items included.</p>
+            {/* SAMAGRI TOGGLE SECTION */}
+            <div className={`bg-white rounded-xl p-5 border transition-all duration-300 shadow-sm ${samagriEnabled ? 'border-orange-400' : 'border-orange-200'}`}>
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4">
+                  <div className={`p-3 rounded-lg transition-all ${samagriEnabled ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600'}`}>
+                    <Box size={24} />
+                  </div>
+                  <div className="space-y-1">
+                    <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">All-in-One Samagri Kit</h3>
+
+                    {samagriEnabled ? (
+                      /* ON State Text */
+                      <p className="text-gray-500 text-[13px]">
+                        <span className="text-orange-600 font-bold">Relax.</span> We bring Flowers, Ghee & Vessels.
+                      </p>
+                    ) : (
+                      /* OFF State Content */
+                      <div className="space-y-3">
+                        <p className="text-gray-500 text-[13px]">
+                          You'll need to buy <span className="text-red-500 font-bold">30+ items.</span>
+                        </p>
+                        <button className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors">
+                          <Download size={14} /> Download Checklist
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="text-[15px] font-bold text-orange-600">+₹600</span>
-                <button onClick={() => setSamagriEnabled(!samagriEnabled)}
-                  className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-300"}`}>
-                  <div className={`bg-white w-5 h-5 rounded-full shadow transition-transform ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`} />
-                </button>
+
+                <div className="flex flex-col items-end gap-1">
+                  <button
+                    onClick={() => setSamagriEnabled(!samagriEnabled)}
+                    className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-200"}`}
+                  >
+                    <div className={`bg-white w-5 h-5 rounded-full shadow transition-transform ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`} />
+                  </button>
+                  <span className="text-[11px] font-bold text-gray-400 mt-1">
+                    {samagriEnabled ? "+₹600" : "Not included"}
+                  </span>
+                </div>
               </div>
             </div>
 
@@ -177,7 +202,7 @@ const KathaPujaBooking = () => {
 
                 <div className="border-t border-orange-50" />
 
-                
+
               </div>
             </div>
 
@@ -187,7 +212,7 @@ const KathaPujaBooking = () => {
               <div>
                 <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
                 <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">
-                    Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.
+                  Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.
                 </p>
               </div>
             </div>

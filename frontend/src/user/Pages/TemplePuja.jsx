@@ -1,13 +1,50 @@
-import { MapPin, Calendar, ArrowRight, Search, Video, Sparkles, Star, ChevronRight } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Search, Ticket } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 export default function TemplePuja() {
+
+const slides = [
+  {
+    title: "शाश्वत वैदिक अनुष्ठान", // Shaswat Vedic Anushthan
+    subtitle: "Experience the profound energy of ancient Vedic chants and sacred fire rituals performed by certified Acharyas.",
+    image: "https://images.unsplash.com/photo-1593739594181-dcd2709bc51d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bWFuZGlyfGVufDB8fDB8fHww",
+    shloka: "॥ शुभं करोति कल्याणम् आरोग्यं धनसंपदा ॥"
+  },
+  {
+    title: "दिव्य मंदिर आरती", // Divya Temple Aarti
+    subtitle: "Connect with the divine through the rhythmic vibrations of temple bells and the warmth of holy lamps.",
+    image: "https://images.unsplash.com/photo-1597109216022-71b4810ed4c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bWFuZGlyfGVufDB8fDB8fHww",
+    shloka: "॥ तमस़ो मा ज्योतिर्गमय ॥"
+  },
+  {
+    title: "परम पावन आशीर्वाद", // Param Paavan Ashirwad
+    subtitle: "A gateway to spiritual awakening, bringing peace, prosperity, and divine protection to your home.",
+    image: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS1P3Qix9jHTASj_DEX1CVWA3wHoubZ4jsktAtxy6rCa5E4LJEe4QrEjdLgzIgZ",
+    shloka: "॥ सर्वे भवन्तु सुखिनः ॥"
+  }
+];
+
+
+  const [currentSlide, setCurrentSlide] = useState(0);
+
   const navigate = useNavigate();
   const [services, setServices] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+
+
+
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
+
 
   useEffect(() => {
     const getSevices = async () => {
@@ -30,7 +67,6 @@ export default function TemplePuja() {
   }, []);
 
 
-
   return (
     <div className="min-h-screen bg-[#FFF4E1] text-[#2D1B08] selection:bg-orange-100">
       {/* Soft Ambient Background Elements */}
@@ -39,10 +75,10 @@ export default function TemplePuja() {
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-orange-200/20 rounded-full blur-[100px] translate-y-1/4 -translate-x-1/4" />
       </div>
 
-      <section className="relative max-w-7xl mx-auto px-6 pt-10 pb-20">
+      <section className="relative max-w-7xl mx-auto px-6 pt-6 pb-5">
 
         {/* HEADER SECTION - CENTERED & LARGE TEXT */}
-        <div className="flex flex-col items-center text-center mb-16">
+        <div className="flex flex-col items-center text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-6">
             <div className="h-[1px] w-12 bg-orange-300"></div>
             <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
@@ -51,18 +87,68 @@ export default function TemplePuja() {
             <div className="h-[1px] w-12 bg-orange-300"></div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-serif leading-[1.1] mb-6 tracking-tight text-[#1A1108]">
+          <h1 className="text-5xl md:text-6xl font-serif leading-[1.1] mb-4 tracking-tight text-[#1A1108]">
             Divine <span className="text-orange-600 italic">Temple Puja</span>
           </h1>
 
-          <p className="mt-2 text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
+          <p className=" text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
             Authentic Vedic rituals and sacred narrations by master priests,
             bringing peace and prosperity to your spiritual journey.
           </p>
         </div>
 
+        {/* PREMIUM COMPACT SLIDER */}
+        <div className="relative w-full max-w-6xl mx-auto border-2 border-orange-400 mb-12 overflow-hidden rounded-[28px] shadow-[0_30px_80px_-20px_rgba(0,0,0,0.18)]">
+
+          {/* Slides Wrapper */}
+          <div
+            className="flex transition-transform duration-900 ease-in-out"
+            style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+          >
+            {slides.map((slide, index) => (
+              <div
+                key={index}
+                className="min-w-full h-[220px] md:h-[300px] bg-cover bg-center flex items-center justify-center relative"
+                style={{ backgroundImage: `url(${slide.image})` }}
+              >
+                {/* Cinematic Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20"></div>
+
+                {/* Text Content */}
+                <div className="relative text-center text-white px-6">
+                  <h2 className="text-2xl md:text-3xl text-orange-600 font-serif mb-2 tracking-tight">
+                    {slide.title}
+                  </h2>
+                  <p className="text-sm md:text-base opacity-90 max-w-xl pb-2 mx-auto">
+                    {slide.subtitle}
+                  </p>
+                  <p className="text-m md:text-base text-orange-500 opacity-90 max-w-xl mx-auto">
+                    {slide.shloka}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Dots Indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === index
+                    ? "w-8 bg-white"
+                    : "w-2.5 bg-white/50 hover:bg-white/80"
+                  }`}
+              />
+            ))}
+          </div>
+
+        </div>
+
+
         {/* SEARCH INPUT */}
-        <div className="relative w-full max-w-2xl mx-auto mb-20">
+        <div className="relative w-full max-w-2xl mx-auto mb-15">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
           <input
             type="text"
@@ -74,7 +160,7 @@ export default function TemplePuja() {
         </div>
 
         {/* SERVICES GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {services
             .filter(service =>
               service.puja_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -93,20 +179,10 @@ export default function TemplePuja() {
                     className="h-full w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1A1108]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
-
-                  {/* Price Badge */}
-                  <div className="absolute top-5 right-5 z-20">
-                    <div className="bg-white/95 backdrop-blur-md border border-orange-100 px-4 py-1.5 rounded-2xl shadow-xl flex flex-col items-end transform group-hover:scale-105 transition-transform duration-500">
-                      <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">Starting Ticket</span>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xl font-black text-[#1A1108] tracking-tighter">₹{service.single_price}</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Content Section */}
-                <div className="p-8 flex flex-col flex-1">
+                <div className="p-6 flex flex-col flex-1">
                   <div className="flex-1">
                     {/* Tagline */}
                     <div className="flex items-center gap-2 mb-4">
@@ -137,7 +213,7 @@ export default function TemplePuja() {
                     </div>
 
                     {/* Row 2: Date & Time */}
-                    <div className="flex items-center gap-3 mb-4">
+                    <div className="flex items-center gap-3">
                       <div className="p-1.5 bg-orange-50 border border-orange-100 rounded-lg shrink-0">
                         <Calendar size={14} className="text-orange-600" />
                       </div>
@@ -163,11 +239,14 @@ export default function TemplePuja() {
 
                   {/* Footer Bar */}
                   <div className="flex items-center justify-between pt-5 border-t border-orange-50 mt-auto">
-                    <div className="flex flex-col">
-                      <span className="text-[10px] text-gray-400 uppercase font-black tracking-widest">Ritual</span>
-                      <span className="text-[11px] font-bold text-green-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 bg-green-500 rounded-full" /> Booking Open
-                      </span>
+                    <div className="flex flex-col items-end">
+                      <div className="flex items-center gap-1.5 py-1  ">
+                        <Ticket size={14} className="text-orange-600" />
+                        <div className="flex items-baseline gap-0.5">
+                          <span className="text-[18px] font-serif font-bold text-orange-600">₹{service.single_price}</span>
+                          <span className="text-[16px] font-semibold text-gray-500">/ticket</span>
+                        </div>
+                      </div>
                     </div>
 
                     <div className="flex items-center gap-4">

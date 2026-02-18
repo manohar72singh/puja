@@ -2,7 +2,7 @@ import {
   MapPin,
   Calendar,
   ArrowRight,
-  Search,
+  Sparkles,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -88,20 +88,15 @@ export default function TrendingPuja() {
                   alt={service.puja_name}
                   className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                 />
-                <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-white/90 backdrop-blur-md border border-orange-200 px-4 py-1 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col items-end">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">
-                      Starting From
+                {/* Visible Luxury Price Badge */}
+                <div className="absolute top-3 right-4 z-20">
+                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
+                    <Sparkles size={12} fill="white" className="text-white" />
+                    <span className="text-[13px] font-semibold tracking-wide">
+                      Trending
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold text-[#2f1e12]">₹</span>
-                      <span className="text-xl font-black text-[#2f1e12] tracking-tight">
-                        {service.standard_price}
-                      </span>
-                    </div>
                   </div>
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80"></div>
               </div>
 
               {/* Content */}
@@ -122,14 +117,17 @@ export default function TrendingPuja() {
 
                 {/* Footer */}
                 <div className="mt-auto pt-5 border-t border-orange-50 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      Ritual Status
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-[0.15em] mb-0.5">
+                      Dakshina
                     </span>
-                    <span className="text-xs font-bold text-green-600 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span>{" "}
-                      Booking Open
-                    </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-bold text-gray-900">₹</span>
+                      <span className="text-2xl font-serif font-black text-[#3D2B1D] tracking-tighter">
+                        {service.standard_price}
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-400 ml-0.5">/-</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">

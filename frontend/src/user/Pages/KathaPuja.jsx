@@ -1,4 +1,4 @@
-import { MapPin, Calendar, ArrowRight, Search, Video } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Search, Sparkles  } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -41,7 +41,7 @@ export default function KathaPuja() {
 
   return (
     <div className="min-h-screen bg-[#FFF4E1]">
-      <section className="relative max-w-7xl mx-auto p-10">
+      <section className="relative max-w-7xl mx-auto p-6">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-300 rounded-full blur-[120px]"></div>
@@ -49,7 +49,7 @@ export default function KathaPuja() {
         </div>
 
         {/* HEADER SECTION */}
-        <div className="flex flex-col mb-16 text-center">
+        <div className="flex flex-col mb-8 text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-[1px] w-12 bg-orange-300"></div>
             <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
@@ -61,13 +61,13 @@ export default function KathaPuja() {
             Divine <span className="text-orange-600 italic">Katha & Jaap</span>
           </h2>
           <p className="mt-2 text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">
-            Authentic Vedic rituals and sacred narrations by master priests, 
+            Authentic Vedic rituals and sacred narrations by master priests,
             bringing peace and prosperity to your spiritual journey.
           </p>
         </div>
 
         {/* SEARCH INPUT */}
-        <div className="relative w-full max-w-2xl mx-auto mb-20">
+        <div className="relative w-full max-w-2xl mx-auto mb-15">
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-orange-500" size={20} />
           <input
             type="text"
@@ -79,7 +79,7 @@ export default function KathaPuja() {
         </div>
 
         {/* SERVICES GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredServices.map((service) => (
             <div
               key={service.id}
@@ -95,17 +95,12 @@ export default function KathaPuja() {
                 />
 
                 {/* Visible Luxury Price Badge */}
-                <div className="absolute top-4 right-4 z-20">
-                  <div className="bg-white/95 backdrop-blur-md border border-orange-200 px-4 py-1.5 rounded-2xl shadow-[0_10px_20px_rgba(0,0,0,0.1)] flex flex-col items-end">
-                    <span className="text-[9px] font-black uppercase tracking-widest text-orange-600 mb-0.5">
-                      Starting From
+                <div className="absolute top-3 right-4 z-20">
+                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
+                    <Sparkles size={12} fill="white" className="text-white" />
+                    <span className="text-[13px] font-semibold tracking-wide">
+                      Trending
                     </span>
-                    <div className="flex items-center gap-1">
-                      <span className="text-xs font-bold text-[#2f1e12]">₹</span>
-                      <span className="text-xl font-black text-[#2f1e12] tracking-tight">
-                        {service.standard_price}
-                      </span>
-                    </div>
                   </div>
                 </div>
 
@@ -131,11 +126,17 @@ export default function KathaPuja() {
 
                 {/* Action Bar */}
                 <div className="mt-auto pt-5 border-t border-orange-50 flex items-center justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Ritual Status</span>
-                    <span className="text-xs font-bold text-green-600 flex items-center gap-1">
-                      <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> Booking Open
+                  <div className="flex flex-col items-start">
+                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-[0.15em] mb-0.5">
+                      Dakshina
                     </span>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-sm font-bold text-gray-900">₹</span>
+                      <span className="text-2xl font-serif font-black text-[#3D2B1D] tracking-tighter">
+                        {service.standard_price}
+                      </span>
+                      <span className="text-[11px] font-bold text-gray-400 ml-0.5">/-</span>
+                    </div>
                   </div>
 
                   <div className="flex items-center gap-3">
