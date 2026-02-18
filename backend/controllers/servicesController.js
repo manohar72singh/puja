@@ -82,9 +82,10 @@ export const bookingDetails = async (req, res) => {
       devoteeName,
       pincode,
       ticket_type, // Temple puja ke liye
-      donations    // Temple puja ke liye
+      donations,    // Temple puja ke liye
+      bookingId
     } = req.body;
-
+    console.log("Received Booking Details:", req.body); // Debugging ke liye
     const userId = req.user.id;
 
     // Format date for MySQL
@@ -107,8 +108,8 @@ export const bookingDetails = async (req, res) => {
     // Query mein table ka naam 'puja_requests' hi rakhein jo aapne bataya tha
     const query = `
       INSERT INTO puja_requests 
-      (user_id, service_id, preferred_date, preferred_time, address, city, state, status) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending')
+      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?)
     `;
 
     // Query execute karein
@@ -120,7 +121,8 @@ export const bookingDetails = async (req, res) => {
       time || 'Morning Slot',
       fullAddress,
       city || 'N/A',
-      state || 'N/A'
+      state || 'N/A',
+      bookingId
     ]);
 
     res.status(201).json({
@@ -149,7 +151,7 @@ export const getUserBookings = async (req, res) => {
         b.*, 
         s.puja_name, 
         s.image_url, 
-        s.puja_type 
+        s.puja_type
       FROM puja_requests b
       JOIN services s ON b.service_id = s.id
       WHERE b.user_id = ?

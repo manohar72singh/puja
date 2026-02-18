@@ -155,22 +155,33 @@ export const getAllPujaRequests = async (req, res) => {
   try {
     const query = `
       SELECT 
-        b.id, 
-        b.address, 
-        b.city, 
-        b.state, 
-        b.preferred_date, 
-        b.preferred_time, 
+        b.id,
+        b.address,
+        b.city,
+        b.state,
+        b.preferred_date,
+        b.preferred_time,
         b.status,
-        s.puja_name, 
+
+        s.puja_name,
         s.puja_type,
-        u.name AS user_name, 
-        u.phone AS user_phone
+
+        u.name AS user_name,
+        u.phone AS user_phone,
+
+        sp.price AS standard_price
+
       FROM puja_requests b
+
       LEFT JOIN services s ON b.service_id = s.id
       LEFT JOIN users u ON b.user_id = u.id
-      WHERE (b.address NOT LIKE '%Ticket:%' OR b.address IS NULL)
-      AND b.status = 'pending'
+
+      LEFT JOIN service_prices sp 
+        ON s.id = sp.service_id 
+        AND sp.pricing_type = 'standard'
+
+      WHERE s.puja_type IN ('home_puja','katha')
+
       ORDER BY b.preferred_date ASC
     `;
 
@@ -183,13 +194,14 @@ export const getAllPujaRequests = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("CustomerCare Fetch Error:", error.message);
+    console.error("Fetch Error:", error.message);
     res.status(500).json({
       success: false,
       message: "Server Error"
     });
   }
 };
+
 
 export const getFilterPujaRequests = async (req, res) => {
   try {
@@ -288,6 +300,84 @@ export const updatePujaStatus = async (req, res) => {
 
   } catch (error) {
     console.error("Update Status Error:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+export const getAllPandits = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.gotra,
+        u.email,
+        u.phone,
+
+        a.id AS address_id,
+        a.address_line1,
+        a.city,
+        a.state,
+        a.pincode
+
+      FROM users u
+      LEFT JOIN addresses a ON u.id = a.user_id
+      WHERE u.role = 'pandit'
+      ORDER BY u.id DESC
+    `;
+
+    const [rows] = await db.query(query);
+
+    res.status(200).json({
+      success: true,
+      count: rows.length,
+      pandits: rows
+    });
+
+  } catch (error) {
+    console.error("Error fetching pandits:", error.message);
+    res.status(500).json({
+      success: false,
+      message: "Server Error"
+    });
+  }
+};
+
+export const getAllUsers = async (req, res) => {
+  try {
+    const query = `
+      SELECT 
+        u.id,
+        u.name,
+        u.gotra,
+        u.email,
+        u.phone,
+
+        a.id AS address_id,
+        a.address_line1,
+        a.city,
+        a.state,
+        a.pincode
+
+      FROM users u
+      LEFT JOIN addresses a ON u.id = a.user_id
+      WHERE u.role = 'user'
+      ORDER BY u.id DESC
+    `;
+
+    const [rows] = await db.query(query);
+
+    res.status(200).json({
+      success: true,
+      count: rows.length,
+      users: rows
+    });
+
+  } catch (error) {
+    console.error("Error fetching users:", error.message);
     res.status(500).json({
       success: false,
       message: "Server Error"

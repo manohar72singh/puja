@@ -34,7 +34,6 @@ export const signupVerify = async (req, res) => {
         // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
         const { phone, otp, role, address, city, state, gotra, email, name, pincode, address_type } = req.body;
         
-        console.log("controller data:", req.body);
         const session = otpStore[phone];
 
         if (!session || session.type !== 'SIGNUP' || session.otp.toString() !== otp.toString()) {
@@ -51,7 +50,6 @@ export const signupVerify = async (req, res) => {
         );
         
         const newUserId = userResult.insertId;
-        console.log("New User ID:", newUserId);
         
         if (address) {
             // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)

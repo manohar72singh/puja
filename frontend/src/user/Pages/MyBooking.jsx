@@ -116,7 +116,8 @@ const MyBookings = () => {
                       {b.status}
                     </div>
                     <p className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                      ID: #P{b.id}
+                      ID: 
+                      <span className="ml-1 text-orange-600">{b.bookingId}</span>
                     </p>
                   </div>
                 </div>
