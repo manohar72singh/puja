@@ -3,7 +3,6 @@
 
   export const verifyToken = (req, res, next) => {
     try {
-      console.log("verify token")
       const authHeader = req.headers.authorization;
 
       if (!authHeader) {
@@ -16,7 +15,6 @@
         token,
         process.env.JWT_SECRET || "secret"
       );
-      console.log("Decoded Token:", decoded);
 
       // 🔥 Important Fix
       req.user = {

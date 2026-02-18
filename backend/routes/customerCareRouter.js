@@ -2,7 +2,9 @@ import express from "express";
 import { customerCareOnly } from "../middleware/customerCare.js";
 import { verifyToken } from "../middleware/auth.js";
 import { getAllPujaRequests, getFilterPujaRequests, updatePujaStatus,customerSignupRequest,customerSignupVerify
-,CusomterLoginRequest,customerVerifyOtp
+,CusomterLoginRequest,customerVerifyOtp,
+getAllPandits,
+getAllUsers
  } from "../controllers/customerCareController.js";
 
 const router = express.Router();
@@ -18,5 +20,9 @@ router.post('/verify-otp', customerVerifyOtp);
 router.get("/dashboard", verifyToken, customerCareOnly, getAllPujaRequests);
 router.get("/filterData", verifyToken,customerCareOnly, getFilterPujaRequests);
 router.put("/update-status/:id", verifyToken, customerCareOnly, updatePujaStatus);
+
+router.get("/allPandits", verifyToken, customerCareOnly, getAllPandits);
+
+router.get('/allUsers', verifyToken, customerCareOnly, getAllUsers);
 
 export default router;

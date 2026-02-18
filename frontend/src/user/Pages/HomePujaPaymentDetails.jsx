@@ -33,6 +33,13 @@ const HomePujaPaymentDetails = () => {
   // Get Samagri status from navigation state
   const isSamagriSelected = location.state?.isSamagriSelected || false;
 
+  // generate booking Id 
+  const generateBookingId = () => {
+    const randomStr = Math.random().toString(36).substring(2, 8);
+    return `BK-${randomStr}`;
+  }
+
+  const bookingId = generateBookingId();
   const [formData, setFormData] = useState({
     date: "",
     time: "",
@@ -102,6 +109,7 @@ const HomePujaPaymentDetails = () => {
     state: formData.state,
     pincode: formData.pincode,
     devoteeName: formData.devoteeName,
+    bookingId: bookingId,
   };
 
   try {
@@ -117,7 +125,7 @@ const HomePujaPaymentDetails = () => {
     const data = await response.json();
 
     if (data.success) {
-      alert("🙏 Jai Ho! Aapki booking swikar kar li gayi hai.");
+      alert("🙏 Jai Ho! Aapki booking swikar kar li gayi hai. Booking ID: " + bookingId);
       navigate("/my-booking"); // Home ya My Bookings page par bhejien
     } else {
       alert("Error: " + data.message);
