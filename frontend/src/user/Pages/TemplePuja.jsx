@@ -1,4 +1,4 @@
-import { MapPin, Calendar, ArrowRight, Search, Ticket } from "lucide-react";
+import { MapPin, Calendar, ArrowRight, Search, Ticket, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 
@@ -155,7 +155,7 @@ const slides = [
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Search for Katha, Jaap or Devta..."
-            className="w-full pl-12 pr-4 py-4 bg-white border border-orange-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-[#3b2a1a]"
+            className="w-full pl-12 pr-4 py-2 bg-white border border-orange-200 rounded-2xl shadow-sm focus:outline-none focus:ring-2 focus:ring-orange-500/10 focus:border-orange-500 transition-all text-[#3b2a1a]"
           />
         </div>
 
@@ -179,6 +179,16 @@ const slides = [
                     className="h-full w-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1A1108]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
+
+                  {/* Visible Luxury Price Badge */}
+                <div className="absolute top-3 left-4 z-20">
+                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
+                    <Sparkles size={12} fill="white" className="text-white" />
+                    <span className="text-[13px] font-semibold tracking-wide">
+                      Features
+                    </span>
+                  </div>
+                </div>
                 </div>
 
                 {/* Content Section */}

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 import axios from "axios";
 import {
   Users,
@@ -26,6 +28,11 @@ const CustomerCareDashboard = () => {
 
   const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
+
+    
+  
+  const navigate = useNavigate();
+  
 
   // ================= FETCH BOOKINGS =================
   const fetchBookings = async () => {
@@ -168,6 +175,12 @@ const CustomerCareDashboard = () => {
     </button>
   );
 
+  const handelLogout = () =>{
+    localStorage.removeItem("token")
+    localStorage.removeItem("role")
+    navigate('/customerCare/signIn')
+  }
+
   const statusStyle = (status) => {
     switch (status) {
       case "pending":
@@ -202,8 +215,10 @@ const CustomerCareDashboard = () => {
           <SidebarItem id="pandits" icon={Users} label="Pandits" />
         </nav>
         <div className="absolute bottom-0 w-64 p-4 border-t border-slate-700">
-          <button className="flex items-center gap-2 text-red-400 hover:text-red-300 px-4 py-2 w-full">
+          <button className="flex items-center gap-2 text-red-400 hover:text-red-300 px-4 py-2 w-full"
+          onClick={handelLogout}>
             <LogOut size={18} /> Logout
+
           </button>
         </div>
       </aside>
