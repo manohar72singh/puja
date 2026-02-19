@@ -1,5 +1,4 @@
 import React, { useEffect, useState, useRef } from 'react';
-import axios from "axios"
 import {
   MapPin, Calendar, Heart, ShieldCheck, ChevronLeft, Sparkles, ArrowRight,
   Shirt, Coffee, Flame, UtensilsCrossed, Loader2, Users, Shield, Lock,
@@ -49,6 +48,7 @@ const TemplePujaBooking = () => {
 
   const handleTemplePayment = async () => {
     const token = localStorage.getItem("token");
+    const currentBookingId = `BK-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
     if (!token) {
       navigate("/signin");
       return;
@@ -61,6 +61,7 @@ const TemplePujaBooking = () => {
       .join(', ');
 
     const bookingData = {
+      bookingId: currentBookingId, // Unique booking ID
       puja_id: id, // Ye aapke useParams wala id hai
       date: new Date().toISOString().split('T')[0],
       time: "Morning Slot",
@@ -91,7 +92,7 @@ const TemplePujaBooking = () => {
   const result = await response.json();
 
   if (result.success) {
-    alert("🙏 Temple Booking Confirmed!");
+    alert(`🙏 Temple Booking Confirmed! Booking ID: ${currentBookingId}`);
     navigate('/my-booking');
   }
 } catch (error) {

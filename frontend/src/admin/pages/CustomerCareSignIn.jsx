@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios'; // Make sure to install axios: npm install axios
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const CustomerCareSignIn = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [step, setStep] = useState(1); // 1: Info/Phone, 2: OTP
@@ -30,7 +30,7 @@ const CustomerCareSignIn = () => {
     
     try {
       // Replace with your actual base URL
-      const response = await axios.post(`http://localhost:5000${endpoint}`, {
+      const response = await axios.post(`${API_BASE_URL}${endpoint}`, {
         phone: formData.phone,
         firstName: formData.firstName,
         lastName: formData.lastName,
@@ -60,7 +60,7 @@ const CustomerCareSignIn = () => {
     const endpoint = isLogin ? '/customerCare/verify-otp' : '/customerCare/signup-verify';
 
     try {
-      const response = await axios.post(`http://localhost:5000${endpoint}`, formData);
+      const response = await axios.post(`${API_BASE_URL}${endpoint}`, formData);
 
       if (response.data.token) {
         localStorage.setItem('token', response.data.token);

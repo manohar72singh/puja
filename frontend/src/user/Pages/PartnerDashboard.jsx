@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { Calendar, Clock, MapPin, User, Phone, LogOut, Flower2, ChevronRight } from 'lucide-react';
-
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const PartnerDashboard = () => {
   const [pujas, setPujas] = useState([]);
   const [profile, setProfile] = useState(null);
@@ -22,7 +22,7 @@ const PartnerDashboard = () => {
 
   const fetchMyPujas = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/partner/my-pujas", {
+      const res = await axios.get(`${API_BASE_URL}/partner/my-pujas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) setPujas(res.data.bookings);
@@ -35,7 +35,7 @@ const PartnerDashboard = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/partner/profile", {
+      const res = await axios.get(`${API_BASE_URL}/partner/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) setProfile(res.data.user);
