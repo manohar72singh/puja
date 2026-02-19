@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { Loader2, Sparkles, ArrowLeft, ShieldCheck } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
-
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const PartnerSignIn = () => {
   const [phoneNumber, setPhoneNumber] = useState('');

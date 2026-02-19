@@ -33,7 +33,7 @@ const PartnerDashboard = () => {
 
   const fetchMyPujas = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/partner/my-pujas", {
+      const res = await axios.get(`${API_BASE_URL}/partner/my-pujas`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) setPujas(res.data.bookings);
@@ -60,7 +60,7 @@ const PartnerDashboard = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/partner/profile", {
+      const res = await axios.get(`${API_BASE_URL}/partner/profile`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (res.data.success) setProfile(res.data.user);
