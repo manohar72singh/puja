@@ -162,6 +162,7 @@ export const getAllPujaRequests = async (req, res) => {
         b.preferred_date,
         b.preferred_time,
         b.status,
+        b.pandit_id,
 
         s.puja_name,
         s.puja_type,
@@ -169,12 +170,15 @@ export const getAllPujaRequests = async (req, res) => {
         u.name AS user_name,
         u.phone AS user_phone,
 
+        pu.name AS pandit_name,
+
         sp.price AS standard_price
 
       FROM puja_requests b
 
       LEFT JOIN services s ON b.service_id = s.id
       LEFT JOIN users u ON b.user_id = u.id
+      LEFT JOIN users pu ON b.pandit_id = pu.id
 
       LEFT JOIN service_prices sp 
         ON s.id = sp.service_id 
@@ -201,6 +205,7 @@ export const getAllPujaRequests = async (req, res) => {
     });
   }
 };
+
 
 
 export const getFilterPujaRequests = async (req, res) => {
@@ -384,3 +389,48 @@ export const getAllUsers = async (req, res) => {
     });
   }
 };
+
+
+
+export const assignPandit = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { panditId } = req.body;
+
+    // 1️⃣ Check booking exist
+    const [booking] = await db.query(
+      "SELECT * FROM puja_requests WHERE id = ?",
+      [bookingId]
+    );
+
+    if (booking.length === 0) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    // 2️⃣ Check pandit exist and role = pandit
+    const [pandit] = await db.query(
+      "SELECT * FROM users WHERE id = ? AND role = 'pandit'",
+      [panditId]
+    );
+
+    if (pandit.length === 0) {
+      return res.status(404).json({ message: "Pandit not found" });
+    }
+
+    // 3️⃣ Assign + auto accept
+    await db.query(
+      "UPDATE puja_requests SET pandit_id = ?, status = 'accepted' WHERE id = ?",
+      [panditId, bookingId]
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Pandit assigned successfully"
+    });
+
+  } catch (error) {
+    console.error("Assign Error:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+

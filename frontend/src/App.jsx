@@ -42,7 +42,7 @@ function App() {
 
   const hideFloatingMenu =
     ["/signin", "/signup", "/profile", "/help",'/manageSankalp',"/savedAddresses","/partnerSignIn"
-      ,"/partnerSignUp","/partner/dashboard","/customerCare/signIn"
+      ,"/partnerSignUp","/partner/dashboard","/customerCare/signIn","/customerCare/dashboard"
     ]
     .includes(location.pathname);
 

@@ -4,7 +4,8 @@ import { verifyToken } from "../middleware/auth.js";
 import { getAllPujaRequests, getFilterPujaRequests, updatePujaStatus,customerSignupRequest,customerSignupVerify
 ,CusomterLoginRequest,customerVerifyOtp,
 getAllPandits,
-getAllUsers
+getAllUsers,
+assignPandit
  } from "../controllers/customerCareController.js";
 
 const router = express.Router();
@@ -19,7 +20,18 @@ router.post('/verify-otp', customerVerifyOtp);
 
 router.get("/dashboard", verifyToken, customerCareOnly, getAllPujaRequests);
 router.get("/filterData", verifyToken,customerCareOnly, getFilterPujaRequests);
+
+
 router.put("/update-status/:id", verifyToken, customerCareOnly, updatePujaStatus);
+router.patch(
+  "/assign-pandit/:bookingId",
+  verifyToken,
+  customerCareOnly,
+  assignPandit
+);
+
+
+
 
 router.get("/allPandits", verifyToken, customerCareOnly, getAllPandits);
 

@@ -1,238 +1,172 @@
-import React, { useState, useEffect } from "react";
-import {
-  CheckCircle, XCircle, Clock, MapPin, Phone, User,
-  Calendar, Bell, LogOut, Headphones, Power
-} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { Calendar, Clock, MapPin, User, Phone, LogOut, Flower2, ChevronRight } from 'lucide-react';
 
 const PartnerDashboard = () => {
-  const [activeTab, setActiveTab] = useState("new");
-  const [newRequests, setNewRequests] = useState([]);
-  const [mySchedule, setMySchedule] = useState([]);
-  const [earnings, setEarnings] = useState(0); // Optional field for tab
+  const [pujas, setPujas] = useState([]);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dutyOn, setDutyOn] = useState(true);
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
-
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
-  const navigate = useNavigate()
-  const handleLogout = () => {
-    localStorage.removeItem("token"); // Token delete karein
-    navigate("/partnerSignIn"); // Login page par bhejein
-    // Agar aap page refresh karna chahte hain toh: window.location.reload();
-  };
-
-  const fetchData = async () => {
-    setLoading(true);
-    const token = localStorage.getItem("token");
-
-    // Agar token hi nahi hai, toh seedha login pe bhejo
+  useEffect(() => {
     if (!token) {
-      handleLogout();
+      navigate("/login");
       return;
     }
+    fetchMyPujas();
+    fetchProfile();
+  }, []);
 
+  const fetchMyPujas = async () => {
     try {
-      // 1. Fetch Available Pujas
-      const res1 = await fetch(`${API_BASE_URL}/partner/available-pujas`, {
-        headers: { Authorization: `Bearer ${token}` }
+      const res = await axios.get("http://localhost:5000/partner/my-pujas", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      // Agar status 401 hai, matlab token expire ya invalid hai
-      if (res1.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data1 = await res1.json();
-      setNewRequests(data1.bookings || []);   
-
-      // 2. Fetch My Accepted Pujas
-      const res2 = await fetch(`${API_BASE_URL}/partner/my-accepted-pujas`, {
-        headers: { Authorization: `Bearer ${token}`}
-      });
-
-      if (res2.status === 401) {
-        handleLogout();
-        return;
-      }
-
-      const data2 = await res2.json();
-      setMySchedule(data2.bookings || []);
-
+      if (res.data.success) setPujas(res.data.bookings);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error(error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
-
-  const handleAction = async (bookingId, action) => {
+  const fetchProfile = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/partner/update-status`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ bookingId, action })
+      const res = await axios.get("http://localhost:5000/partner/profile", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      const data = await response.json();
-      if (data.success) {
-        fetchData();
-      }
+      if (res.data.success) setProfile(res.data.user);
     } catch (error) {
-      alert("Action failed!");
+      console.error(error);
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    navigate("/partnerSignIn");
+  };
+
   return (
-    <div className="min-h-screen bg-[#FFF4E1] font-sans">
-      {/* --- ORANGE HEADER SECTION --- */}
-      <header className="bg-[#FF8A3D] p-[20.2px] text-white shadow-md"> {/* Increased to ~20px */}
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-[15.2px]"> {/* Increased gap */}
-            {/* Container increased to ~51px */}
-            <div className="w-[51px] h-[51px] bg-white/20 rounded-full flex items-center justify-center border border-white/30">
-              <User size={31} /> {/* Increased icon size */}
+    <div className="min-h-screen bg-[#0c0a09] text-stone-200 font-sans pb-10">
+      
+      {/* 🟠 Saffron Navbar */}
+      <nav className="bg-[#1c1917] border-b border-orange-900/30 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <div className="bg-orange-600 p-2 rounded-lg shadow-lg shadow-orange-600/30">
+              <Flower2 className="text-white" size={24} />
             </div>
-
-            <div>
-              {/* Name heading increased to ~17.6px */}
-              <p className="text-[17.6px] font-bold opacity-90 leading-tight">Namaste, Demo</p>
-              {/* Sub-text increased to ~12.7px */}
-              <p className="text-[12.7px] flex items-center gap-[5px] opacity-80 mt-1">
-                <MapPin size={13} /> Varanasi
-              </p>
-            </div>
+            <span className="text-xl font-black text-white uppercase tracking-tighter">
+              Pandit<span className="text-orange-500">Portal</span>
+            </span>
           </div>
 
-          <div className="flex items-center gap-[20.2px]">
-            <Bell size={25} className="cursor-pointer hover:opacity-70 transition-opacity" />
-
-            {/* Logout Button updated with handleLogout */}
-            <button
+          <div className="flex items-center gap-5">
+            {profile && (
+              <div className="text-right hidden sm:block">
+                <p className="text-xs text-orange-500 font-bold uppercase tracking-widest">Aacharya</p>
+                <p className="text-sm font-bold text-white leading-tight">{profile.name}</p>
+              </div>
+            )}
+            <button 
               onClick={handleLogout}
-              className="p-2 hover:bg-white/10 rounded-full transition-all active:scale-90"
-              title="Logout"
+              className="p-2 hover:bg-red-600/10 text-stone-500 hover:text-red-500 rounded-full transition-all"
             >
-              <LogOut size={25} />
+              <LogOut size={22} />
             </button>
           </div>
         </div>
+      </nav>
 
-        {/* Duty Status Toggle Section */}
-        <div className="max-w-7xl mx-auto mt-[20.2px] bg-black/10 p-[10.1px] px-[20.2px] rounded-xl flex justify-between items-center">
+      {/* 🟠 Body Content */}
+      <main className="max-w-5xl mx-auto px-4 mt-10">
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
           <div>
-            {/* Title increased to ~15.2px */}
-            <p className="text-[15.2px] font-bold uppercase tracking-wide">Duty Status</p>
-            {/* Description increased to ~12.7px */}
-            <p className="text-[12.7px] opacity-80">Receiving new puja requests</p>
+            <h2 className="text-3xl font-black text-white">Upcoming Services</h2>
+            <p className="text-stone-500 text-sm mt-1">Today's assigned spiritual duties</p>
           </div>
-
-          {/* Toggle width increased to ~61px, height to ~31px */}
-          <div
-            onClick={() => setDutyOn(!dutyOn)}
-            className={`w-[61px] h-[31px] rounded-full p-[5px] cursor-pointer transition-all ${dutyOn ? 'bg-green-500 shadow-lg shadow-green-900/20' : 'bg-gray-400'}`}
-          >
-            {/* Knob increased to ~20.2px */}
-            <div className={`w-[20.2px] h-[20.2px] bg-white rounded-full transition-all shadow-md ${dutyOn ? 'translate-x-[30.8px]' : 'translate-x-0'}`} />
+          <div className="bg-orange-600/10 border border-orange-600/20 px-4 py-2 rounded-full">
+            <span className="text-orange-500 font-bold text-xs uppercase tracking-widest">Total: {pujas.length} Assignments</span>
           </div>
         </div>
-      </header>
 
-      {/* --- TABS SYSTEM --- */}
-      <div className="bg-white shadow-sm border-b-orange-400 sticky top-0 z-10">
-        <div className="max-w-7xl mx-auto flex">
-          {[
-            { id: "new", label: "NewRequests", count: newRequests.length },
-            { id: "accepted", label: "Schedule", count: mySchedule.length },
-            { id: "earnings", label: "Earnings", count: 0 },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex-1 py-4 text-sm font-bold transition-all relative ${activeTab === tab.id ? "text-orange-600" : "text-gray-400"
-                }`}
-            >
-              <span className="flex items-center justify-center gap-2">
-                {tab.label} {tab.count > 0 && <span className="bg-red-500 text-white text-[10px] px-1.5 rounded-full">{tab.count}</span>}
-              </span>
-              {activeTab === tab.id && <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 rounded-t-lg" />}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* --- DASHBOARD CONTENT --- */}
-      <main className="p-4 max-w-7xl mx-auto space-y-4 pb-20">
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 opacity-50">
-            <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-2"></div>
-            <p className="text-sm font-bold uppercase tracking-widest text-orange-900">Fetching Details...</p>
+          <div className="py-20 text-center">
+             <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+             <p className="text-stone-500 text-xs font-bold uppercase tracking-widest">Pujas Loading...</p>
+          </div>
+        ) : pujas.length === 0 ? (
+          <div className="bg-[#1c1917] border border-stone-800 rounded-2xl p-20 text-center">
+            <p className="text-stone-600 font-bold uppercase tracking-widest">Shubh Din! No Pujas Assigned Yet.</p>
           </div>
         ) : (
-          (activeTab === "new" ? newRequests : mySchedule).map((puja) => (
-            <div key={puja.id} className="bg-white border-b-4 border-orange-400 rounded-xl shadow-sm overflow-hidden border border-gray-100">
-              <div className="p-4">
-                {/* Puja Header & Price */}
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-black text-gray-700 text-lg">{puja.puja_name}</h3>
-                    <span className="text-[10px] uppercase font-bold text-orange-500 tracking-wider">North Indian</span>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xl font-black text-orange-600">₹{puja.standard_price || '0'}</p>
-                    <button className="text-[10px] bg-[#FFD700] px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                      📦 Samagri
-                    </button>
-                  </div>
-                </div>
-
-                {/* Details Grid */}
-                <div className="grid grid-cols-1 gap-3 text-gray-500">
-                  <div className="flex items-center gap-3">
-                    <Calendar size={16} className="text-gray-400" />
-                    <p className="text-sm font-bold text-gray-700">{new Date(puja.preferred_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Clock size={16} className="text-gray-400" />
-                    <p className="text-sm font-bold text-gray-700">{puja.preferred_time}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <MapPin size={16} className="text-gray-400" />
-                    <p className="text-sm font-medium leading-tight">{puja.address}, {puja.city}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <User size={16} className="text-gray-400" />
-                    <p className="text-sm font-bold text-gray-800">{puja.user_name}</p>
+          <div className="flex flex-col gap-4">
+            {pujas.map((puja) => (
+              <div 
+                key={puja.id}
+                className="bg-[#1c1917] border border-stone-800 hover:border-orange-600/40 rounded-2xl overflow-hidden transition-all group flex flex-col md:flex-row"
+              >
+                {/* Left Side: Service Info */}
+                <div className="p-6 md:w-1/3 bg-stone-900/50 flex flex-col justify-center border-b md:border-b-0 md:border-r border-stone-800">
+                  <div className="bg-orange-600 w-10 h-1 text-[10px] mb-3 rounded-full"></div>
+                  <h3 className="text-xl font-bold text-white group-hover:text-orange-500 transition-colors">
+                    {puja.puja_name}
+                  </h3>
+                  <div className="mt-4 space-y-2">
+                    <div className="flex items-center gap-2 text-stone-400 text-sm">
+                      <Calendar size={14} className="text-orange-600" />
+                      {new Date(puja.preferred_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long' })}
+                    </div>
+                    <div className="flex items-center gap-2 text-stone-400 text-sm">
+                      <Clock size={14} className="text-orange-600" />
+                      {puja.preferred_time || "Morning"}
+                    </div>
                   </div>
                 </div>
 
-                {/* --- BUTTONS (Image Style) --- */}
-                {activeTab === "new" && (
-                  <div className="flex gap-3 mt-6">
-                    <button
-                      onClick={() => handleAction(puja.id, 'declined')}
-                      className="flex-1 py-3 px-4 border border-red-100 rounded-xl text-red-500 font-bold text-sm flex items-center justify-center gap-2 hover:bg-red-50 transition-all"
-                    >
-                      <XCircle size={16} /> Decline
-                    </button>
-                    <button
-                      onClick={() => handleAction(puja.id, 'accepted')}
-                      className="flex-[2] py-3 px-4 bg-green-600 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-green-700 shadow-lg shadow-green-100 transition-all"
-                    >
-                      <CheckCircle size={16} /> Accept
-                    </button>
+                {/* Middle: Location & Customer */}
+                <div className="p-6 flex-1 flex flex-col justify-center gap-4">
+                  <div className="flex items-start gap-3">
+                    <MapPin className="text-orange-600 mt-1 shrink-0" size={18} />
+                    <p className="text-stone-300 text-sm leading-relaxed">
+                      {puja.address}, {puja.city}, <span className="text-orange-500/80 font-bold uppercase text-[10px]">{puja.state}</span>
+                    </p>
                   </div>
-                )}
+                  
+                  <div className="flex items-center gap-3 bg-stone-900/80 p-3 rounded-xl border border-stone-800">
+                    <div className="h-8 w-8 rounded-full bg-orange-600/20 flex items-center justify-center text-orange-500 font-bold text-xs uppercase">
+                      {puja.customer_name?.charAt(0)}
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-stone-500 font-bold uppercase tracking-tighter">Customer Name</p>
+                      <p className="text-sm font-bold text-stone-200">{puja.customer_name}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Side: Quick Action */}
+                <div className="p-6 md:w-48 flex items-center justify-center bg-stone-900/30">
+                  <a 
+                    href={`tel:${puja.customer_phone}`}
+                    className="flex items-center justify-center gap-3 w-full bg-orange-600 hover:bg-orange-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-orange-600/20 transition-all active:scale-95"
+                  >
+                    <Phone size={18} />
+                    <span>Call Now</span>
+                  </a>
+                </div>
               </div>
-            </div>
-          ))
+            ))}
+          </div>
         )}
       </main>
+
+      <div className="mt-20 text-center opacity-20 text-[10px] font-bold uppercase tracking-[0.5em]">
+        Devotional Service Excellence
+      </div>
     </div>
   );
 };
