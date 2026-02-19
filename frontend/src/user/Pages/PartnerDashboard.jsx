@@ -1,19 +1,30 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  User,
+  Bell,
+  LogOut,
+  X
+} from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Clock, MapPin, User, Phone, LogOut, Flower2, ChevronRight } from 'lucide-react';
 
 const PartnerDashboard = () => {
   const [pujas, setPujas] = useState([]);
   const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("schedule");
+  const [isOnline, setIsOnline] = useState(true);
+  const [showProfile, setShowProfile] = useState(false);
+  const [editing, setEditing] = useState(false);
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
   useEffect(() => {
     if (!token) {
-      navigate("/login");
+      navigate("/partnerSignIn");
       return;
     }
     fetchMyPujas();
@@ -28,10 +39,24 @@ const PartnerDashboard = () => {
       if (res.data.success) setPujas(res.data.bookings);
     } catch (error) {
       console.error(error);
-    } finally {
-      setLoading(false);
     }
   };
+
+
+  const handleUpdate = async () => {
+    try {
+      await axios.put(
+        "http://localhost:5000/partner/update-profile",
+        profile, // profile object me address bhi included hai
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setEditing(false);
+      alert("Profile Updated Successfully");
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
 
   const fetchProfile = async () => {
     try {
@@ -44,129 +69,335 @@ const PartnerDashboard = () => {
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    navigate("/partnerSignIn");
+
+
+  const formatDate = (date) => {
+    return new Intl.DateTimeFormat("en-IN", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+      weekday: "long",
+    }).format(new Date(date));
   };
 
+  const totalEarnings = pujas.reduce(
+    (sum, p) => sum + (Number(p.price) || 0),
+    0
+  );
+
   return (
-    <div className="min-h-screen bg-[#0c0a09] text-stone-200 font-sans pb-10">
-      
-      {/* 🟠 Saffron Navbar */}
-      <nav className="bg-[#1c1917] border-b border-orange-900/30 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-4 h-20 flex justify-between items-center">
-          <div className="flex items-center gap-3">
-            <div className="bg-orange-600 p-2 rounded-lg shadow-lg shadow-orange-600/30">
-              <Flower2 className="text-white" size={24} />
-            </div>
-            <span className="text-xl font-black text-white uppercase tracking-tighter">
-              Pandit<span className="text-orange-500">Portal</span>
-            </span>
-          </div>
+    <div className="min-h-screen bg-[#FFF4E1] font-sans pb-24">
 
-          <div className="flex items-center gap-5">
-            {profile && (
-              <div className="text-right hidden sm:block">
-                <p className="text-xs text-orange-500 font-bold uppercase tracking-widest">Aacharya</p>
-                <p className="text-sm font-bold text-white leading-tight">{profile.name}</p>
-              </div>
-            )}
-            <button 
-              onClick={handleLogout}
-              className="p-2 hover:bg-red-600/10 text-stone-500 hover:text-red-500 rounded-full transition-all"
+      {/* 🔶 HEADER */}
+      <div className="bg-orange-400 px-4 pt-4 pb-6 shadow-lg text-white">
+        <div className="flex justify-between items-center">
+
+          {/* Left: Profile Icon + Name */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full min-w-0">
+            <button
+              onClick={() => setShowProfile(true)}
+              className="flex-shrink-0 w-9 h-9 sm:w-11 sm:h-11 bg-white/20 backdrop-blur-md 
+                   border border-white/30 rounded-xl flex items-center justify-center 
+                   hover:bg-white/30 transition"
             >
-              <LogOut size={22} />
+              <User size={18} className="sm:!w-5 sm:!h-5" />
             </button>
+
+            <div className="flex-1 min-w-0">
+              <h1 className="text-base sm:text-lg font-semibold leading-tight truncate">
+                Namaste, {profile?.name || "Partner"}
+              </h1>
+              <p className="text-xs sm:text-sm opacity-90 truncate">
+                📍 {profile?.city || "India"}
+              </p>
+            </div>
+          </div>
+
+          {/* Right: Notifications + Logout */}
+          <div className="flex items-center gap-3 sm:gap-4 ml-2">
+            <Bell size={18} />
+            <LogOut
+              size={18}
+              className="cursor-pointer"
+              onClick={() => {
+                localStorage.clear();
+                navigate("/partnerSignIn");
+              }}
+            />
           </div>
         </div>
-      </nav>
 
-      {/* 🟠 Body Content */}
-      <main className="max-w-5xl mx-auto px-4 mt-10">
-        
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
+        {/* Duty Toggle */}
+        <div className="mt-4 sm:mt-6 bg-white/20 backdrop-blur-md 
+                  border border-white/30 rounded-2xl p-2 flex justify-between items-center">
           <div>
-            <h2 className="text-3xl font-black text-white">Upcoming Services</h2>
-            <p className="text-stone-500 text-sm mt-1">Today's assigned spiritual duties</p>
+            <p className="font-semibold text-white text-sm sm:text-base">
+              Duty Status
+            </p>
+            <p className="text-xs sm:text-sm text-white/90">
+              {isOnline
+                ? "Receiving new puja requests"
+                : "Currently not receiving requests"}
+            </p>
           </div>
-          <div className="bg-orange-600/10 border border-orange-600/20 px-4 py-2 rounded-full">
-            <span className="text-orange-500 font-bold text-xs uppercase tracking-widest">Total: {pujas.length} Assignments</span>
-          </div>
+
+          <button
+            onClick={() => setIsOnline(!isOnline)}
+            className={`relative w-12 h-6 sm:w-14 sm:h-7 rounded-full transition-all duration-300
+        ${isOnline ? "bg-green-500" : "bg-gray-400"}`}
+          >
+            <span
+              className={`absolute top-0.5 left-0.5 w-5 h-5 sm:w-5 sm:h-5 bg-white rounded-full shadow-md 
+          transition-all duration-300 ${isOnline ? "translate-x-6 sm:translate-x-7" : ""}`}
+            ></span>
+          </button>
         </div>
+      </div>
 
-        {loading ? (
-          <div className="py-20 text-center">
-             <div className="w-8 h-8 border-2 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-             <p className="text-stone-500 text-xs font-bold uppercase tracking-widest">Pujas Loading...</p>
-          </div>
-        ) : pujas.length === 0 ? (
-          <div className="bg-[#1c1917] border border-stone-800 rounded-2xl p-20 text-center">
-            <p className="text-stone-600 font-bold uppercase tracking-widest">Shubh Din! No Pujas Assigned Yet.</p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-4">
-            {pujas.map((puja) => (
-              <div 
-                key={puja.id}
-                className="bg-[#1c1917] border border-stone-800 hover:border-orange-600/40 rounded-2xl overflow-hidden transition-all group flex flex-col md:flex-row"
-              >
-                {/* Left Side: Service Info */}
-                <div className="p-6 md:w-1/3 bg-stone-900/50 flex flex-col justify-center border-b md:border-b-0 md:border-r border-stone-800">
-                  <div className="bg-orange-600 w-10 h-1 text-[10px] mb-3 rounded-full"></div>
-                  <h3 className="text-xl font-bold text-white group-hover:text-orange-500 transition-colors">
-                    {puja.puja_name}
-                  </h3>
-                  <div className="mt-4 space-y-2">
-                    <div className="flex items-center gap-2 text-stone-400 text-sm">
-                      <Calendar size={14} className="text-orange-600" />
-                      {new Date(puja.preferred_date).toLocaleDateString('en-IN', { day: '2-digit', month: 'long' })}
-                    </div>
-                    <div className="flex items-center gap-2 text-stone-400 text-sm">
-                      <Clock size={14} className="text-orange-600" />
-                      {puja.preferred_time || "Morning"}
-                    </div>
-                  </div>
-                </div>
 
-                {/* Middle: Location & Customer */}
-                <div className="p-6 flex-1 flex flex-col justify-center gap-4">
-                  <div className="flex items-start gap-3">
-                    <MapPin className="text-orange-600 mt-1 shrink-0" size={18} />
-                    <p className="text-stone-300 text-sm leading-relaxed">
-                      {puja.address}, {puja.city}, <span className="text-orange-500/80 font-bold uppercase text-[10px]">{puja.state}</span>
-                    </p>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 bg-stone-900/80 p-3 rounded-xl border border-stone-800">
-                    <div className="h-8 w-8 rounded-full bg-orange-600/20 flex items-center justify-center text-orange-500 font-bold text-xs uppercase">
-                      {puja.customer_name?.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-[10px] text-stone-500 font-bold uppercase tracking-tighter">Customer Name</p>
-                      <p className="text-sm font-bold text-stone-200">{puja.customer_name}</p>
-                    </div>
-                  </div>
-                </div>
 
-                {/* Right Side: Quick Action */}
-                <div className="p-6 md:w-48 flex items-center justify-center bg-stone-900/30">
-                  <a 
-                    href={`tel:${puja.customer_phone}`}
-                    className="flex items-center justify-center gap-3 w-full bg-orange-600 hover:bg-orange-500 text-white py-3 rounded-xl font-bold shadow-lg shadow-orange-600/20 transition-all active:scale-95"
-                  >
-                    <Phone size={18} />
-                    <span>Call Now</span>
-                  </a>
-                </div>
+      {/* 🔘 Tabs */}
+      <div className="px-4 sm:px-6 mt-6">
+        <div className="bg-[#E6E0D4] rounded-2xl p-2 flex justify-around">
+          <button
+            onClick={() => setActiveTab("schedule")}
+            className={`px-4 sm:px-6 py-2 rounded-xl text-sm sm:text-base font-semibold ${activeTab === "schedule"
+              ? "bg-white shadow text-[#6B4F2B]"
+              : "text-gray-500"
+              }`}
+          >
+            Schedule
+          </button>
+
+          <button
+            onClick={() => setActiveTab("earnings")}
+            className={`px-4 sm:px-6 py-2 rounded-xl text-sm sm:text-base font-semibold ${activeTab === "earnings"
+              ? "bg-white shadow text-[#6B4F2B]"
+              : "text-gray-500"
+              }`}
+          >
+            Earnings
+          </button>
+        </div>
+      </div>
+
+      {/* 📅 CONTENT */}
+      <div className="px-4 sm:px-6 mt-6 space-y-4 sm:space-y-6">
+
+        {/* Schedule Tab */}
+        {activeTab === "schedule" &&
+          pujas.map((puja) => (
+            <div
+              key={puja.id}
+              className="bg-white border-t-4 border-orange-400 rounded-2xl p-4 sm:p-6 shadow-sm"
+            >
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0">
+                <h3 className="text-base sm:text-lg font-semibold text-[#4B3A2F]">
+                  {puja.puja_name}
+                </h3>
+
+                <p className="flex items-center gap-2 text-lg sm:text-xl font-semibold text-orange-600">
+                  💰 ₹{puja.price || 0}
+                </p>
               </div>
-            ))}
+
+              <div className="mt-3 sm:mt-4 space-y-1 sm:space-y-2 text-xs sm:text-sm text-gray-600">
+
+                <p className="flex items-center gap-2">
+                  <Calendar size={14} />
+                  {formatDate(puja.preferred_date)}
+                </p>
+
+                <p className="flex items-center gap-2">
+                  <Clock size={14} />
+                  {puja.preferred_time || "09:00 AM"}
+                </p>
+
+                <p className="flex items-center gap-2">
+                  <MapPin size={14} />
+                  {puja.address}, {puja.city}
+                </p>
+
+                <p className="flex items-center gap-2">
+                  <User size={14} />
+                  {puja.customer_name}
+                </p>
+              </div>
+            </div>
+          ))}
+
+        {/* Earnings Tab */}
+        {activeTab === "earnings" && (
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow text-center">
+            <p className="text-gray-500 text-xs sm:text-sm">Total Earnings</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-orange-600 mt-2">
+              ₹{totalEarnings}
+            </h2>
           </div>
         )}
-      </main>
-
-      <div className="mt-20 text-center opacity-20 text-[10px] font-bold uppercase tracking-[0.5em]">
-        Devotional Service Excellence
       </div>
+
+      {/* 🟣 PROFILE POPUP */}
+      {showProfile && profile && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 sm:p-0">
+          <div className="bg-[#FFF4E1] w-full sm:w-[90%] max-w-md rounded-2xl p-6 relative shadow-xl overflow-y-auto max-h-[90vh] border-2 border-orange-400">
+
+            {/* Close Button */}
+            <X
+              className="absolute top-4 right-4 cursor-pointer text-gray-700 hover:text-red-500"
+              onClick={() => {
+                setShowProfile(false);
+                setEditing(false);
+              }}
+            />
+
+            <h2 className="text-lg sm:text-xl font-bold mb-4 text-[#6B4F2B]">
+              My Profile
+            </h2>
+
+            {/* Profile Fields */}
+            {["name", "phone"].map((field) => (
+              <div key={field} className="mb-3">
+                <label className="text-xs sm:text-sm text-[#4B3A2F] capitalize">{field}</label>
+                <input
+                  type="text"
+                  value={profile[field] || ""}
+                  disabled={true} // read-only
+                  className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-gray-200 cursor-not-allowed"
+                />
+              </div>
+            ))}
+
+            {["email", "gotra"].map((field) => (
+              <div key={field} className="mb-3">
+                <label className="text-xs sm:text-sm text-[#4B3A2F] capitalize">{field}</label>
+                <input
+                  type="text"
+                  value={profile[field] || ""}
+                  disabled={!editing} // editable only in editing mode
+                  onChange={(e) =>
+                    setProfile({
+                      ...profile,
+                      [field]: e.target.value,
+                    })
+                  }
+                  className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            ))}
+
+
+            {/* Address Fields */}
+            {profile.address && (
+              <>
+                <div className="mb-3">
+                  <label className="text-xs sm:text-sm text-[#4B3A2F]">Address</label>
+                  <input
+                    type="text"
+                    value={profile.address.address_line1}
+                    disabled={!editing}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        address: {
+                          ...profile.address,
+                          address_line1: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+
+                <div className="mb-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="text-xs sm:text-sm text-[#4B3A2F]">City</label>
+                    <input
+                      type="text"
+                      value={profile.address.city}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          address: {
+                            ...profile.address,
+                            city: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs sm:text-sm text-[#4B3A2F]">State</label>
+                    <input
+                      type="text"
+                      value={profile.address.state}
+                      disabled={!editing}
+                      onChange={(e) =>
+                        setProfile({
+                          ...profile,
+                          address: {
+                            ...profile.address,
+                            state: e.target.value,
+                          },
+                        })
+                      }
+                      className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+                </div>
+
+                <div className="mb-3">
+                  <label className="text-xs sm:text-sm text-[#4B3A2F]">Pincode</label>
+                  <input
+                    type="text"
+                    value={profile.address.pincode}
+                    disabled={!editing}
+                    onChange={(e) =>
+                      setProfile({
+                        ...profile,
+                        address: {
+                          ...profile.address,
+                          pincode: e.target.value,
+                        },
+                      })
+                    }
+                    className="w-full border border-orange-300 rounded-lg p-2 mt-1 text-sm sm:text-base bg-white focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+              </>
+            )}
+
+            {/* Edit / Save Button */}
+            {!editing ? (
+              <button
+                onClick={() => setEditing(true)}
+                className="w-full bg-orange-400 text-white py-2 rounded-lg mt-4 text-sm sm:text-base hover:bg-orange-500 transition"
+              >
+                Edit Profile
+              </button>
+            ) : (
+              <button
+                onClick={handleUpdate}
+                className="w-full bg-green-600 text-white py-2 rounded-lg mt-4 text-sm sm:text-base hover:bg-green-700 transition"
+              >
+                Save Changes
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+
+
+      {/* 📞 Support Button */}
+      <div className="fixed bottom-4 left-0 right-0 px-4 sm:px-6">
+        <button className="w-full bg-[#E6E0D4] py-3 rounded-xl text-sm sm:text-base font-semibold text-gray-700 shadow">
+          🎧 Call Support
+        </button>
+      </div>
+
     </div>
   );
 };
