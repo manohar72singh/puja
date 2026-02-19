@@ -22,6 +22,8 @@ const PartnerDashboard = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
   useEffect(() => {
     if (!token) {
       navigate("/partnerSignIn");
@@ -46,7 +48,7 @@ const PartnerDashboard = () => {
   const handleUpdate = async () => {
     try {
       await axios.put(
-        "http://localhost:5000/partner/update-profile",
+        `${API_BASE_URL}/partner/update-profile`,
         profile, // profile object me address bhi included hai
         { headers: { Authorization: `Bearer ${token}` } }
       );
