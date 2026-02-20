@@ -16,6 +16,7 @@ const MyBookings = () => {
         });
         const data = await response.json();
         if (data.success) setBookings(data.bookings);
+        console.log("Fetched Bookings:", data.bookings); // Debugging ke liye
       } catch (error) {
         console.error("Error fetching bookings:", error);
       } finally {
@@ -51,13 +52,15 @@ const MyBookings = () => {
         ) : (
           <div className="space-y-4">
             {bookings.map((b) => {
-              const isTemplePuja = b.address && b.address.includes("Ticket:");
+              const isTemplePuja = b.puja_type === "temple_puja";
 
               return (
                 <div
                   key={b.id}
                   className={`relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border transition-all hover:shadow-md flex flex-col md:flex-row gap-4 sm:gap-6 mb-4 ${
-                    isTemplePuja ? "border-orange-300 bg-orange-50/20" : "border-gray-100"
+                    isTemplePuja
+                      ? "border-orange-300 bg-orange-50/20"
+                      : "border-gray-100"
                   }`}
                 >
                   {/* Category Ribbon */}
@@ -81,7 +84,8 @@ const MyBookings = () => {
                   {/* Content */}
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2">
-                      {b.puja_name} {isTemplePuja && <span className="text-sm">⛩️</span>}
+                      {b.puja_name}{" "}
+                      {isTemplePuja && <span className="text-sm">⛩️</span>}
                     </h3>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mt-3 text-sm text-gray-600">
@@ -96,11 +100,14 @@ const MyBookings = () => {
                       </div>
 
                       <div className="flex items-start gap-2 sm:col-span-2">
-                        <MapPin size={14} className="text-orange-500 shrink-0 mt-1" />
+                        <MapPin
+                          size={14}
+                          className="text-orange-500 shrink-0 mt-1"
+                        />
                         <span className="italic text-gray-500 leading-tight">
                           {isTemplePuja
-                            ? `Temple Location: ${b.city}, ${b.state}`
-                            : `Home Address: ${b.address}`}
+                            ? `Temple Address: ${b.final_address}`
+                            : `Home Address: ${b.final_address}`}
                         </span>
                       </div>
                     </div>
@@ -114,7 +121,7 @@ const MyBookings = () => {
                           </span>
                         </div>
                         <div className="text-gray-700 font-medium leading-relaxed">
-                          {b.address}
+                          {b.final_address}
                         </div>
                       </div>
                     )}
@@ -126,14 +133,15 @@ const MyBookings = () => {
                           b.status === "pending"
                             ? "bg-orange-100 text-orange-600 border border-orange-200"
                             : b.status === "declined"
-                            ? "text-red-500 bg-red-100 border border-red-200"
-                            : "bg-green-100 text-green-600 border border-green-200"
+                              ? "text-red-500 bg-red-100 border border-red-200"
+                              : "bg-green-100 text-green-600 border border-green-200"
                         }`}
                       >
                         {b.status}
                       </div>
                       <span className="text-[10px] font-bold text-gray-400">
-                        ID: <span className="text-orange-600">{b.bookingId}</span>
+                        ID:{" "}
+                        <span className="text-orange-600">{b.bookingId}</span>
                       </span>
                     </div>
                   </div>
@@ -145,14 +153,17 @@ const MyBookings = () => {
                         b.status === "pending"
                           ? "bg-orange-100 text-orange-600 border border-orange-200"
                           : b.status === "declined"
-                          ? "text-red-500 bg-red-100 border border-red-200"
-                          : "bg-green-100 text-green-600 border border-green-200"
+                            ? "text-red-500 bg-red-100 border border-red-200"
+                            : "bg-green-100 text-green-600 border border-green-200"
                       }`}
                     >
                       {b.status}
                     </div>
                     <p className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                      ID: <span className="ml-1 text-orange-600">{b.bookingId}</span>
+                      ID:{" "}
+                      <span className="ml-1 text-orange-600">
+                        {b.bookingId}
+                      </span>
                     </p>
                   </div>
                 </div>
