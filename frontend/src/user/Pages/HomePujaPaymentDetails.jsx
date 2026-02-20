@@ -92,49 +92,49 @@ const HomePujaPaymentDetails = () => {
   ];
 
   const handlePayment = async () => {
-  // Basic validation
-  if (!formData.date || !formData.devoteeName || !formData.city) {
-    alert("Please fill all mandatory fields (Date, Name, City)");
-    return;
-  }
-
-  const token = localStorage.getItem("token");
-  
-  const payload = {
-    puja_id: id,
-    date: formData.date,
-    time: formData.time,
-    location: formData.location,
-    city: formData.city,
-    state: formData.state,
-    pincode: formData.pincode,
-    devoteeName: formData.devoteeName,
-    bookingId: bookingId,
-  };
-
-  try {
-    const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json();
-
-    if (data.success) {
-      alert("🙏 Jai Ho! Aapki booking swikar kar li gayi hai. Booking ID: " + bookingId);
-      navigate("/my-booking"); // Home ya My Bookings page par bhejien
-    } else {
-      alert("Error: " + data.message);
+    // Basic validation
+    if (!formData.date || !formData.devoteeName || !formData.city) {
+      alert("Please fill all mandatory fields (Date, Name, City)");
+      return;
     }
-  } catch (error) {
-    console.error("Booking submission failed:", error);
-    alert("Server error. Please check if backend is running.");
-  }
-};
+
+    const token = localStorage.getItem("token");
+
+    const payload = {
+      puja_id: id,
+      date: formData.date,
+      time: formData.time,
+      location: formData.location,
+      city: formData.city,
+      state: formData.state,
+      pincode: formData.pincode,
+      devoteeName: formData.devoteeName,
+      bookingId: bookingId,
+    };
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert("🙏 Jai Ho! Aapki booking swikar kar li gayi hai. Booking ID: " + bookingId);
+        navigate("/my-booking"); // Home ya My Bookings page par bhejien
+      } else {
+        alert("Error: " + data.message);
+      }
+    } catch (error) {
+      console.error("Booking submission failed:", error);
+      alert("Server error. Please check if backend is running.");
+    }
+  };
 
   // Button mein onClick add karein:
   // <button onClick={handlePayment} className="..."> Pay ₹{grandTotal} </button>
@@ -309,18 +309,22 @@ const HomePujaPaymentDetails = () => {
                 </div>
 
                 {/* WhatsApp Help Box */}
-                <div className={`${innerDivStyle} bg-orange-50/20 flex items-center justify-between border-dashed mt-8`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-lg border border-orange-200">
+                <div className={`${innerDivStyle} bg-orange-50/20 flex flex-col md:flex-row items-center justify-between border-dashed mt-8 p-4 md:p-5 gap-4`}>
+                  {/* Left Side: Icon & Text */}
+                  <div className="flex items-center gap-3 w-full md:w-auto">
+                    <div className="p-2 bg-white rounded-lg border border-orange-200 shrink-0">
                       <MessageCircle size={20} className="text-orange-500" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-bold">Have custom requirements?</h4>
+                      <h4 className="text-sm font-bold text-gray-800">Have custom requirements?</h4>
                       <p className="text-xs text-gray-700 font-medium">Chat with us for special requests</p>
                     </div>
                   </div>
-                  <button className="bg-white border border-orange-200 px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-orange-50 transition-colors">
-                    <span className="text-orange-500 font-black italic">W</span> WhatsApp
+
+                  {/* Right Side: WhatsApp Button */}
+                  <button className="w-full md:w-auto bg-white border border-orange-200 px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-orange-50 active:scale-95 transition-all shadow-sm">
+                    <span className="text-green-600 font-black italic">W</span>
+                    <span>WhatsApp Us</span>
                   </button>
                 </div>
               </div>
@@ -364,10 +368,13 @@ const HomePujaPaymentDetails = () => {
                 className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border ${donations.gau ? "border-orange-500 bg-orange-50/30" : "border-orange-200 hover:border-orange-200 bg-white"}`}
               >
                 <div className="flex items-center gap-4">
-                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
+                  {/* Fixed: Added shrink-0 and ensured equal width/height */}
+                  <div className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
                     {donations.gau && <div className="w-2 h-2 bg-white rounded-full" />}
                   </div>
-                  <span className="text-2xl">🐄</span>
+
+                  <span className="text-2xl shrink-0">🐄</span>
+
                   <div>
                     <h4 className="font-bold text-sm text-gray-900 leading-tight">Complete your Sankalp with Gau Seva</h4>
                     <p className="text-[11px] text-gray-500 font-medium">Feed a cow on your behalf — an auspicious addition to any puja</p>
@@ -439,7 +446,7 @@ const HomePujaPaymentDetails = () => {
                   </div>
 
                   <button className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
-                  onClick={handlePayment}>
+                    onClick={handlePayment}>
                     <ArrowRight size={16} /> Pay ₹{grandTotal}
                   </button>
 

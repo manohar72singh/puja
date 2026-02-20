@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { 
-  Menu, X, Home, Globe, User, Settings, 
-  ShieldCheck, ChevronDown, LogOut, MapPin, HelpCircle 
+import {
+  Menu, X, Home, Globe, User, Settings,
+  ShieldCheck, ChevronDown, LogOut, MapPin, HelpCircle
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 
@@ -69,12 +69,11 @@ const Navbar = () => {
     <>
       {/* Navbar */}
       <nav
-        className={`fixed top-0 inset-x-0 z-[100] transition-all duration-500 backdrop-blur-xl border-b border-white/20 ${
-          scrolled ? "bg-white/30 shadow-lg" : "bg-white/20"
-        }`}
+        className={`fixed top-0 inset-x-0 z-[100] transition-all duration-500 backdrop-blur-xl border-b border-white/20 ${scrolled ? "bg-white/30 shadow-lg" : "bg-white/20"
+          }`}
       >
         <div className="max-w-[1360px] mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8 h-[72px]">
-          
+
           {/* LOGO */}
           <div
             className="flex items-center gap-2 cursor-pointer"
@@ -102,8 +101,7 @@ const Navbar = () => {
                 key={item.to}
                 to={item.to}
                 className={({ isActive }) =>
-                  `font-semibold text-[15px] transition-colors ${
-                    isActive ? "text-orange-600 " : "text-black hover:text-orange-600"
+                  `font-semibold text-[15px] transition-colors ${isActive ? "text-orange-600 " : "text-black hover:text-orange-600"
                   }`
                 }
               >
@@ -116,8 +114,7 @@ const Navbar = () => {
               <NavLink
                 to="/my-booking"
                 className={({ isActive }) =>
-                  `font-semibold text-[15px] transition-colors ${
-                    isActive ? "text-orange-600" : "text-black hover:text-orange-600"
+                  `font-semibold text-[15px] transition-colors ${isActive ? "text-orange-600" : "text-black hover:text-orange-600"
                   }`
                 }
               >
@@ -177,7 +174,7 @@ const Navbar = () => {
                       >
                         <User size={18} className="text-gray-400" /> My Profile
                       </button>
-                      <button 
+                      <button
                         onClick={() => { navigate("/manageSankalp"); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors">
                         <ShieldCheck size={18} className="text-gray-400" /> Manage Sankalp
@@ -214,7 +211,7 @@ const Navbar = () => {
                   Sign In
                 </button>
                 <button className="px-6 py-2 rounded-xl bg-[#2D1B0B] text-white font-bold text-sm shadow-md"
-                  onClick={()=>navigate("/partnerSignIn")}>
+                  onClick={() => navigate("/partnerSignIn")}>
                   Partner Login
                 </button>
               </div>
@@ -238,9 +235,8 @@ const Navbar = () => {
           onClick={() => setMenuOpen(false)}
         />
         <div
-          className={`absolute right-0 h-full w-[80%] bg-white/80 backdrop-blur-md shadow-2xl transition-transform duration-500 flex flex-col ${
-            menuOpen ? "translate-x-0" : "translate-x-full"
-          }`}
+          className={`absolute right-0 h-full w-[80%] bg-white/80 backdrop-blur-md shadow-2xl transition-transform duration-500 flex flex-col ${menuOpen ? "translate-x-0" : "translate-x-full"
+            }`}
         >
           <div className="p-6 flex justify-between items-center border-b">
             <span className="font-bold text-[#3b2a1a]">Sri Vedic Puja</span>
@@ -286,32 +282,51 @@ const Navbar = () => {
             )}
           </div>
 
-          <div className="p-6 border-t bg-gray-50/50 backdrop-blur-md">
+          {/* Drawer Bottom (Auth Section) */}
+          <div className="p-5 border-t bg-gray-50/80 backdrop-blur-sm">
             {user ? (
-              <div className="bg-white/70 backdrop-blur-md p-4 rounded-2xl shadow-sm border border-orange-100">
-                <div className="flex items-center gap-3 mb-4 text-left">
-                  <div className="h-10 w-10 bg-orange-600 text-white rounded-full flex items-center justify-center font-bold shrink-0">
-                    {user.name?.charAt(0)}
+              <div className="bg-white p-5 rounded-2xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07)] border border-orange-100 text-left">
+                <div className="flex items-center gap-4 mb-5">
+                  <div className="h-14 w-14 bg-gradient-to-br from-orange-500 to-orange-700 text-white rounded-full flex items-center justify-center font-bold text-2xl shadow-inner shrink-0">
+                    {user.name?.charAt(0).toUpperCase()}
                   </div>
                   <div className="overflow-hidden">
-                    <p className="font-bold truncate">{user.name}</p>
-                    <p className="text-xs text-gray-500 truncate">{user.email}</p>
+                    <p className="font-extrabold text-[#2D1B0B] truncate text-lg">{user.name}</p>
+                    <p className="text-xs text-gray-400 truncate tracking-tight">{user.email}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleLogout}
-                  className="w-full py-3 bg-red-50 text-red-500 rounded-xl font-bold flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-bold flex items-center justify-center gap-2 active:scale-[0.98] transition-all border border-red-100"
                 >
-                  <LogOut size={16} /> Logout
+                  <LogOut size={18} /> Logout
                 </button>
               </div>
             ) : (
-              <button
-                onClick={() => { navigate("/signin"); setMenuOpen(false); }}
-                className="w-full py-4 bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-200"
-              >
-                Sign In
-              </button>
+              <div className="flex flex-col gap-3">
+                {/* User Login - Primary Action */}
+                <button
+                  onClick={() => { navigate("/signin"); setMenuOpen(false); }}
+                  className="w-full py-2 bg-orange-600 text-white rounded-xl font-bold shadow-lg shadow-orange-200 active:scale-[0.98] transition-all flex items-center justify-center"
+                >
+                  Sign In
+                </button>
+
+                {/* Partner Login - Secondary Action */}
+                <button
+                  onClick={() => { navigate("/partnerSignIn"); setMenuOpen(false); }}
+                  className="w-full py-2 bg-[#2D1B0B] text-white rounded-xl font-bold active:scale-[0.98] transition-all flex items-center justify-center border border-[#2D1B0B]"
+                >
+                  Partner Login
+                </button>
+
+                <div className="mt-2 flex flex-col items-center gap-1">
+                  <div className="h-1 w-8 bg-gray-200 rounded-full mb-1"></div>
+                  <p className="text-[11px] text-gray-400 uppercase tracking-[0.15em] font-bold">
+                    Join our Vedic Community
+                  </p>
+                </div>
+              </div>
             )}
           </div>
         </div>
