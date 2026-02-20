@@ -1,7 +1,7 @@
 import { Routes, Route, useLocation } from "react-router-dom";
 import UserLayout from "./user/Layout/UserLayout";
 import NavbarOnlyLayout from "./user/Layout/NavbarOnlyLayout";
-import ProtectedLayout from "./user/Layout/ProtectedLayout";
+import {ProtectedLayout,CustomerProtectedLayout} from "./user/Layout/ProtectedLayout";
 
 import Home from "./user/Pages/Home";
 import Gallery from "./user/Pages/Gallery";
@@ -41,14 +41,14 @@ function App() {
   const location = useLocation();
 
   const hideFloatingMenu =
-    ["/signin", "/signup", "/profile", "/help",'/manageSankalp',"/savedAddresses","/partnerSignIn"
-      ,"/partnerSignUp","/partner/dashboard","/customerCare/signIn","/customerCare/dashboard"
+    ["/signin", "/signup", "/profile", "/help", '/manageSankalp', "/savedAddresses", "/partnerSignIn"
+      , "/partnerSignUp", "/partner/dashboard", "/customerCare/signIn", "/customerCare/dashboard"
     ]
-    .includes(location.pathname);
+      .includes(location.pathname);
 
   return (
     <>
-    <ScrollToTop />
+      <ScrollToTop />
       <Routes>
 
         {/* ================= PUBLIC USER LAYOUT ================= */}
@@ -124,8 +124,11 @@ function App() {
           <Route path="/partner/dashboard" element={<PartnerDashboard />} />
         </Route>
 
-        <Route path='/customerCare/signIn' element={<CustomerCareSignIn/>}/>
-        <Route path="/customerCare/dashboard" element={<CustomerCareDashboard/>}/>
+        <Route path='/customerCare/signIn' element={<CustomerCareSignIn />} />
+
+        <Route element={<CustomerProtectedLayout />}>
+          <Route path="/customerCare/dashboard" element={<CustomerCareDashboard />} />
+        </Route>
 
         {/* ================= 404 ================= */}
         <Route path="*" element={<h1>Not Found</h1>} />

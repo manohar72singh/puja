@@ -27,8 +27,8 @@ export function RightFloatingMenu() {
             <div className="hidden lg:block">
                 {/* w-36 ko w-40 kiya aur padding badhayi */}
                 <div className="bg-white border border-orange-100 shadow-md rounded-l-xl p-2 w-28 space-y-1.5">
-                    <div className="text-[10px] font-bold tracking-widest text-orange-600 uppercase flex items-center px-2 mb-1">
-                        <Sparkles size={10} />
+                    <div className="text-[12px] font-bold gap-2 tracking-widest text-orange-600 uppercase flex items-center px-2 mb-1">
+                        <Sparkles size={12} />
                         Free
                     </div>
 
@@ -47,12 +47,12 @@ export function RightFloatingMenu() {
             </div>
 
             {/* ===== Tablet ===== */}
-            <div className="hidden md:flex lg:hidden items-center">
+            <div className="hidden md:flex  lg:hidden items-center">
 
                 {/* Trigger */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-orange-600 text-white w-8 py-3 flex flex-col items-center justify-center rounded-l-lg shadow-md gap-2"
+                    className="bg-orange-600 text-white gap-2 w-8 py-3 flex flex-col items-center justify-center rounded-l-lg shadow-md gap-2"
                 >
                     <Sparkles size={14} />
 
@@ -92,7 +92,7 @@ export function RightFloatingMenu() {
                 {/* Trigger */}
                 <button
                     onClick={() => setIsOpen(!isOpen)}
-                    className="bg-orange-600 text-white w-8 py-3 flex flex-col items-center justify-center rounded-l-lg shadow-md gap-2"
+                    className="bg-orange-600 text-white gap-2 w-8 py-3 flex flex-col items-center justify-center rounded-l-lg shadow-md gap-2"
                 >
                     <Sparkles size={14} />
 

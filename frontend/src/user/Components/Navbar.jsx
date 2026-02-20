@@ -63,7 +63,6 @@ const Navbar = () => {
     { to: "/homePuja", label: "Home-Puja", icon: <Globe size={18} /> },
     { to: "/temple-puja", label: "Temple-Puja", icon: <User size={18} /> },
     { to: "/katha-jaap", label: "Katha-Jaap", icon: <User size={18} /> },
-    { to: "/pind_dan", label: "Pind Dan", icon: <ShieldCheck size={18} /> },
   ];
 
   return (

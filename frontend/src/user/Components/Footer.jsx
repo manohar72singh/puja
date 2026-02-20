@@ -26,7 +26,7 @@ const Footer = () => {
   return (
     <footer className="bg-orange-200 border-t border-orange-100">
       <div className="max-w-7xl mx-auto px-5 py-6 md:py-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-2 lg:gap-8">
           
           {/* 1. BRAND & SOCIALS - Single row on mobile */}
           <div className="lg:col-span-4 flex flex-row lg:flex-col justify-between items-center lg:items-start border-b border-orange-300/30 pb-4 lg:border-0 lg:pb-0">
@@ -46,9 +46,9 @@ const Footer = () => {
           </div>
 
           {/* 2. LINKS SECTIONS - 2 Columns on mobile to save 50% height */}
-          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-y-6 gap-x-4">
+          <div className="lg:col-span-5 grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-3">Services</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-2">Services</h4>
               <ul className="space-y-2">
                 {footerLinks.services.map((link) => (
                   <li key={link.label}><NavLink to={link.to} className="text-gray-600 text-xs hover:text-orange-600">{link.label}</NavLink></li>
@@ -56,7 +56,7 @@ const Footer = () => {
               </ul>
             </div>
             <div>
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-3">Community</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-2">Community</h4>
               <ul className="space-y-2">
                 {footerLinks.community.map((link) => (
                   <li key={link.label}><NavLink to={link.to} className="text-gray-600 text-xs hover:text-orange-600">{link.label}</NavLink></li>
@@ -64,7 +64,7 @@ const Footer = () => {
               </ul>
             </div>
             <div className="col-span-2 sm:col-span-1 border-t border-orange-300/20 pt-4 sm:border-0 sm:pt-0">
-              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-3">Support</h4>
+              <h4 className="text-[11px] font-bold uppercase tracking-widest text-orange-800 mb-2">Support</h4>
               <ul className="grid grid-cols-2 sm:block gap-2">
                 {footerLinks.support.map((link) => (
                   <li key={link.label}><NavLink to={link.to} className="text-gray-600 text-xs hover:text-orange-600">{link.label}</NavLink></li>

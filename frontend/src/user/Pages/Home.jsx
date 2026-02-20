@@ -42,7 +42,7 @@ export default function Home() {
 
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[54px] font-black leading-tight font-serif text-[#3b2a1a]">
               Sacred Rituals,
-              <br className="hidden sm:block" />
+              <br className="" />
               <span className="text-orange-500">Modern Convenience</span>
             </h1>
 
@@ -103,18 +103,18 @@ export default function Home() {
             </div>
 
             {/* Feature Tags */}
-            <div className="flex flex-wrap gap-3 mt-8">
-              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+            <div className="flex flex-wrap gap-1 mt-8">
+              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
                 <ShieldCheck size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Verified Pandits</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
                 <Box size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Samagri Included</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/70 px-3 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
                 <Sparkles size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Fixed Pricing</span>
               </div>
@@ -142,7 +142,7 @@ export default function Home() {
             ))}
 
             {/* Info Card */}
-            <div className="absolute bottom-5 left-5 right-5 sm:right-auto sm:max-w-[90%] z-40">
+            <div className="absolute bottom-5 w-fit left-5 right-5 sm:right-auto sm:max-w-[90%] z-40">
               <div className="bg-white/10 backdrop-blur-md border border-white/10 p-4 rounded-2xl">
                 <span className="text-orange-400 text-[10px] font-black uppercase tracking-widest">
                   Ceremony
