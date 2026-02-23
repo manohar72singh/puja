@@ -161,6 +161,24 @@ const KathaPujaPaymentDetails = () => {
         } else {
           setPuja(data);
         }
+        //fetch default address and prefill form
+        const addressRes = await fetch(`${API_BASE_URL}/user/default-address`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const addressData = await addressRes.json();
+        console.log("Default address response:", addressData);
+        if (addressData) {
+          setFormData((prev) => ({
+            ...prev,
+            location: addressData.address_line1 || "",
+            city: addressData.city || "",
+            state: addressData.state || "",
+            pincode: addressData.pincode || "",
+          }));
+        }
       } catch (error) {
         console.error("Error booking puja:", error);
       } finally {

@@ -27,7 +27,7 @@ const HomePujaPaymentDetails = () => {
   // State for API data
   const [puja, setPuja] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  // const [address, setAddress] = useState(null);
   const dharmicRef = useRef(null);
 
   // Get Samagri status from navigation state
@@ -154,12 +154,31 @@ const HomePujaPaymentDetails = () => {
           },
         });
         const data = await response.json();
-
+        console.log("Puja booking response:", data);
         // Handling both array and object response patterns
         if (Array.isArray(data)) {
           setPuja(data[0]);
         } else {
           setPuja(data);
+        }
+
+        //fetch default address and prefill form
+        const addressRes = await fetch(`${API_BASE_URL}/user/default-address`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        const addressData = await addressRes.json();
+        console.log("Default address response:", addressData);
+        if (addressData) {
+          setFormData((prev) => ({
+            ...prev,
+            location: addressData.address_line1 || "",
+            city: addressData.city || "",
+            state: addressData.state || "",
+            pincode: addressData.pincode || "",
+          }));
         }
       } catch (error) {
         console.error("Error booking puja:", error);

@@ -1,27 +1,28 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 
-export const ProtectedLayout = () => {
-  const token = localStorage.getItem("token");
+export const ProtectedLayout = ({ allowedRoles }) => {
   const location = useLocation();
+  const token = localStorage.getItem("token");
 
+  // 🔐 If no token → redirect
   if (!token) {
-    // Ye line MUST hamesha rehni chahiye
     return <Navigate to="/signin" state={{ from: location }} replace />;
   }
 
-  return <Outlet />;
-};
+  try {
+    const decoded = jwtDecode(token);
 
-export const CustomerProtectedLayout = () => {
-  const token = localStorage.getItem("token");
-  const location = useLocation();
+    // 🔐 If role not allowed → redirect
+    if (allowedRoles && !allowedRoles.includes(decoded?.role)) {
+      return <Navigate to="/" replace />;
+    }
 
-  if (!token) {
-    // Ye line MUST hamesha rehni chahiye
-    return <Navigate to="/customerCare/signIn" state={{ from: location }} replace />;
+    return <Outlet />;
+  } catch (error) {
+    // ❌ Invalid token
+    localStorage.removeItem("token");
+    console.log("Error decoding token:", error);
+    return <Navigate to="/signin" replace />;
   }
-
-  return <Outlet />;
 };
-
-
