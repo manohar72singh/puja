@@ -39,7 +39,10 @@ const HomePujaPaymentDetails = () => {
     const randomStr = Math.random().toString(36).substring(2, 8);
     return `BK-${randomStr}`;
   };
-
+  const token = localStorage.getItem("token");
+  const userName = token
+    ? JSON.parse(atob(token.split(".")[1])).name
+    : "Guest User";
   const bookingId = generateBookingId();
   const [formData, setFormData] = useState({
     date: "",
@@ -48,7 +51,7 @@ const HomePujaPaymentDetails = () => {
     state: "", // Naya field
     city: "", // Naya field
     pincode: "",
-    devoteeName: "",
+    devoteeName: userName,
     gotra: "",
   });
 
@@ -99,29 +102,29 @@ const HomePujaPaymentDetails = () => {
       return;
     }
 
-    const token = localStorage.getItem("token");
-
     const payload = {
       puja_id: id,
       date: formData.date,
       time: formData.time,
-      location: formData.location,
+      location: `${formData.location} - ${formData.pincode}`,
       city: formData.city,
       state: formData.state,
-      pincode: formData.pincode,
       devoteeName: formData.devoteeName,
       bookingId: bookingId,
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       const data = await response.json();
 
@@ -139,9 +142,6 @@ const HomePujaPaymentDetails = () => {
       alert("Server error. Please check if backend is running.");
     }
   };
-
-  // Button mein onClick add karein:
-  // <button onClick={handlePayment} className="..."> Pay ₹{grandTotal} </button>
 
   useEffect(() => {
     const bookPuja = async (id) => {
