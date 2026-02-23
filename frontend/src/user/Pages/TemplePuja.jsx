@@ -35,8 +35,6 @@ const slides = [
   const [searchTerm, setSearchTerm] = useState("");
 
 
-
-
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
@@ -58,6 +56,7 @@ const slides = [
           }
         });
         const data = await response.json();
+        console.log("temple puja::::::::",data.data)
         setServices(data.data);
       } catch (error) {
         console.log("Error", error);
