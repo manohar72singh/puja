@@ -97,13 +97,16 @@ const TemplePujaBooking = () => {
             minute: "2-digit",
           })
         : "10:00 AM",
-      city: service?.location || "Kashi",
-      state: "Uttar Pradesh",
-      pincode: "221001",
-      devoteeName: "Devotee User",
+      address: service?.address || "N/A",
+      city: "default city",
+      state: service.address.split(",")[service.address.split(",").length - 1],
+      devoteeName: token
+        ? JSON.parse(atob(token.split(".")[1])).name
+        : "Guest User",
       ticket_type: selectedTicket,
       donations: selectedDonations,
     };
+    // console.log("Booking Data to be sent:", bookingData); // Debugging ke liye
 
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
