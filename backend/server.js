@@ -6,6 +6,7 @@ import servicesRouter from "./routes/servicesRoutes.js";
 import partnerRouter from "./routes/partnerRouter.js";
 import adminRouter from "./routes/adminRouter.js"
 import customerCare from "./routes/customerCareRouter.js"
+import mandirRouter from "./routes/mandirRouter.js"
 import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -33,6 +34,9 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.send("Server running ✅");
 });
+
+//get mandir
+app.use('/mandir', mandirRouter);
 
 // 3. Routes
 app.use('/user', authRouter);

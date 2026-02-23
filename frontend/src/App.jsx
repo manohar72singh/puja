@@ -4,7 +4,6 @@ import NavbarOnlyLayout from "./user/Layout/NavbarOnlyLayout";
 import { ProtectedLayout } from "./user/Layout/ProtectedLayout";
 
 import Home from "./user/Pages/Home";
-import Gallery from "./user/Pages/Gallery";
 
 
 import Pind_Dan from "./user/Pages/Pind_Dan";
@@ -29,6 +28,8 @@ import MyBookings from "./user/Pages/MyBooking";
 
 import SignIn from "./user/Pages/SignIn";
 import SignUp from "./user/Pages/SignUp";
+
+
 import PartnerSignIn from "./user/Pages/PartnerSignIn";
 import PartnerSignUp from "./user/Pages/PartnerSignUp";
 import PartnerDashboard from "./user/Pages/PartnerDashboard";
@@ -39,6 +40,11 @@ import ScrollToTop from "./user/Components/ScrollToTop";
 
 import { RightFloatingMenu } from "./user/Components/RightFloatingMenu";
 import CustomerCareDashboard from "./admin/pages/CustomerCareDashboard";
+
+
+import FullTemplePage from "./user/Pages/FullTemplePage";
+import MandirDetailsPage from "./user/Pages/MandirDetailsPage"
+
 
 function App() {
   const location = useLocation();
@@ -64,7 +70,11 @@ function App() {
         {/* ================= PUBLIC USER LAYOUT ================= */}
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
-          <Route path="/gallery" element={<Gallery />} />
+
+            <Route path="/temples" element={<FullTemplePage />} />
+            <Route path="/:id" element={<MandirDetailsPage />} />
+
+
 
           {/* Home Puja */}
           <Route path="/homePuja">
@@ -106,11 +116,6 @@ function App() {
             <Route index element={<Pind_Dan />} />
             <Route path=":id" element={<PindDanBooking />} />
           </Route>
-
-          {/* 🔐 My Booking Protected */}
-          {/* <Route element={<ProtectedLayout />}>
-            <Route path="/my-booking" element={<MyBookings />} />
-          </Route> */}
         </Route>
 
         {/* ================= NAVBAR ONLY LAYOUT ================= */}

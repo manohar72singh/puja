@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import {
   Menu, X, Home, Globe, User, Settings,
-  ShieldCheck, ChevronDown, LogOut, MapPin, HelpCircle
+  ShieldCheck, ChevronDown, Church, CalendarDays, Flame, LogOut, MapPin, HelpCircle
 } from "lucide-react";
 import { jwtDecode } from "jwt-decode";
 
@@ -14,6 +14,12 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const profileRef = useRef(null);
+
+  const menuItems = [
+    { label: "Temple", path: "/temples", icon: <Church size={16} /> },
+    { label: "Events", path: "/events", icon: <CalendarDays size={16} /> },
+    { label: "Aarti", path: "/aarti", icon: <Flame size={16} /> },
+  ];
 
   // Decode token and set user
   useEffect(() => {
@@ -125,27 +131,41 @@ const Navbar = () => {
 
             {/* Dropdown */}
             <li
-              className="relative"
+              className="relative group" // Group class for extra safety
               onMouseEnter={() => setDropdownOpen(true)}
               onMouseLeave={() => setDropdownOpen(false)}
             >
-              <div className="flex items-center gap-1 font-bold text-[15px] cursor-pointer hover:text-orange-600">
-                Gallery{" "}
+              {/* Trigger Label - No click needed, just a hover target */}
+              <div className="flex items-center gap-1 font-bold text-[15px] cursor-default text-slate-700 hover:text-orange-600 py-2 px-1 transition-colors">
+                Gallery
                 <ChevronDown
                   size={14}
-                  className={dropdownOpen ? "rotate-180 transition-transform" : "transition-transform"}
+                  className={`transition-transform duration-300 ${dropdownOpen ? "rotate-180 text-orange-600" : "text-slate-400"}`}
                 />
               </div>
+
+              {/* Dropdown Menu Container */}
               {dropdownOpen && (
-                <div className="absolute top-full left-0 w-48 bg-white shadow-xl rounded-xl border border-gray-100 py-2 mt-0">
-                  {["Temple", "Events", "Aarti"].map((i) => (
-                    <button
-                      key={i}
-                      className="w-full text-left px-4 py-2 text-sm font-medium hover:bg-orange-200 transition-colors"
-                    >
-                      {i}
-                    </button>
-                  ))}
+                <div className="absolute top-full left-0 w-52 pt-2 z-50">
+                  <div className="bg-white shadow-2xl rounded-2xl border border-orange-50 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+
+                    {/* Individual Page Links */}
+                    {menuItems.map((item) => (
+                      <button
+                        key={item.label}
+                        onClick={() => {
+                          navigate(item.path);
+                          setDropdownOpen(false); // Page change hote hi band ho jaye
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-slate-600 hover:text-orange-600 hover:bg-orange-50 transition-all group/item"
+                      >
+                        <span className="text-slate-400 group-hover/item:text-orange-500 transition-colors">
+                          {item.icon}
+                        </span>
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
             </li>
@@ -164,11 +184,10 @@ const Navbar = () => {
 
                 {profileOpen && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-[0_10px_40px_rgba(0,0,0,0.1)] border border-gray-100 overflow-hidden">
-                    <div className="p-4 border-b border-gray-50 bg-gray-50/50 text-left">
-                      <h4 className="font-bold text-[#2D1B0B] text-[16px]">{user.name}</h4>
-                      <p className="text-[13px] text-gray-500 truncate">{user.email}</p>
+                    <div className="p-3 border-b border-gray-50 bg-gray-50/50 text-left">
+                      <h4 className="font-bold text-black capitalize text-[16px]">Welcome,{user.name}</h4>
                     </div>
-                    <div className="py-2 text-left">
+                    <div className=" text-left">
                       <button
                         onClick={() => { navigate("/profile"); setProfileOpen(false); }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 text-gray-700 hover:bg-orange-200 transition-colors"

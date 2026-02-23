@@ -1,0 +1,183 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+import { MapPin, Search, ChevronRight, Sparkles } from 'lucide-react';
+
+const FullTemplePage = () => {
+  const [temples, setTemples] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeCity, setActiveCity] = useState("All");
+
+  const cities = ["All", "Gaya", "Varanasi", "Mathura", "Ayodhya", "Ujjain", "Puri", "Vrindavan", "Tirumala", "Amritsar"];
+
+  useEffect(() => {
+    const fetchTemples = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/mandir/all');
+        setTemples(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        setLoading(false);
+      }
+    };
+    fetchTemples();
+  }, []);
+
+  // Filter Logic: Search + City Button
+  const filteredTemples = temples.filter(t => {
+    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                          t.location.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCity = activeCity === "All" || t.location.toLowerCase().includes(activeCity.toLowerCase());
+    
+    return matchesSearch && matchesCity;
+  });
+
+  return (
+    <div className="bg-orange-100 min-h-screen font-sans">
+      
+      {/* 1. HERO SECTION */}
+      <section className="bg-[#FFF5E9] pt-16 pb-24 px-6 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center relative z-10">
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm font-bold">
+              <Sparkles size={16} /> Explore Divine India
+            </div>
+            <h1 className="text-4xl md:text-6xl font-black text-[#2D2D2D] leading-[1.1]">
+              Connect with <br />
+              <span className="text-orange-600">Divine Temples</span>
+            </h1>
+            <p className="text-gray-600 text-lg max-w-md font-medium">
+              Discover the history, timings, and spiritual essence of India's most sacred pilgrimages.
+            </p>
+          </div>
+
+          <div className="hidden lg:flex justify-end">
+            <img 
+              src="/img/img_hero_artwork_en.webp" 
+              className="w-full max-w-lg drop-shadow-2xl animate-float" 
+              alt="Temple Map" 
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* 2. SEARCH & CITY FILTERS (Sticky) */}
+      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-100 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col md:flex-row gap-6 items-center">
+            
+            {/* Search Input */}
+            <div className="relative w-full md:w-80">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+              <input 
+                type="text" 
+                placeholder="Search temples..." 
+                className="w-full pl-11 pr-4 py-2.5 bg-gray-100 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/20 transition-all text-sm font-medium"
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+
+            {/* City Scrollable Buttons */}
+            <div className="flex flex-1 gap-3 overflow-x-auto no-scrollbar pb-1 w-full">
+              {cities.map((city) => (
+                <button
+                  key={city}
+                  onClick={() => setActiveCity(city)}
+                  className={`px-6 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 ${
+                    activeCity === city 
+                    ? 'bg-orange-600 text-white shadow-lg shadow-orange-200 scale-105' 
+                    : 'bg-white text-gray-500 border border-gray-200 hover:border-orange-300'
+                  }`}
+                >
+                  {city}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* 3. CARDS GRID */}
+      <section className="max-w-7xl mx-auto px-6 py-12">
+        {loading ? (
+          <div className="flex flex-col items-center py-20 gap-4">
+             <div className="w-10 h-10 border-4 border-orange-200 border-t-orange-600 rounded-full animate-spin"></div>
+             <span className="text-gray-400 font-bold">Fetching divine locations...</span>
+          </div>
+        ) : (
+          <>
+            <div className="mb-8 flex justify-between items-end">
+               <div>
+                 <h2 className="text-2xl font-black text-gray-800">Prasiddh Mandir</h2>
+                 <p className="text-gray-400 text-sm font-medium">Showing {filteredTemples.length} temples in {activeCity}</p>
+               </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+              {filteredTemples.map((temple) => (
+                <Link to={`/${temple.id}`} key={temple.id} className="group">
+                  <div className="bg-white rounded-[1.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full flex flex-col">
+                    
+                    {/* Image */}
+                    <div className="relative aspect-[4/3] m-2 overflow-hidden rounded-[1rem]">
+                      <img 
+                        src={temple.image_url_1} 
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                        alt={temple.name}
+                      />
+                    </div>
+
+                    {/* Content */}
+                    <div className="p-6 pt-2 flex flex-col flex-1">
+                      <div className="flex items-center gap-1.5 text-gray-400 mb-2">
+                        <MapPin size={12} className="text-orange-500" />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          {temple.location}
+                        </span>
+                      </div>
+                      
+                      <h3 className="text-lg font-extrabold text-gray-800 mb-2 group-hover:text-orange-600 transition-colors">
+                        {temple.name}
+                      </h3>
+
+                      <p className="text-gray-500 text-xs leading-relaxed line-clamp-2 mb-4">
+                        {temple.about}
+                      </p>
+
+                      <div className="mt-auto flex items-center justify-between">
+                         <span className="text-[11px] font-bold text-orange-600 bg-orange-50 px-3 py-1 rounded-lg">Explore Now</span>
+                         <div className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 group-hover:bg-orange-600 group-hover:text-white transition-all duration-300">
+                            <ChevronRight size={18} />
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </>
+        )}
+
+        {!loading && filteredTemples.length === 0 && (
+          <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+            <p className="text-gray-400 font-bold text-lg">Kshama karein! Is city mein abhi koi mandir nahi mila.</p>
+            <button onClick={() => {setActiveCity("All"); setSearchTerm("");}} className="text-orange-600 font-bold mt-2 underline">Sabhi mandir dekhein</button>
+          </div>
+        )}
+      </section>
+
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-15px); }
+        }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+      `}</style>
+    </div>
+  );
+};
+
+export default FullTemplePage;

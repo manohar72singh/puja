@@ -16,6 +16,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { FaWhatsapp } from "react-icons/fa";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -127,7 +128,7 @@ const HomePujaPaymentDetails = () => {
       if (data.success) {
         alert(
           "🙏 Jai Ho! Aapki booking swikar kar li gayi hai. Booking ID: " +
-            bookingId,
+          bookingId,
         );
         navigate("/my-booking"); // Home ya My Bookings page par bhejien
       } else {
@@ -400,10 +401,9 @@ const HomePujaPaymentDetails = () => {
                     </div>
                   </div>
 
-                  {/* Right Side: WhatsApp Button */}
-                  <button className="w-full md:w-auto bg-white border border-orange-200 px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-orange-50 active:scale-95 transition-all shadow-sm">
-                    <span className="text-green-600 font-black italic">W</span>
-                    <span>WhatsApp Us</span>
+                  <button className="w-full md:w-auto bg-white border border-green-400 px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-green-50 active:scale-95 transition-all shadow-sm">
+                    <FaWhatsapp className="text-green-600 text-lg" />
+                    <span className="text-green-700">WhatsApp Us</span>
                   </button>
                 </div>
               </div>
