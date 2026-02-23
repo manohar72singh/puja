@@ -51,16 +51,16 @@ export default function Home() {
             </p>
 
             {/* ✅ Buttons - Always Side by Side */}
-            <div className="flex gap-3 mt-8 w-full">
+            <div className="flex gap-3 mt-8">
               <button
-                className="flex-1 bg-orange-500 text-white font-bold px-4 py-3 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 text-sm sm:text-base"
+                className=" bg-orange-500 text-white font-bold p-3 rounded-xl shadow-md hover:bg-orange-600 transition-all active:scale-95 text-sm sm:text-base"
                 onClick={() => navigate("/homePuja")}
               >
                 Book Home Puja
               </button>
 
               <button
-                className="flex-1 bg-white text-orange-500 font-bold px-4 py-3 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 text-sm sm:text-base"
+                className=" bg-white text-orange-500 font-bold p-3 rounded-xl border border-orange-200 shadow-sm hover:bg-orange-50 transition-all active:scale-95 text-sm sm:text-base"
                 onClick={() => navigate("/temple-puja")}
               >
                 Book Temple Puja
@@ -104,17 +104,17 @@ export default function Home() {
 
             {/* Feature Tags */}
             <div className="flex flex-wrap gap-1 mt-8">
-              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-orange-200/50 px-2 py-2 rounded-xl">
                 <ShieldCheck size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Verified Pandits</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-orange-200/50 px-2 py-2 rounded-xl">
                 <Box size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Samagri Included</span>
               </div>
 
-              <div className="flex items-center gap-2 bg-gray-100/70 px-2 py-2 rounded-xl">
+              <div className="flex items-center gap-2 bg-orange-200/50 px-2 py-2 rounded-xl">
                 <Sparkles size={14} className="text-orange-600" />
                 <span className="text-xs font-semibold text-gray-600">Fixed Pricing</span>
               </div>
@@ -159,19 +159,22 @@ export default function Home() {
             </div>
 
             {/* Tablet & Desktop slider dots */}
-            <div className="hidden md:flex absolute bottom-5 right-4 -translate-x-1/2 z-50 gap-3">
+            <div className="hidden md:flex absolute bottom-5 right-4 z-50 gap-2">
               {rituals.map((_, i) => (
                 <span
                   key={i}
                   onClick={() => setIndex(i)}
                   className={`
-                   w-2 h-2 rounded-full cursor-pointer 
-                   transition-transform transition-colors duration-300 ease-in-out
-                   ${i === index ? "bg-orange-300 scale-125 px-3" : "bg-white/50 scale-100"}
-                 `}
+        h-2 rounded-full cursor-pointer 
+        transition-all duration-500 ease-in-out
+        ${i === index
+                      ? "bg-orange-300 w-8"  // Active dot: Lambi width (Pill shape)
+                      : "bg-white/50 w-2 hover:bg-white/80" // Inactive dot: Choti width (Circle)
+                    }
+      `}
                 ></span>
               ))}
-            </div>                  
+            </div>
           </div>
         </div>
       </section>
@@ -228,7 +231,7 @@ export default function Home() {
       {/* FOOTER COMPONENTS */}
       <div className="w-full">
         <SpecialPujas />
-        <TrendingPuja/>
+        <TrendingPuja />
         <DevotionalStats />
         <HowItWorks />
         <ReviewSection />

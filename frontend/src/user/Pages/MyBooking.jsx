@@ -65,7 +65,7 @@ const MyBookings = () => {
                 >
                   {/* Category Ribbon */}
                   <div
-                    className={`absolute top-0 right-0 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white ${
+                    className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl -3xl text-[10px] font-black uppercase tracking-widest text-white ${
                       isTemplePuja ? "bg-orange-500" : "bg-blue-500"
                     }`}
                   >

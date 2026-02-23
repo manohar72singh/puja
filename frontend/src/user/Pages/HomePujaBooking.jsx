@@ -205,8 +205,6 @@ const HomePujaBooking = () => {
 
                 <div className="border-t border-orange-50" />
 
-
-
               </div>
 
             </div>
@@ -252,7 +250,7 @@ const HomePujaBooking = () => {
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* Base Price Row */}
                 <div className="flex justify-between items-center text-[15px] font-bold">
                   <span className="text-gray-500 uppercase tracking-wider">Base Price</span>
@@ -261,7 +259,7 @@ const HomePujaBooking = () => {
 
                 {/* Samagri Kit Row - Tabhi dikhega jab enabled ho */}
                 {samagriEnabled && (
-                  <div className="flex justify-between items-center text-[15px] font-bold pt-4 border-t border-orange-50">
+                  <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
                     <span className="text-gray-500 uppercase tracking-wider">Samagri Kit</span>
                     <span className=" tracking-tight">+₹600</span>
                   </div>
@@ -281,7 +279,7 @@ const HomePujaBooking = () => {
 
                     {/* Price Alignment: Right Side */}
                     <div className="text-right">
-                      <span className="text-4xl font-serif font-bold text-orange-600 tracking-tighter">
+                      <span className="text-2xl font-bold text-orange-600 tracking-tighter">
                         ₹{totalAmount}
                       </span>
                     </div>
@@ -330,11 +328,19 @@ const BenefitSmall = ({ icon, title, desc }) => (
 
 // --- HELPER: FAQ ITEM ---
 const FAQItem = ({ q, a }) => (
-  <details className="group bg-orange-50/20 rounded-xl border border-orange-200 p-2 list-none cursor-pointer">
-    <summary className="font-bold flex justify-between items-center text-[15px] text-gray-700">
-      {q} <ChevronRight size={20} className="group-open:rotate-90 transition-transform text-orange-400" />
+  <details className="group py-2 cursor-pointer list-none">
+    <summary className="flex justify-between items-center font-bold text-[15px] text-gray-700 list-none [&::-webkit-details-marker]:hidden">
+      <span className="pr-5">{q}</span>
+      <ChevronRight 
+        size={18} 
+        className="group-open:rotate-90 transition-transform duration-300 text-orange-400 shrink-0" 
+      />
     </summary>
-    <p className="text-[14px] text-gray-500 mt-2 pt-2 border-t border-orange-100 leading-relaxed font-medium">{a}</p>
+    <div className="overflow-hidden">
+      <p className="text-[14px] text-gray-500 mt-3 leading-relaxed font-medium animate-in fade-in slide-in-from-top-1">
+        {a}
+      </p>
+    </div>
   </details>
 );
 

@@ -1,8 +1,8 @@
 export default function DevotionalStats() {
   return (
-    // Reduced py-16 to py-10 for mobile
     <section className="bg-[#0a8d64] text-white py-10 md:py-16 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12">
+      {/* items-center add kiya hai taaki dono side vertical barabar dikhein */}
+      <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 md:gap-12 items-center">
         
         {/* LEFT CONTENT */}
         <div className="text-left">
@@ -10,7 +10,6 @@ export default function DevotionalStats() {
             Trusted by Over 30 Million Devotees
           </p>
 
-          {/* Scaled text size: 3xl on mobile, 5xl on large screens */}
           <h2 className="text-3xl md:text-5xl font-bold leading-tight mb-4 md:mb-6">
             India’s Largest <br className="hidden md:block" /> Devotional Platform
           </h2>
@@ -23,8 +22,8 @@ export default function DevotionalStats() {
         </div>
 
         {/* RIGHT STATS */}
-        {/* Changed gap-8 to gap-6 for mobile tightness */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8">
+        {/* Gap ko grid mein maintain kiya hai taaki upar-niche barabar lage */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 md:gap-10">
           
           {/* CARD 1 */}
           <div className="flex gap-3 md:gap-4 items-start">

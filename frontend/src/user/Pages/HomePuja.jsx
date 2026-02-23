@@ -49,7 +49,7 @@ export default function HomePuja() {
     // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
 
-      <section className="relative max-w-7xl mx-auto p-8">
+      <section className="relative max-w-7xl mx-auto p-6">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-300 rounded-full blur-[120px]"></div>

@@ -34,6 +34,8 @@ const HomePujaPaymentDetails = () => {
   // Get Samagri status from navigation state
   const isSamagriSelected = location.state?.isSamagriSelected || false;
 
+  const [errorMsg, setErrorMsg] = useState("");
+
   // generate booking Id
   const generateBookingId = () => {
     const randomStr = Math.random().toString(36).substring(2, 8);
@@ -98,9 +100,12 @@ const HomePujaPaymentDetails = () => {
   const handlePayment = async () => {
     // Basic validation
     if (!formData.date || !formData.devoteeName || !formData.city) {
-      alert("Please fill all mandatory fields (Date, Name, City)");
-      return;
-    }
+  setErrorMsg("Please fill all mandatory fields (Date, Name, City)");
+  
+  // 3 second baad error apne aap gayab ho jaye
+  setTimeout(() => setErrorMsg(""), 3000); 
+  return;
+}
 
     const payload = {
       puja_id: id,
@@ -129,10 +134,6 @@ const HomePujaPaymentDetails = () => {
       const data = await response.json();
 
       if (data.success) {
-        alert(
-          "🙏 Jai Ho! Aapki booking swikar kar li gayi hai. Booking ID: " +
-          bookingId,
-        );
         navigate("/my-booking"); // Home ya My Bookings page par bhejien
       } else {
         alert("Error: " + data.message);
@@ -233,6 +234,18 @@ const HomePujaPaymentDetails = () => {
   }
 
   return (
+
+<>
+    {/* Error Alert Box */}
+{errorMsg && (
+  <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
+    <div className="bg-red-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white">
+      <span className="text-xl">⚠️</span>
+      <p className="font-bold text-sm tracking-wide">{errorMsg}</p>
+    </div>
+  </div>
+)}
+
     <div className="min-h-screen bg-[#FFF4E1] font-sans text-[#2D2D2D] antialiased pb-20">
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* Back Button */}
@@ -611,6 +624,8 @@ const HomePujaPaymentDetails = () => {
         </div>
       </div>
     </div>
+
+    </>
   );
 };
 

@@ -8,22 +8,22 @@ export default function TemplePuja() {
 
 const slides = [
   {
-    title: "शाश्वत वैदिक अनुष्ठान", // Shaswat Vedic Anushthan
-    subtitle: "Experience the profound energy of ancient Vedic chants and sacred fire rituals performed by certified Acharyas.",
-    image: "https://images.unsplash.com/photo-1593739594181-dcd2709bc51d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8bWFuZGlyfGVufDB8fDB8fHww",
-    shloka: "॥ शुभं करोति कल्याणम् आरोग्यं धनसंपदा ॥"
+    // title: "शाश्वत वैदिक अनुष्ठान", // Shaswat Vedic Anushthan
+    // subtitle: "Experience the profound energy of ancient Vedic chants and sacred fire rituals performed by certified Acharyas.",
+    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSubcfauFJQsHR1rHAaZi9NBEPvmBi2gWJRwQ&s",
+    // shloka: "॥ शुभं करोति कल्याणम् आरोग्यं धनसंपदा ॥"
   },
   {
-    title: "दिव्य मंदिर आरती", // Divya Temple Aarti
-    subtitle: "Connect with the divine through the rhythmic vibrations of temple bells and the warmth of holy lamps.",
-    image: "https://images.unsplash.com/photo-1597109216022-71b4810ed4c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bWFuZGlyfGVufDB8fDB8fHww",
-    shloka: "॥ तमस़ो मा ज्योतिर्गमय ॥"
+    // title: "दिव्य मंदिर आरती", // Divya Temple Aarti
+    // subtitle: "Connect with the divine through the rhythmic vibrations of temple bells and the warmth of holy lamps.",
+    image: "https://images.unsplash.com/photo-1597109216022-71b4810ed4c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bWFuZGlyfGVufDB8fDB8fHwwz",
+    // shloka: "॥ तमस़ो मा ज्योतिर्गमय ॥"
   },
   {
-    title: "परम पावन आशीर्वाद", // Param Paavan Ashirwad
-    subtitle: "A gateway to spiritual awakening, bringing peace, prosperity, and divine protection to your home.",
+    // title: "परम पावन आशीर्वाद", // Param Paavan Ashirwad
+    // subtitle: "A gateway to spiritual awakening, bringing peace, prosperity, and divine protection to your home.",
     image: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS1P3Qix9jHTASj_DEX1CVWA3wHoubZ4jsktAtxy6rCa5E4LJEe4QrEjdLgzIgZ",
-    shloka: "॥ सर्वे भवन्तु सुखिनः ॥"
+    // shloka: "॥ सर्वे भवन्तु सुखिनः ॥"
   }
 ];
 
@@ -38,7 +38,7 @@ const slides = [
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 6000);
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
@@ -129,7 +129,7 @@ const slides = [
             ))}
           </div>
 
-          {/* Dots Indicator */}
+          {/* Dots Indicator
           <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
             {slides.map((_, index) => (
               <button
@@ -141,7 +141,7 @@ const slides = [
                   }`}
               />
             ))}
-          </div>
+          </div> */}
 
         </div>
 

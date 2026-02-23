@@ -8,13 +8,15 @@ const FullTemplePage = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCity, setActiveCity] = useState("All");
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
 
   const cities = ["All", "Gaya", "Varanasi", "Mathura", "Ayodhya", "Ujjain", "Puri", "Vrindavan", "Tirumala", "Amritsar"];
 
   useEffect(() => {
     const fetchTemples = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/mandir/all');
+        const response = await axios.get(`${API_BASE_URL}/mandir/all`);
         setTemples(response.data);
         setLoading(false);
       } catch (error) {

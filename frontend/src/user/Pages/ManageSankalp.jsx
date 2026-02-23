@@ -19,6 +19,21 @@ const ManageSankalp = () => {
     rashi: "",
   });
 
+  const rashiSymbols = {
+    "mesh": "♈",
+    "vrish": "♉",
+    "mithun": "♊",
+    "karka": "♋",
+    "simha": "♌",
+    "kanya": "♍",
+    "tula": "♎",
+    "vrishchik": "♏",
+    "dhanu": "♐",
+    "makar": "♑",
+    "kumbh": "♒",
+    "meen": "♓"
+  };
+
   const fetchMembers = async () => {
     try {
       setLoading(true);
@@ -153,8 +168,11 @@ const ManageSankalp = () => {
                     {/* Rashi */}
                     <div className="flex flex-col">
                       <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Rashi</span>
-                      <div className="flex items-center gap-1 text-[#1A2B47]">
-                        <Moon size={15} className="text-orange-300" />
+                      <div className="flex items-center gap-2 text-[#1A2B47]">
+                        {/* Agar rashi hai toh symbol dikhao, varna sparkle icon ya default */}
+                        <span className="text-lg leading-none">
+                          {member.rashi ? (rashiSymbols[member.rashi.toLowerCase().trim()] || "✨") : "—"}
+                        </span>
                         <span className="text-[14px] font-bold">{member.rashi || "—"}</span>
                       </div>
                     </div>
@@ -230,13 +248,19 @@ const ManageSankalp = () => {
                   <div>
                     <label className={labelClass}>Rashi</label>
                     <select name="rashi" value={formData.rashi} onChange={handleChange} className={inputClass}>
-                      <option value="">Select</option>
-                      <option value="Mesh">Mesh</option><option value="Vrish">Vrish</option>
-                      <option value="Mithun">Mithun</option><option value="Karka">Karka</option>
-                      <option value="Simha">Simha</option><option value="Kanya">Kanya</option>
-                      <option value="Tula">Tula</option><option value="Vrishchik">Vrishchik</option>
-                      <option value="Dhanu">Dhanu</option><option value="Makar">Makar</option>
-                      <option value="Kumbh">Kumbh</option><option value="Meen">Meen</option>
+                      <option value="">Select Rashi</option>
+                      <option value="Mesh">♈ Mesh (Aries)</option>
+                      <option value="Vrish">♉ Vrish (Taurus)</option>
+                      <option value="Mithun">♊ Mithun (Gemini)</option>
+                      <option value="Karka">♋ Karka (Cancer)</option>
+                      <option value="Simha">♌ Simha (Leo)</option>
+                      <option value="Kanya">♍ Kanya (Virgo)</option>
+                      <option value="Tula">♎ Tula (Libra)</option>
+                      <option value="Vrishchik">♏ Vrishchik (Scorpio)</option>
+                      <option value="Dhanu">♐ Dhanu (Sagittarius)</option>
+                      <option value="Makar">♑ Makar (Capricorn)</option>
+                      <option value="Kumbh">♒ Kumbh (Aquarius)</option>
+                      <option value="Meen">♓ Meen (Pisces)</option>
                     </select>
                   </div>
                   <div>
