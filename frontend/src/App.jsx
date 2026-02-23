@@ -5,9 +5,8 @@ import { ProtectedLayout } from "./user/Layout/ProtectedLayout";
 
 import Home from "./user/Pages/Home";
 
-
 import Pind_Dan from "./user/Pages/Pind_Dan";
-import PindDanBooking from "./user/Pages/PindDanBooking"
+import PindDanBooking from "./user/Pages/PindDanBooking";
 
 import HomePuja from "./user/Pages/HomePuja";
 import HomePujaBooking from "./user/Pages/HomePujaBooking";
@@ -29,7 +28,6 @@ import MyBookings from "./user/Pages/MyBooking";
 import SignIn from "./user/Pages/SignIn";
 import SignUp from "./user/Pages/SignUp";
 
-
 import PartnerSignIn from "./user/Pages/PartnerSignIn";
 import PartnerSignUp from "./user/Pages/PartnerSignUp";
 import PartnerDashboard from "./user/Pages/PartnerDashboard";
@@ -41,10 +39,9 @@ import ScrollToTop from "./user/Components/ScrollToTop";
 import { RightFloatingMenu } from "./user/Components/RightFloatingMenu";
 import CustomerCareDashboard from "./admin/pages/CustomerCareDashboard";
 
-
 import FullTemplePage from "./user/Pages/FullTemplePage";
-import MandirDetailsPage from "./user/Pages/MandirDetailsPage"
-
+import MandirDetailsPage from "./user/Pages/MandirDetailsPage";
+import AdminDashboard from "./admin/pages/AdminDashboard";
 
 function App() {
   const location = useLocation();
@@ -71,10 +68,8 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
 
-            <Route path="/temples" element={<FullTemplePage />} />
-            <Route path="/:id" element={<MandirDetailsPage />} />
-
-
+          <Route path="/temples" element={<FullTemplePage />} />
+          <Route path="/:id" element={<MandirDetailsPage />} />
 
           {/* Home Puja */}
           <Route path="/homePuja">
@@ -109,7 +104,6 @@ function App() {
             <Route index element={<TemplePuja />} />
             <Route path=":id" element={<TemplePujaBooking />} />
           </Route>
-
 
           {/* Pind Pan */}
           <Route path="/pind-dan">
@@ -150,6 +144,7 @@ function App() {
             element={<CustomerCareDashboard />}
           />
         </Route>
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* ================= 404 ================= */}
         <Route path="*" element={<h1>Not Found</h1>} />
