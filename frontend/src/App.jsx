@@ -5,7 +5,10 @@ import { ProtectedLayout } from "./user/Layout/ProtectedLayout";
 
 import Home from "./user/Pages/Home";
 import Gallery from "./user/Pages/Gallery";
+
+
 import Pind_Dan from "./user/Pages/Pind_Dan";
+import PindDanBooking from "./user/Pages/PindDanBooking"
 
 import HomePuja from "./user/Pages/HomePuja";
 import HomePujaBooking from "./user/Pages/HomePujaBooking";
@@ -62,7 +65,6 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/gallery" element={<Gallery />} />
-          <Route path="/pind_dan" element={<Pind_Dan />} />
 
           {/* Home Puja */}
           <Route path="/homePuja">
@@ -96,6 +98,13 @@ function App() {
           <Route path="/temple-puja">
             <Route index element={<TemplePuja />} />
             <Route path=":id" element={<TemplePujaBooking />} />
+          </Route>
+
+
+          {/* Pind Pan */}
+          <Route path="/pind-dan">
+            <Route index element={<Pind_Dan />} />
+            <Route path=":id" element={<PindDanBooking />} />
           </Route>
 
           {/* 🔐 My Booking Protected */}

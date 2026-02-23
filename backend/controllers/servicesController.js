@@ -390,7 +390,6 @@ export const templePujaSingle = async (req, res) => {
         t.dateOfStart,
         t.created_at AS temple_created_at,
 
-        MAX(CASE WHEN p.pricing_type = 'standard' THEN p.price END) AS standard_price,
         MAX(CASE WHEN p.pricing_type = 'single' THEN p.price END) AS single_price,
         MAX(CASE WHEN p.pricing_type = 'couple' THEN p.price END) AS couple_price,
         MAX(CASE WHEN p.pricing_type = 'family' THEN p.price END) AS family_price
@@ -414,6 +413,103 @@ export const templePujaSingle = async (req, res) => {
       success: true,
       data: rows,
     });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
+export const pindDan = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT 
+        s.id AS service_id,
+        s.puja_name,
+        s.puja_type,
+        s.description,
+        s.image_url,
+        s.created_at AS service_created_at,
+
+        t.id AS temple_id,
+        t.about,
+        t.address,
+        t.dateOfStart,
+        t.created_at AS temple_created_at,
+
+        p.price AS standard_price
+
+      FROM services s
+
+      LEFT JOIN temples t 
+        ON s.id = t.service_id
+
+      LEFT JOIN service_prices p 
+        ON s.id = p.service_id 
+        AND p.pricing_type = 'standard'
+
+      WHERE s.puja_type = 'pind_dan'
+    `);
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+
+export const PindDanSingle = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const [rows] = await db.query(
+      `
+      SELECT 
+        s.id AS service_id,
+        s.puja_name,
+        s.puja_type,
+        s.description,
+        s.image_url,
+        s.created_at AS service_created_at,
+
+        t.id AS temple_id,
+        t.about,
+        t.address,
+        t.dateOfStart,
+        t.created_at AS temple_created_at,
+
+        p.price AS standard_price
+
+      FROM services s
+
+      LEFT JOIN temples t 
+        ON s.id = t.service_id
+
+      LEFT JOIN service_prices p 
+        ON s.id = p.service_id 
+        AND p.pricing_type = 'standard'
+
+      WHERE s.id = ?
+      `,
+      [id]
+    );
+
+    res.status(200).json({
+      success: true,
+      data: rows[0] || null,
+    });
+
   } catch (error) {
     console.error(error);
     res.status(500).json({

@@ -7,6 +7,8 @@ import {
   getUserBookings,
   templePuja,
   templePujaSingle,
+  pindDan,
+  PindDanSingle,
 } from "../controllers/servicesController.js";
 
 const router = express.Router();
@@ -22,5 +24,8 @@ router.get("/my-bookings", verifyToken, getUserBookings);
 
 router.get("/temple-puja", templePuja);
 router.get("/temple-puja/:id", templePujaSingle);
+
+router.get("/pind-dan", pindDan);
+router.get("/pind-dan/:id", PindDanSingle);
 
 export default router;
