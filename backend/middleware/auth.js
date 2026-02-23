@@ -1,30 +1,28 @@
-  import jwt from "jsonwebtoken";
+import jwt from "jsonwebtoken";
 
+export const verifyToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
 
-  export const verifyToken = (req, res, next) => {
-    try {
-      const authHeader = req.headers.authorization;
-
-      if (!authHeader) {
-        return res.status(401).json({ message: "No token provided" });
-      }
-
-      const token = authHeader.split(" ")[1];
-
-      const decoded = jwt.verify(
-        token,
-        process.env.JWT_SECRET || "secret"
-      );
-
-      // 🔥 Important Fix
-      req.user = {
-        id: decoded.id || decoded._id,
-        role: decoded.role
-      };
-
-      next();
-    } catch (error) {
-      console.error("Token Error:", error);
-      return res.status(401).json({ message: "Invalid token" });
+    if (!authHeader) {
+      return res.status(401).json({ message: "No token provided" });
     }
-  };
+
+    const token = authHeader.split(" ")[1];
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
+
+    console.log(decoded);
+
+    // 🔥 Important Fix
+    req.user = {
+      id: decoded.id || decoded._id,
+      role: decoded.role,
+    };
+
+    next();
+  } catch (error) {
+    console.error("Token Error:", error);
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};

@@ -1,302 +1,398 @@
-import db from '../config/db.js'
-import jwt from 'jsonwebtoken'
+import db from "../config/db.js";
+import jwt from "jsonwebtoken";
 
 let otpStore = {}; // Temporary memory for OTPs
 
 // --- 1. SIGNUP REQUEST ---
 export const signupRequest = async (req, res) => {
-    try {
-        const { name, phone, email, gotra } = req.body;
-        if (!phone || !name) return res.status(400).json({ message: "Name and Phone are required" });
+  try {
+    const { name, phone, email, gotra } = req.body;
+    if (!phone || !name)
+      return res.status(400).json({ message: "Name and Phone are required" });
 
-        const [existing] = await db.query("SELECT id FROM users WHERE phone = ?", [phone]);
-        if (existing.length > 0) return res.status(409).json({ message: "Already registered. Please Login." });
+    const [existing] = await db.query("SELECT id FROM users WHERE phone = ?", [
+      phone,
+    ]);
+    if (existing.length > 0)
+      return res
+        .status(409)
+        .json({ message: "Already registered. Please Login." });
 
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        otpStore[phone] = {
-            userData: { name, phone, email, gotra },
-            otp: otp,
-            type: 'SIGNUP',
-            expires: Date.now() + 10 * 60 * 1000
-        };
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[phone] = {
+      userData: { name, phone, email, gotra },
+      otp: otp,
+      type: "SIGNUP",
+      expires: Date.now() + 10 * 60 * 1000,
+    };
 
-        console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
-        res.status(200).json({ message: "OTP sent successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Internal server error" });
-    }
+    console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 // --- 2. SIGNUP VERIFY (With Transactions & Address) ---
 export const signupVerify = async (req, res) => {
-    let connection;
-    try {
-        // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
-        const { phone, otp, role, address, city, state, gotra, email, name, pincode, address_type } = req.body;
-        
-        const session = otpStore[phone];
+  let connection;
+  try {
+    // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
+    const {
+      phone,
+      otp,
+      role,
+      address,
+      city,
+      state,
+      gotra,
+      email,
+      name,
+      pincode,
+      address_type,
+    } = req.body;
 
-        if (!session || session.type !== 'SIGNUP' || session.otp.toString() !== otp.toString()) {
-            return res.status(400).json({ message: "Invalid OTP or Session Expired" });
-        }
+    const session = otpStore[phone];
 
-        connection = await db.getConnection();
-        await connection.beginTransaction();
-        
-        // User Insert
-        const [userResult] = await connection.query(
-            "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
-            [name, phone, email || null, gotra || null, role || "user"]
-        );
-        
-        const newUserId = userResult.insertId;
-        
-        if (address) {
-            // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
-            await connection.query(
-                "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [newUserId, address, city, state, address_type || "home", pincode || null, 1]
-            );
-        }
-        
-        await connection.commit();
-        delete otpStore[phone];
-
-        const token = jwt.sign(
-            { id: newUserId, name, phone, role: role || "user" }, 
-            process.env.JWT_SECRET || 'secret', 
-            { expiresIn: '7d' }
-        );
-
-        res.status(201).json({ message: "Verified Successfully!", token, role: role || "user" });
-
-    } catch (error) {
-        console.error("Signup Error:", error); // Console mein error check karne ke liye
-        if (connection) await connection.rollback();
-        res.status(500).json({ message: "Error saving data", error: error.message });
-    } finally {
-        if (connection) connection.release();
+    if (
+      !session ||
+      session.type !== "SIGNUP" ||
+      session.otp.toString() !== otp.toString()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid OTP or Session Expired" });
     }
+
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    // User Insert
+    const [userResult] = await connection.query(
+      "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
+      [name, phone, email || null, gotra || null, role || "user"],
+    );
+
+    const newUserId = userResult.insertId;
+
+    if (address) {
+      // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
+      await connection.query(
+        "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          newUserId,
+          address,
+          city,
+          state,
+          address_type || "home",
+          pincode || null,
+          1,
+        ],
+      );
+    }
+
+    await connection.commit();
+    delete otpStore[phone];
+
+    const token = jwt.sign(
+      { id: newUserId, name, phone, role: role || "user" },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "7d" },
+    );
+
+    res
+      .status(201)
+      .json({ message: "Verified Successfully!", token, role: role || "user" });
+  } catch (error) {
+    console.error("Signup Error:", error); // Console mein error check karne ke liye
+    if (connection) await connection.rollback();
+    res
+      .status(500)
+      .json({ message: "Error saving data", error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
 // --- 3. LOGIN REQUEST (Modified for Partner Check) ---
 export const loginRequest = async (req, res) => {
-    try {
-        const { phone, role } = req.body; // Frontend se role ('user' ya 'pandit') bhejien
-        
-        // Role wise check: Pandit login tabhi hoga jab DB mein role 'pandit' ho
-        const [rows] = await db.query("SELECT id, role FROM users WHERE phone = ?", [phone]);
-        
-        if (rows.length === 0) return res.status(404).json({ message: "Account not found." });
-        
-        // Security Check: Agar Pandit login page hai aur user 'user' hai, toh block karein
-        if (role && rows[0].role !== role) {
-            return res.status(403).json({ message: `Access denied. You are registered as a ${rows[0].role}.` });
-        }
+  try {
+    const { phone, role } = req.body; // Frontend se role ('user' ya 'pandit') bhejien
 
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        otpStore[phone] = { otp, type: 'LOGIN', expires: Date.now() + 5 * 60 * 1000 };
+    // Role wise check: Pandit login tabhi hoga jab DB mein role 'pandit' ho
+    const [rows] = await db.query(
+      "SELECT id, role FROM users WHERE phone = ?",
+      [phone],
+    );
 
-        console.log(`\n--- LOGIN OTP FOR ${phone}: ${otp} ---\n`);
-        res.status(200).json({ message: "OTP sent" });
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Account not found." });
+
+    // Security Check: Agar Pandit login page hai aur user 'user' hai, toh block karein
+    if (role && rows[0].role !== role) {
+      return res.status(403).json({
+        message: `Access denied. You are registered as a ${rows[0].role}.`,
+      });
     }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[phone] = {
+      otp,
+      type: "LOGIN",
+      expires: Date.now() + 5 * 60 * 1000,
+    };
+
+    console.log(`\n--- LOGIN OTP FOR ${phone}: ${otp} ---\n`);
+    res.status(200).json({ message: "OTP sent" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // --- 4. VERIFY OTP (Bypass Logic Added) ---
 export const verifyOtp = async (req, res) => {
-    try {
-        const { phone, otp } = req.body;
-        const session = otpStore[phone];
+  try {
+    const { phone, otp } = req.body;
+    const session = otpStore[phone];
 
-        // --- BYPASS LOGIC ---
-        // Agar OTP '123456' hai, toh ye bypass ho jayega
-        const isBypass = (otp.toString() === "123456");
+    // --- BYPASS LOGIC ---
+    // Agar OTP '123456' hai, toh ye bypass ho jayega
+    const isBypass = otp.toString() === "123456";
 
-        if (isBypass || (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString())) {
-            
-            const [rows] = await db.query("SELECT id, name, phone, email, role FROM users WHERE phone = ?", [phone]);
-            
-            // Check agar bypass use kar rahe hain par user DB mein nahi hai
-            if (rows.length === 0) {
-                return res.status(404).json({ message: "User not found in database." });
-            }
+    if (
+      isBypass ||
+      (session &&
+        session.type === "LOGIN" &&
+        session.otp.toString() === otp.toString())
+    ) {
+      const [rows] = await db.query(
+        "SELECT id, name, phone, email, role FROM users WHERE phone = ?",
+        [phone],
+      );
 
-            // Session delete karein agar normal login tha
-            if (session) delete otpStore[phone];
+      // Check agar bypass use kar rahe hain par user DB mein nahi hai
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "User not found in database." });
+      }
 
-            const token = jwt.sign({
-                id: rows[0].id,
-                name: rows[0].name,
-                phone: rows[0].phone,
-                email: rows[0].email,
-                role: rows[0].role 
-            }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+      // Session delete karein agar normal login tha
+      if (session) delete otpStore[phone];
 
-            res.status(200).json({ 
-                message: isBypass ? "Login success (Bypass Used)" : "Login success", 
-                token, 
-                role: rows[0].role 
-            });
-        } else {
-            res.status(400).json({ message: "Invalid OTP" });
-        }
-    } catch (error) {
-        console.error("Verify OTP Error:", error);
-        res.status(500).json({ message: "Verification failed" });
+      const token = jwt.sign(
+        {
+          id: rows[0].id,
+          name: rows[0].name,
+          phone: rows[0].phone,
+          email: rows[0].email,
+          role: rows[0].role,
+        },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "7d" },
+      );
+
+      res.status(200).json({
+        message: isBypass ? "Login success (Bypass Used)" : "Login success",
+        token,
+        role: rows[0].role,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid OTP" });
     }
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    res.status(500).json({ message: "Verification failed" });
+  }
 };
 
 // 1. Naya Address Add Karna
 export const addAddress = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const { address_line1, city, state, pincode, address_type, is_default } = req.body;
+  try {
+    const userId = req.user.id;
+    const { address_line1, city, state, pincode, address_type, is_default } =
+      req.body;
 
-        if (!address_line1 || !city || !state || !pincode) {
-            return res.status(400).json({ message: "All fields are required" });
-        }
-
-        // Agar naya address default hai, toh baaki purane addresses ko default se hatao
-        if (is_default) {
-            await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
-        }
-
-        const [result] = await db.query(
-            `INSERT INTO addresses (user_id, address_line1, city, state, pincode, address_type, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [userId, address_line1, city, state, pincode, address_type, is_default ? 1 : 0]
-        );
-
-        res.status(201).json({ message: "Address added successfully", id: result.insertId });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to add address", error: error.message });
+    if (!address_line1 || !city || !state || !pincode) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    // Agar naya address default hai, toh baaki purane addresses ko default se hatao
+    if (is_default) {
+      await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [
+        userId,
+      ]);
+    }
+
+    const [result] = await db.query(
+      `INSERT INTO addresses (user_id, address_line1, city, state, pincode, address_type, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [
+        userId,
+        address_line1,
+        city,
+        state,
+        pincode,
+        address_type,
+        is_default ? 1 : 0,
+      ],
+    );
+
+    res
+      .status(201)
+      .json({ message: "Address added successfully", id: result.insertId });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to add address", error: error.message });
+  }
 };
 
 // 2. Saare Addresses Get Karna (Listing)
 export const getUserAddresses = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const [rows] = await db.query(
-            "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC", 
-            [userId]
-        );
-        res.json(rows);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching addresses", error: error.message });
-    }
+  try {
+    const userId = req.user.id;
+    const [rows] = await db.query(
+      "SELECT * FROM addresses WHERE user_id = ? ORDER BY is_default DESC, created_at DESC",
+      [userId],
+    );
+    res.json(rows);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error fetching addresses", error: error.message });
+  }
 };
 
 // 3. Ek Single Address Get Karna (Edit Form ke liye)
 export const getSingleAddress = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
-        const [rows] = await db.query("SELECT * FROM addresses WHERE id = ? AND user_id = ?", [id, userId]);
-        
-        if (rows.length === 0) return res.status(404).json({ message: "Address not found" });
-        res.json(rows[0]);
-    } catch (error) {
-        res.status(500).json({ message: "Error fetching address" });
-    }
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const [rows] = await db.query(
+      "SELECT * FROM addresses WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
+
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Address not found" });
+    res.json(rows[0]);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching address" });
+  }
 };
 
 // 4. Address Update Karna
 export const updateAddress = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
-        const { address_line1, city, state, pincode, address_type, is_default } = req.body;
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    const { address_line1, city, state, pincode, address_type, is_default } =
+      req.body;
 
-        if (is_default) {
-            await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
-        }
-
-        await db.query(
-            `UPDATE addresses SET address_line1=?, city=?, state=?, pincode=?, address_type=?, is_default=? WHERE id=? AND user_id=?`,
-            [address_line1, city, state, pincode, address_type, is_default ? 1 : 0, id, userId]
-        );
-
-        res.json({ message: "Address Updated successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Update failed", error: error.message });
+    if (is_default) {
+      await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [
+        userId,
+      ]);
     }
+
+    await db.query(
+      `UPDATE addresses SET address_line1=?, city=?, state=?, pincode=?, address_type=?, is_default=? WHERE id=? AND user_id=?`,
+      [
+        address_line1,
+        city,
+        state,
+        pincode,
+        address_type,
+        is_default ? 1 : 0,
+        id,
+        userId,
+      ],
+    );
+
+    res.json({ message: "Address Updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Update failed", error: error.message });
+  }
 };
 
 // 5. Address Delete Karna
 export const deleteAddress = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        const [result] = await db.query("DELETE FROM addresses WHERE id = ? AND user_id = ?", [id, userId]);
+    const [result] = await db.query(
+      "DELETE FROM addresses WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
 
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ message: "Address not found" });
-        }
-        res.json({ message: "Address deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Delete failed", error: error.message });
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ message: "Address not found" });
     }
+    res.json({ message: "Address deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Delete failed", error: error.message });
+  }
 };
 
 // 6. Default Status Toggle Karna
 export const setDefaultAddress = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const userId = req.user.id;
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
 
-        await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [userId]);
-        await db.query("UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?", [id, userId]);
+    await db.query("UPDATE addresses SET is_default = 0 WHERE user_id = ?", [
+      userId,
+    ]);
+    await db.query(
+      "UPDATE addresses SET is_default = 1 WHERE id = ? AND user_id = ?",
+      [id, userId],
+    );
 
-        res.json({ message: "Default address updated" });
-    } catch (error) {
-        res.status(500).json({ message: "Failed to set default" });
-    }
+    res.json({ message: "Default address updated" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to set default" });
+  }
 };
 
 //10.add family member
 
-export const addMember = async(req,res) =>{
-    try{
-        const userId = req.user.id;
-        const { name, relation, gotra, dob, rashi} = req.body;       
+export const addMember = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { name, relation, gotra, dob, rashi } = req.body;
 
-        if(!name || !relation){
-            return res.status(400).json({message:"Name and Relation required"})
-        }
+    if (!name || !relation) {
+      return res.status(400).json({ message: "Name and Relation required" });
+    }
 
-        await db.query(
-            `INSERT INTO user_family_members
+    await db.query(
+      `INSERT INTO user_family_members
             (user_id, name, relation ,gotra ,dob ,rashi)
             VALUES (?, ?, ?, ?, ?, ?)`,
-            [userId,name, relation, gotra, dob, rashi]
-        );
-        res.json({ message: "Family member added" });
-
-    }catch(error){
-        console.log("Server",error)
-        res.status(500).json({ message: "Server error" });
-    }
-}
+      [userId, name, relation, gotra, dob, rashi],
+    );
+    res.json({ message: "Family member added" });
+  } catch (error) {
+    console.log("Server", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 // show all family members of user
-export const allMembers = async(req,res)=>{
-    try{
-        const userId = req.user.id;
-        const [members] = await db.query(
-            `SELECT * FROM user_family_members 
+export const allMembers = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const [members] = await db.query(
+      `SELECT * FROM user_family_members 
             WHERE user_id = ? 
             ORDER BY created_at DESC`,
-            [userId]
-        );
-        res.json(members)
-    }catch(error){
-        console.log(error)
-        res.status(500).json({message:"Server Error"})
-    }
-}
+      [userId],
+    );
+    res.json(members);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server Error" });
+  }
+};
 
 // DELETE a family member
 export const deleteMember = async (req, res) => {
@@ -307,11 +403,13 @@ export const deleteMember = async (req, res) => {
     // Pehle check karein ki ye member usi user ka hai ya nahi (Security check)
     const [member] = await db.execute(
       "SELECT * FROM user_family_members WHERE id = ? AND user_id = ?",
-      [id, userId]
+      [id, userId],
     );
 
     if (member.length === 0) {
-      return res.status(404).json({ message: "Member not found or unauthorized" });
+      return res
+        .status(404)
+        .json({ message: "Member not found or unauthorized" });
     }
 
     // Member delete karein
@@ -321,5 +419,30 @@ export const deleteMember = async (req, res) => {
   } catch (error) {
     console.error("Delete Member Error:", error);
     res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+// Bydefault get address of user
+export const getDefaultAddress = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const [rows] = await db.query(
+      `
+      SELECT id, address_line1, city, state, pincode
+      FROM addresses
+      WHERE user_id = ? AND is_default = true
+      LIMIT 1
+      `,
+      [userId],
+    );
+
+    res.status(200).json(rows[0] || null);
+  } catch (error) {
+    console.error("Default Address Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch default address",
+    });
   }
 };

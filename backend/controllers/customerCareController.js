@@ -1,152 +1,216 @@
-import db from '../config/db.js'
-import jwt from 'jsonwebtoken'
+import db from "../config/db.js";
+import jwt from "jsonwebtoken";
 
 let otpStore = {}; // Temporary memory for OTPs
 
 // --- 1. SIGNUP REQUEST ---
 export const customerSignupRequest = async (req, res) => {
-    try {
-        const { firstName,lastName, phone, email } = req.body;
-        if (!phone || !firstName) return res.status(400).json({ message: "Name and Phone are required" });
+  try {
+    const { firstName, lastName, phone, email } = req.body;
+    if (!phone || !firstName)
+      return res.status(400).json({ message: "Name and Phone are required" });
 
-        const [existing] = await db.query("SELECT id FROM users WHERE phone = ?", [phone]);
-        if (existing.length > 0) return res.status(409).json({ message: "Already registered. Please Login." });
+    const [existing] = await db.query("SELECT id FROM users WHERE phone = ?", [
+      phone,
+    ]);
+    if (existing.length > 0)
+      return res
+        .status(409)
+        .json({ message: "Already registered. Please Login." });
 
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        otpStore[phone] = {
-            userData: { firstName,lastName, phone, email },
-            otp: otp,
-            type: 'SIGNUP',
-            expires: Date.now() + 10 * 60 * 1000
-        };
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[phone] = {
+      userData: { firstName, lastName, phone, email },
+      otp: otp,
+      type: "SIGNUP",
+      expires: Date.now() + 10 * 60 * 1000,
+    };
 
-        console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
-        res.status(200).json({ message: "OTP sent successfully" });
-    } catch (error) {
-        res.status(500).json({ message: "Internal server error" });
-    }
+    console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
+    res.status(200).json({ message: "OTP sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Internal server error" });
+  }
 };
 
 // --- 2. SIGNUP VERIFY (With Transactions & Address) ---
 export const customerSignupVerify = async (req, res) => {
-    let connection;
-    try {
-        // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
-        const { phone, otp, role, address, city, state, lastName, email, firstName, pincode, address_type } = req.body;
-        
-        const session = otpStore[phone];
+  let connection;
+  try {
+    // 1. Inhe destructure karna zaroori hai (pincode aur address_type add kiya)
+    const {
+      phone,
+      otp,
+      role,
+      address,
+      city,
+      state,
+      lastName,
+      email,
+      firstName,
+      pincode,
+      address_type,
+    } = req.body;
 
-        if (!session || session.type !== 'SIGNUP' || session.otp.toString() !== otp.toString()) {
-            return res.status(400).json({ message: "Invalid OTP or Session Expired" });
-        }
+    const session = otpStore[phone];
 
-        connection = await db.getConnection();
-        await connection.beginTransaction();
-        
-        // User Insert
-        const [userResult] = await connection.query(
-            "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
-            [firstName, phone, email || null, lastName || null, role || "customerCare"]
-        );
-        
-        const newUserId = userResult.insertId;
-        console.log("New User ID:", newUserId);
-        
-        if (address) {
-            // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
-            await connection.query(
-                "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                [newUserId, address, city, state, address_type || "home", pincode || null, 1]
-            );
-        }
-        
-        await connection.commit();
-        delete otpStore[phone];
-
-        const token = jwt.sign(
-            { id: newUserId, firstName, phone, role: role || "customerCare" }, 
-            process.env.JWT_SECRET || 'secret', 
-            { expiresIn: '7d' }
-        );
-
-        res.status(201).json({ message: "Verified Successfully!", token, role: role || "customerCare" });
-
-    } catch (error) {
-        console.error("Signup Error:", error); // Console mein error check karne ke liye
-        if (connection) await connection.rollback();
-        res.status(500).json({ message: "Error saving data", error: error.message });
-    } finally {
-        if (connection) connection.release();
+    if (
+      !session ||
+      session.type !== "SIGNUP" ||
+      session.otp.toString() !== otp.toString()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "Invalid OTP or Session Expired" });
     }
+
+    connection = await db.getConnection();
+    await connection.beginTransaction();
+
+    // User Insert
+    const [userResult] = await connection.query(
+      "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
+      [
+        firstName,
+        phone,
+        email || null,
+        lastName || null,
+        role || "customerCare",
+      ],
+    );
+
+    const newUserId = userResult.insertId;
+    console.log("New User ID:", newUserId);
+
+    if (address) {
+      // 2. Query aur Values ko match kiya (Yahan 7 placeholders aur 7 values hain)
+      await connection.query(
+        "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [
+          newUserId,
+          address,
+          city,
+          state,
+          address_type || "home",
+          pincode || null,
+          1,
+        ],
+      );
+    }
+
+    await connection.commit();
+    delete otpStore[phone];
+
+    const token = jwt.sign(
+      { id: newUserId, firstName, phone, role: role || "customerCare" },
+      process.env.JWT_SECRET || "secret",
+      { expiresIn: "7d" },
+    );
+
+    res.status(201).json({
+      message: "Verified Successfully!",
+      token,
+      role: role || "customerCare",
+    });
+  } catch (error) {
+    console.error("Signup Error:", error); // Console mein error check karne ke liye
+    if (connection) await connection.rollback();
+    res
+      .status(500)
+      .json({ message: "Error saving data", error: error.message });
+  } finally {
+    if (connection) connection.release();
+  }
 };
 
 // --- 3. LOGIN REQUEST (Modified for Partner Check) ---
 export const CusomterLoginRequest = async (req, res) => {
-    try {
-        const { phone, role } = req.body; // Frontend se role ('user' ya 'pandit') bhejien
-        
-        // Role wise check: Pandit login tabhi hoga jab DB mein role 'pandit' ho
-        const [rows] = await db.query("SELECT id, role FROM users WHERE phone = ?", [phone]);
-        
-        if (rows.length === 0) return res.status(404).json({ message: "Account not found." });
-        
-        // Security Check: Agar Pandit login page hai aur user 'user' hai, toh block karein
-        if (role && rows[0].role !== role) {
-            return res.status(403).json({ message: `Access denied. You are registered as a ${rows[0].role}.` });
-        }
+  try {
+    const { phone, role } = req.body; // Frontend se role ('user' ya 'pandit') bhejien
 
-        const otp = Math.floor(100000 + Math.random() * 900000);
-        otpStore[phone] = { otp, type: 'LOGIN', expires: Date.now() + 5 * 60 * 1000 };
+    // Role wise check: Pandit login tabhi hoga jab DB mein role 'pandit' ho
+    const [rows] = await db.query(
+      "SELECT id, role FROM users WHERE phone = ?",
+      [phone],
+    );
 
-        console.log(`\n--- LOGIN OTP FOR ${phone}: ${otp} ---\n`);
-        res.status(200).json({ message: "OTP sent" });
-    } catch (error) {
-        res.status(500).json({ message: "Server error" });
+    if (rows.length === 0)
+      return res.status(404).json({ message: "Account not found." });
+
+    // Security Check: Agar Pandit login page hai aur user 'user' hai, toh block karein
+    if (role && rows[0].role !== role) {
+      return res.status(403).json({
+        message: `Access denied. You are registered as a ${rows[0].role}.`,
+      });
     }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore[phone] = {
+      otp,
+      type: "LOGIN",
+      expires: Date.now() + 5 * 60 * 1000,
+    };
+
+    console.log(`\n--- LOGIN OTP FOR ${phone}: ${otp} ---\n`);
+    res.status(200).json({ message: "OTP sent" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error" });
+  }
 };
 
 // --- 4. VERIFY OTP (Bypass Logic Added) ---
 export const customerVerifyOtp = async (req, res) => {
-    try {
-        const { phone, otp } = req.body;
-        const session = otpStore[phone];
+  try {
+    const { phone, otp } = req.body;
+    const session = otpStore[phone];
 
-        // --- BYPASS LOGIC ---
-        // Agar OTP '123456' hai, toh ye bypass ho jayega
-        const isBypass = (otp.toString() === "123456");
+    // --- BYPASS LOGIC ---
+    // Agar OTP '123456' hai, toh ye bypass ho jayega
+    const isBypass = otp.toString() === "123456";
 
-        if (isBypass || (session && session.type === 'LOGIN' && session.otp.toString() === otp.toString())) {
-            
-            const [rows] = await db.query("SELECT id, name, phone, email, role FROM users WHERE phone = ?", [phone]);
-            
-            // Check agar bypass use kar rahe hain par user DB mein nahi hai
-            if (rows.length === 0) {
-                return res.status(404).json({ message: "User not found in database." });
-            }
+    if (
+      isBypass ||
+      (session &&
+        session.type === "LOGIN" &&
+        session.otp.toString() === otp.toString())
+    ) {
+      const [rows] = await db.query(
+        "SELECT id, name, phone, email, role FROM users WHERE phone = ?",
+        [phone],
+      );
 
-            // Session delete karein agar normal login tha
-            if (session) delete otpStore[phone];
+      // Check agar bypass use kar rahe hain par user DB mein nahi hai
+      if (rows.length === 0) {
+        return res.status(404).json({ message: "User not found in database." });
+      }
 
-            const token = jwt.sign({
-                id: rows[0].id,
-                firstName: rows[0].name,
-                phone: rows[0].phone,
-                email: rows[0].email,
-                role: rows[0].role 
-            }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+      // Session delete karein agar normal login tha
+      if (session) delete otpStore[phone];
 
-            res.status(200).json({ 
-                message: isBypass ? "Login success (Bypass Used)" : "Login success", 
-                token, 
-                role: rows[0].role 
-            });
-        } else {
-            res.status(400).json({ message: "Invalid OTP" });
-        }
-    } catch (error) {
-        console.error("Verify OTP Error:", error);
-        res.status(500).json({ message: "Verification failed" });
+      const token = jwt.sign(
+        {
+          id: rows[0].id,
+          firstName: rows[0].name,
+          phone: rows[0].phone,
+          email: rows[0].email,
+          role: rows[0].role,
+        },
+        process.env.JWT_SECRET || "secret",
+        { expiresIn: "7d" },
+      );
+
+      res.status(200).json({
+        message: isBypass ? "Login success (Bypass Used)" : "Login success",
+        token,
+        role: rows[0].role,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid OTP" });
     }
+  } catch (error) {
+    console.error("Verify OTP Error:", error);
+    res.status(500).json({ message: "Verification failed" });
+  }
 };
 
 // Customer care ke pass All Booking Show hogi
@@ -194,23 +258,19 @@ export const getAllPujaRequests = async (req, res) => {
     res.status(200).json({
       success: true,
       count: rows.length,
-      bookings: rows
+      bookings: rows,
     });
-
   } catch (error) {
     console.error("Fetch Error:", error.message);
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 };
 
-
-
 export const getFilterPujaRequests = async (req, res) => {
   try {
-
     const statsQuery = `
       SELECT 
         COUNT(*) AS total,
@@ -227,20 +287,17 @@ export const getFilterPujaRequests = async (req, res) => {
       success: true,
       stats: stats[0],
     });
-
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 };
 
-
-
-// customer care ke pass booking accept ya decline karne ka option hoga, 
+// customer care ke pass booking accept ya decline karne ka option hoga,
 // aur uske baad wo pandit ko assign kar sakta hai.
-// Iske liye ek API banayenge jisme booking ID aur action (accept/decline) bhejna hoga. 
+// Iske liye ek API banayenge jisme booking ID aur action (accept/decline) bhejna hoga.
 // Phir us action ke hisaab se database update karenge.
 
 // Accept decline API
@@ -254,20 +311,20 @@ export const updatePujaStatus = async (req, res) => {
     if (!allowedStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid status value"
+        message: "Invalid status value",
       });
     }
 
     // Step 1: Get current status
     const [rows] = await db.query(
       "SELECT status FROM puja_requests WHERE id = ?",
-      [id]
+      [id],
     );
 
     if (rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: "Request not found"
+        message: "Request not found",
       });
     }
 
@@ -276,8 +333,10 @@ export const updatePujaStatus = async (req, res) => {
     // Step 2: Validate transition according to your diagram
     let isValidTransition = false;
 
-    if (currentStatus === "pending" && 
-        (status === "accepted" || status === "declined")) {
+    if (
+      currentStatus === "pending" &&
+      (status === "accepted" || status === "declined")
+    ) {
       isValidTransition = true;
     }
 
@@ -288,26 +347,25 @@ export const updatePujaStatus = async (req, res) => {
     if (!isValidTransition) {
       return res.status(400).json({
         success: false,
-        message: `Cannot change status from ${currentStatus} to ${status}`
+        message: `Cannot change status from ${currentStatus} to ${status}`,
       });
     }
 
     // Step 3: Update status
-    await db.query(
-      "UPDATE puja_requests SET status = ? WHERE id = ?",
-      [status, id]
-    );
+    await db.query("UPDATE puja_requests SET status = ? WHERE id = ?", [
+      status,
+      id,
+    ]);
 
     return res.status(200).json({
       success: true,
-      message: `Puja request ${status} successfully`
+      message: `Puja request ${status} successfully`,
     });
-
   } catch (error) {
     console.error("Update Status Error:", error.message);
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 };
@@ -339,17 +397,55 @@ export const getAllPandits = async (req, res) => {
     res.status(200).json({
       success: true,
       count: rows.length,
-      pandits: rows
+      pandits: rows,
     });
-
   } catch (error) {
     console.error("Error fetching pandits:", error.message);
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 };
+
+// export const getAllUsers = async (req, res) => {
+//   try {
+//     const query = `
+//       SELECT
+//         u.id,
+//         u.name,
+//         u.gotra,
+//         u.email,
+//         u.phone,
+
+//         a.id AS address_id,
+//         a.address_line1,
+//         a.city,
+//         a.state,
+//         a.pincode
+
+//       FROM users u
+//       LEFT JOIN addresses a ON u.id = a.user_id
+//       WHERE u.role = 'user'
+//       ORDER BY u.id DESC
+//     `;
+
+//     const [rows] = await db.query(query);
+
+//     res.status(200).json({
+//       success: true,
+//       count: rows.length,
+//       users: rows
+//     });
+
+//   } catch (error) {
+//     console.error("Error fetching users:", error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server Error"
+//     });
+//   }
+// };
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -368,7 +464,10 @@ export const getAllUsers = async (req, res) => {
         a.pincode
 
       FROM users u
-      LEFT JOIN addresses a ON u.id = a.user_id
+      LEFT JOIN addresses a 
+        ON u.id = a.user_id 
+        AND a.is_default = TRUE
+
       WHERE u.role = 'user'
       ORDER BY u.id DESC
     `;
@@ -378,19 +477,16 @@ export const getAllUsers = async (req, res) => {
     res.status(200).json({
       success: true,
       count: rows.length,
-      users: rows
+      users: rows,
     });
-
   } catch (error) {
     console.error("Error fetching users:", error.message);
     res.status(500).json({
       success: false,
-      message: "Server Error"
+      message: "Server Error",
     });
   }
 };
-
-
 
 export const assignPandit = async (req, res) => {
   try {
@@ -400,7 +496,7 @@ export const assignPandit = async (req, res) => {
     // 1️⃣ Check booking exist
     const [booking] = await db.query(
       "SELECT * FROM puja_requests WHERE id = ?",
-      [bookingId]
+      [bookingId],
     );
 
     if (booking.length === 0) {
@@ -410,7 +506,7 @@ export const assignPandit = async (req, res) => {
     // 2️⃣ Check pandit exist and role = pandit
     const [pandit] = await db.query(
       "SELECT * FROM users WHERE id = ? AND role = 'pandit'",
-      [panditId]
+      [panditId],
     );
 
     if (pandit.length === 0) {
@@ -420,17 +516,15 @@ export const assignPandit = async (req, res) => {
     // 3️⃣ Assign + auto accept
     await db.query(
       "UPDATE puja_requests SET pandit_id = ?, status = 'accepted' WHERE id = ?",
-      [panditId, bookingId]
+      [panditId, bookingId],
     );
 
     res.status(200).json({
       success: true,
-      message: "Pandit assigned successfully"
+      message: "Pandit assigned successfully",
     });
-
   } catch (error) {
     console.error("Assign Error:", error);
     res.status(500).json({ message: "Server error" });
   }
 };
-
