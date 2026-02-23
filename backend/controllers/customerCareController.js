@@ -352,10 +352,17 @@ export const updatePujaStatus = async (req, res) => {
     }
 
     // Step 3: Update status
-    await db.query("UPDATE puja_requests SET status = ? WHERE id = ?", [
-      status,
-      id,
-    ]);
+    if (status === "completed") {
+      await db.query(
+        "UPDATE puja_requests SET status = ?, completed_at = NOW() WHERE id = ?",
+        [status, id],
+      );
+    } else {
+      await db.query("UPDATE puja_requests SET status = ? WHERE id = ?", [
+        status,
+        id,
+      ]);
+    }
 
     return res.status(200).json({
       success: true,
