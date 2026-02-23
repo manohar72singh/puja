@@ -39,7 +39,8 @@ const KathaPujaPaymentDetails = () => {
   };
 
   const bookingId = generateBookingId(); // Unique booking ID for this transaction
-
+  const token = localStorage.getItem("token");
+  const userName = token ? JSON.parse(atob(token.split(".")[1])).name : "Guest";
   const [formData, setFormData] = useState({
     date: "",
     time: "",
@@ -47,7 +48,7 @@ const KathaPujaPaymentDetails = () => {
     state: "", // Naya field
     city: "", // Naya field
     pincode: "",
-    devoteeName: "",
+    devoteeName: userName,
     gotra: "",
   });
 
@@ -104,7 +105,7 @@ const KathaPujaPaymentDetails = () => {
       puja_id: id,
       date: formData.date,
       time: formData.time,
-      location: formData.location,
+      location: `${formData.location} - ${formData.pincode}`,
       city: formData.city,
       state: formData.state,
       pincode: formData.pincode,
@@ -113,14 +114,17 @@ const KathaPujaPaymentDetails = () => {
     };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      });
+      );
 
       const data = await response.json();
 
