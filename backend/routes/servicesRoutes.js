@@ -10,6 +10,7 @@ import {
   pindDan,
   PindDanSingle,
   homeORKathaPujaBookingDetails,
+  cancelBooking
 } from "../controllers/servicesController.js";
 
 const router = express.Router();
@@ -19,6 +20,7 @@ router.get("/bookPuja/:id", verifyToken, bookPuja);
 
 //jo user puja book kar rha hai vo sabhi booking puja requests mai ja rahi hai
 router.post("/bookingDetails", verifyToken, bookingDetails);
+router.delete("/cancel-booking/:id", verifyToken, cancelBooking);
 
 // home puja booking details
 router.post(

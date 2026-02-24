@@ -7,27 +7,16 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 export default function TemplePuja() {
 
 const slides = [
-  {
-    // title: "शाश्वत वैदिक अनुष्ठान", // Shaswat Vedic Anushthan
-    // subtitle: "Experience the profound energy of ancient Vedic chants and sacred fire rituals performed by certified Acharyas.",
-    image: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSubcfauFJQsHR1rHAaZi9NBEPvmBi2gWJRwQ&s",
-    // shloka: "॥ शुभं करोति कल्याणम् आरोग्यं धनसंपदा ॥"
+  { 
+    image: "/img/slider1.jpeg",
   },
-  {
-    // title: "दिव्य मंदिर आरती", // Divya Temple Aarti
-    // subtitle: "Connect with the divine through the rhythmic vibrations of temple bells and the warmth of holy lamps.",
-    image: "https://images.unsplash.com/photo-1597109216022-71b4810ed4c0?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Nnx8bWFuZGlyfGVufDB8fDB8fHwwz",
-    // shloka: "॥ तमस़ो मा ज्योतिर्गमय ॥"
+  { 
+    image: "/img/slider2.jpeg", 
   },
-  {
-    // title: "परम पावन आशीर्वाद", // Param Paavan Ashirwad
-    // subtitle: "A gateway to spiritual awakening, bringing peace, prosperity, and divine protection to your home.",
-    image: "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcS1P3Qix9jHTASj_DEX1CVWA3wHoubZ4jsktAtxy6rCa5E4LJEe4QrEjdLgzIgZ",
-    // shloka: "॥ सर्वे भवन्तु सुखिनः ॥"
+  { 
+    image: "/img/slider3.jpeg",  
   }
 ];
-
-
   const [currentSlide, setCurrentSlide] = useState(0);
 
   const navigate = useNavigate();
@@ -38,7 +27,7 @@ const slides = [
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
-    }, 4000);
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -56,7 +45,7 @@ const slides = [
           }
         });
         const data = await response.json();
-        console.log("temple puja::::::::",data.data)
+        console.log("temple puja::::::::", data.data)
         setServices(data.data);
       } catch (error) {
         console.log("Error", error);
@@ -78,7 +67,7 @@ const slides = [
 
         {/* HEADER SECTION - CENTERED & LARGE TEXT */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-[1px] w-12 bg-orange-300"></div>
             <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
               Sacred Luxury Rituals
@@ -107,44 +96,24 @@ const slides = [
             {slides.map((slide, index) => (
               <div
                 key={index}
-                className="min-w-full h-[220px] md:h-[300px] bg-cover bg-center flex items-center justify-center relative"
-                style={{ backgroundImage: `url(${slide.image})` }}
+                className="min-w-full h-[300px] md:h-[300px] flex items-center justify-center relative"
+                style={{
+                  // Yaha 'slide.image' use hoga na ki slides[currentIndex]
+                  backgroundImage: `url(${slide.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
+                }}
               >
                 {/* Cinematic Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-black/20"></div>
 
                 {/* Text Content */}
-                <div className="relative text-center text-white px-6">
-                  <h2 className="text-2xl md:text-3xl text-orange-600 font-serif mb-2 tracking-tight">
-                    {slide.title}
-                  </h2>
-                  <p className="text-sm md:text-base opacity-90 max-w-xl pb-2 mx-auto">
-                    {slide.subtitle}
-                  </p>
-                  <p className="text-m md:text-base text-orange-500 opacity-90 max-w-xl mx-auto">
-                    {slide.shloka}
-                  </p>
-                </div>
+                
               </div>
             ))}
           </div>
-
-          {/* Dots Indicator
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-            {slides.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentSlide(index)}
-                className={`h-2.5 rounded-full transition-all duration-300 ${currentSlide === index
-                    ? "w-8 bg-white"
-                    : "w-2.5 bg-white/50 hover:bg-white/80"
-                  }`}
-              />
-            ))}
-          </div> */}
-
         </div>
-
 
         {/* SEARCH INPUT */}
         <div className="relative w-full max-w-2xl mx-auto mb-15">
@@ -180,14 +149,14 @@ const slides = [
                   <div className="absolute inset-0 bg-gradient-to-t from-[#1A1108]/90 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity duration-500" />
 
                   {/* Visible Luxury Price Badge */}
-                <div className="absolute top-3 left-4 z-20">
-                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
-                    <Sparkles size={12} fill="white" className="text-white" />
-                    <span className="text-[13px] font-semibold tracking-wide">
-                      Features
-                    </span>
+                  <div className="absolute top-3 left-4 z-20">
+                    <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
+                      <Sparkles size={12} fill="white" className="text-white" />
+                      <span className="text-[13px] font-semibold tracking-wide">
+                        Features
+                      </span>
+                    </div>
                   </div>
-                </div>
                 </div>
 
                 {/* Content Section */}

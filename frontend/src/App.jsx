@@ -41,6 +41,9 @@ import CustomerCareDashboard from "./admin/pages/CustomerCareDashboard";
 
 import FullTemplePage from "./user/Pages/FullTemplePage";
 import MandirDetailsPage from "./user/Pages/MandirDetailsPage";
+import EventsPage from "./user/Pages/EventsPage";
+import AartiPage  from "./user/Pages/AartiPage";
+
 import AdminDashboard from "./admin/pages/AdminDashboard";
 
 function App() {
@@ -70,6 +73,8 @@ function App() {
 
           <Route path="/temples" element={<FullTemplePage />} />
           <Route path="/:id" element={<MandirDetailsPage />} />
+          <Route path="/events" element={<EventsPage/>}/>
+          <Route path="/aarti" element={<AartiPage/>}/>
 
           {/* Home Puja */}
           <Route path="/homePuja">

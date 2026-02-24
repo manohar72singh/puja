@@ -1,11 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Clock, MapPin, Info } from "lucide-react";
+import { Calendar, Clock, MapPin, Info, Trash2, AlertTriangle } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // --- Naya State Confirmation Pop-up ke liye ---
+  const [showConfirm, setShowConfirm] = useState({ show: false, id: null, data: null });
 
   useEffect(() => {
     const fetchMyBookings = async () => {
@@ -16,7 +20,6 @@ const MyBookings = () => {
         });
         const data = await response.json();
         if (data.success) setBookings(data.bookings);
-        console.log("Fetched Bookings:", data.bookings); // Debugging ke liye
       } catch (error) {
         console.error("Error fetching bookings:", error);
       } finally {
@@ -25,6 +28,34 @@ const MyBookings = () => {
     };
     fetchMyBookings();
   }, []);
+
+  // --- Cancel Function Jo Database se Delete Karega ---
+  const handleCancelBooking = async (bookingId) => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(`${API_BASE_URL}/puja/cancel-booking/${bookingId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setBookings(bookings.filter((b) => b.id !== bookingId));
+        setErrorMsg("Booking cancelled successfully!");
+        setTimeout(() => setErrorMsg(""), 3000);
+      } else {
+        setErrorMsg(data.message || "Failed to cancel booking.");
+        setTimeout(() => setErrorMsg(""), 3000);
+      }
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      setErrorMsg("Something went wrong!");
+      setTimeout(() => setErrorMsg(""), 3000);
+    } finally {
+      setShowConfirm({ show: false, id: null, data: null });
+    }
+  };
 
   if (loading)
     return (
@@ -35,6 +66,102 @@ const MyBookings = () => {
 
   return (
     <div className="min-h-screen bg-[#FFF4E1] p-4 sm:p-6">
+
+      {/* --- 1. RED CONFIRMATION POP-UP (Modal) --- */}
+      {showConfirm.show && (() => {
+        // Time Calculation Logic
+        // const bookingDate = new Date(showConfirm.data?.preferred_time);
+
+        const preferred_date = showConfirm.data?.preferred_date;
+        const preferred_time = showConfirm.data?.preferred_time;
+
+        // Extract only date part (YYYY-MM-DD)
+        const bookingDate = preferred_date.split("T")[0];
+
+        // Merge date + time
+        const mergedDateTime = new Date(`${bookingDate}T${preferred_time}:00`);
+
+        const now = new Date();
+
+
+        const isExpired = mergedDateTime < now;
+
+        return (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
+            <div className="bg-[#FFFCEF] rounded-3xl p-8 max-w-md w-full shadow-2xl animate-in fade-in zoom-in duration-200 border border-orange-100">
+              <div className="flex flex-col items-start text-left">
+
+                <h3 className="text-2xl font-bold text-[#3b2a1a] font-serif mb-2 text-left">Cancel Booking?</h3>
+
+                <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+                  Are you sure you want to cancel this booking for <span className="font-bold text-[#3b2a1a] italic">{showConfirm.data?.puja_name}</span>?
+                </p>
+
+                {/* Event Passed Alert */}
+                {isExpired && (
+                  <div className="w-full bg-red-50 border border-red-100 p-3 rounded-xl mb-4">
+                    <p className="text-red-600 font-bold text-[13px] flex items-center gap-2">
+                      <span>⚠️</span> Event has passed
+                    </p>
+                  </div>
+                )}
+
+                {/* Refund Policy Section */}
+                <div className="w-full border-t border-gray-200 pt-4 mb-6">
+                  <p className="text-[#8b5e34] font-bold text-xs uppercase mb-3 tracking-widest">Refund Policy:</p>
+                  <ul className="text-[#8b5e34]/80 text-[13px] space-y-2 list-none font-medium">
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#8b5e34]/40 rounded-full"></span>
+                      More than 48 hours before: 100% refund
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#8b5e34]/40 rounded-full"></span>
+                      24-48 hours before: 50% refund
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 bg-[#8b5e34]/40 rounded-full"></span>
+                      Less than 24 hours: No refund
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="flex gap-3 w-full">
+                  {/* --- KEEP BOOKING BUTTON LOGIC --- */}
+                  <button
+                    onClick={() => setShowConfirm({ show: false, id: null, data: null })}
+                    className="flex-1 px-4 py-3 bg-white border border-orange-200 text-[#3b2a1a] rounded-xl font-bold hover:bg-orange-50 transition-all text-sm shadow-sm active:scale-95"
+                  >
+                    Keep Booking
+                  </button>
+
+                  {/* --- CANCEL BUTTON LOGIC --- */}
+                  <button
+                    disabled={isExpired}
+                    onClick={() => handleCancelBooking(showConfirm.id)}
+                    className={`flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${isExpired
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                      : "bg-red-500 text-white hover:bg-red-600 shadow-red-100"
+                      }`}
+                  >
+                    {isExpired ? "Cannot Cancel" : "Yes, Cancel"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* --- 2. Top Red Alert Notification --- */}
+      {errorMsg && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-bounce text-center min-w-[300px]">
+          <div className="bg-red-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center justify-center gap-3 border-2 border-white">
+            <span className="text-xl">⚠️</span>
+            <p className="font-bold text-sm tracking-wide">{errorMsg}</p>
+          </div>
+        </div>
+      )}
+
       <div className="max-w-6xl mx-auto">
         <h2 className="text-4xl font-serif text-[#3b2a1a] mb-2">
           My Sacred <span className="text-orange-500 italic">Bookings</span>
@@ -57,26 +184,23 @@ const MyBookings = () => {
               return (
                 <div
                   key={b.id}
-                  className={`relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border transition-all hover:shadow-md flex flex-col md:flex-row gap-4 sm:gap-6 mb-4 ${
-                    isTemplePuja
-                      ? "border-orange-300 bg-orange-50/20"
-                      : "border-gray-100"
-                  }`}
+                  className={`relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border transition-all hover:shadow-md flex flex-col md:flex-row md:items-center gap-4 sm:gap-6 ${isTemplePuja ? "border-orange-300" : "border-orange-300"}`}   
                 >
+                  
                   {/* Category Ribbon */}
                   <div
-                    className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl -3xl text-[10px] font-black uppercase tracking-widest text-white ${
-                      isTemplePuja ? "bg-orange-500" : "bg-blue-500"
-                    }`}
+                    className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest text-white ${isTemplePuja ? "bg-orange-500" : "bg-blue-500"
+                      }`}
                   >
                     {isTemplePuja ? "Temple Ceremony" : "Home Ritual"}
                   </div>
 
                   {/* Image */}
-                  <div className="w-full md:w-32 h-28 sm:h-32 shrink-0">
+                    <div className="w-full md:w-32 h-40 sm:h-32 shrink-0 md:flex md:items-center md:justify-center">
+                      
                     <img
                       src={`${API_BASE_URL}/uploads/${b.image_url}`}
-                      className="w-full h-full object-cover rounded-2xl shadow-sm"
+                      className="w-full h-full  object-cover rounded-2xl shadow-sm"
                       alt={b.puja_name}
                     />
                   </div>
@@ -100,10 +224,7 @@ const MyBookings = () => {
                       </div>
 
                       <div className="flex items-start gap-2 sm:col-span-2">
-                        <MapPin
-                          size={14}
-                          className="text-orange-500 shrink-0 mt-1"
-                        />
+                        <MapPin size={14} className="text-orange-500 shrink-0 mt-1" />
                         <span className="italic text-gray-500 leading-tight">
                           {isTemplePuja
                             ? `Temple Address: ${b.final_address}`
@@ -126,45 +247,57 @@ const MyBookings = () => {
                       </div>
                     )}
 
-                    {/* Status for mobile */}
-                    <div className="mt-3 flex items-center justify-between sm:hidden">
+                    {/* Mobile View: Status and Cancel Button */}
+                    <div className="mt-4 flex items-center justify-between sm:hidden">
                       <div
-                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                          b.status === "pending"
-                            ? "bg-orange-100 text-orange-600 border border-orange-200"
-                            : b.status === "declined"
-                              ? "text-red-500 bg-red-100 border border-red-200"
-                              : "bg-green-100 text-green-600 border border-green-200"
-                        }`}
-                      >
-                        {b.status}
-                      </div>
-                      <span className="text-[10px] font-bold text-gray-400">
-                        ID:{" "}
-                        <span className="text-orange-600">{b.bookingId}</span>
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Status for desktop */}
-                  <div className="hidden md:flex flex-col justify-center items-end border-l border-gray-100 pl-6 min-w-[120px]">
-                    <div
-                      className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                        b.status === "pending"
+                        className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${b.status === "pending"
                           ? "bg-orange-100 text-orange-600 border border-orange-200"
                           : b.status === "declined"
                             ? "text-red-500 bg-red-100 border border-red-200"
                             : "bg-green-100 text-green-600 border border-green-200"
-                      }`}
+                          }`}
+                      >
+                        {b.status}
+                      </div>
+
+                      {b.status === "pending" && (
+                        <button
+                          onClick={() => setShowConfirm({ show: true, id: b.id, data: b })}
+                          className="flex items-center gap-1 text-red-500 font-bold text-[10px] uppercase border border-red-200 px-2 py-1 rounded-lg hover:bg-red-50"
+                        >
+                          <Trash2 size={12} /> Cancel
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Desktop View: Status and Cancel Button */}
+                  <div className="hidden md:flex flex-col justify-center items-end border-l border-gray-100 pl-6 min-w-[140px]">
+
+                    <p className="my-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
+                      ID: <span className="ml-1 text-orange-600">{b.bookingId}</span>
+                    </p>
+                    <div
+                      className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${b.status === "pending"
+                        ? "bg-orange-100 text-orange-600 border border-orange-200"
+                        : b.status === "declined"
+                          ? "text-red-500 bg-red-100 border border-red-200"
+                          : "bg-green-100 text-green-600 border border-green-200"
+                        }`}
                     >
                       {b.status}
                     </div>
-                    <p className="mt-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
-                      ID:{" "}
-                      <span className="ml-1 text-orange-600">
-                        {b.bookingId}
-                      </span>
-                    </p>
+
+                    {b.status === "pending" && (
+                      <button
+                        onClick={() => setShowConfirm({ show: true, id: b.id, data: b })}
+                        className="mt-3 flex items-center gap-1 text-red-500 font-bold text-[10px] uppercase border border-red-200 px-3 py-1.5 rounded-xl hover:bg-red-50 transition-colors"
+                      >
+                        <Trash2 size={12} /> Cancel Booking
+                      </button>
+                    )}
+
+
                   </div>
                 </div>
               );

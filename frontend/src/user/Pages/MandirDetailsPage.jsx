@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
     MapPin, ArrowLeft, Info, Navigation, Clock,
-    Flame, Utensils, Sun, Moon, Sparkles, ShieldCheck, 
+    Flame, Utensils, Sun, Moon, Sparkles, ShieldCheck,
     CalendarDays, Landmark, Car
 } from "lucide-react";
 
@@ -13,7 +13,7 @@ const MandirDetailsPage = () => {
     const [mandir, setMandir] = useState(null);
     const [loading, setLoading] = useState(true);
 
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+    const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 
     useEffect(() => {
@@ -51,12 +51,12 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
     return (
         <div className="bg-orange-100 min-h-screen font-sans text-slate-900 pb-20">
-            
+
             <main className="max-w-7xl mx-auto px-6 pt-6">
-                
+
                 {/* SIMPLE BACK BUTTON */}
-                <button 
-                    onClick={() => navigate(-1)} 
+                <button
+                    onClick={() => navigate(-1)}
                     className="flex items-center gap-2 text-gray-600 hover:text-orange-600 font-bold mb-6 transition-colors"
                 >
                     <ArrowLeft size={20} /> Back
@@ -64,7 +64,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
                 {/* HERO SECTION */}
                 <div className="relative h-[350px] md:h-[480px] rounded-[2.5rem] overflow-hidden shadow-sm mb-12">
-                    <img src={mandir.image_url_1} alt={mandir.name} className="w-full h-full object-cover" />
+                    <img src={`${API_BASE_URL}/uploads/${mandir.image_url_1}`} alt={mandir.name} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                     <div className="absolute bottom-10 left-10 right-10">
                         <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-4 py-1.5 rounded-full text-[10px] text-white font-bold w-fit uppercase tracking-widest mb-4 border border-white/20">
@@ -78,10 +78,10 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-                    
+
                     {/* LEFT CONTENT */}
                     <div className="lg:col-span-2 space-y-12">
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex gap-4 items-center">
                                 <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Landmark size={22} /></div>
@@ -186,9 +186,9 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
                                     </div>
                                 </div>
                                 <a
-                                    href={mandir.map_url}
+                                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(mandir.name + " " + mandir.location)}`}
                                     target="_blank"
-                                    rel="noreferrer"
+                                    rel="noopener noreferrer"
                                     className="block text-center bg-orange-600 text-white py-4 rounded-2xl font-bold hover:bg-orange-700 transition-all shadow-lg shadow-orange-100"
                                 >
                                     OPEN IN GOOGLE MAPS

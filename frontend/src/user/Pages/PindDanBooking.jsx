@@ -92,9 +92,9 @@ const PindDanBooking = () => {
       date: new Date().toISOString().split("T")[0],
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          hour: "2-digit",
+          minute: "2-digit",
+        })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "Default City",
@@ -393,14 +393,22 @@ const PindDanBooking = () => {
                             [item.id]: !p[item.id],
                           }))
                         }
-                        className={`flex items-center justify-between p-5 rounded-xl border transition-all shadow-sm ${donations[item.id] ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"}`}
+                        className={`flex items-center justify-between p-5 rounded-xl border transition-all shadow-sm ${donations[item.id]
+                          ? "border-orange-400 bg-orange-50"
+                          : "border-orange-200 bg-white hover:border-orange-300"
+                          }`}
                       >
+                        {/* LEFT SIDE */}
                         <div className="flex items-center gap-4 text-left">
                           <div
-                            className={`p-3 rounded-lg transition-all ${donations[item.id] ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}
+                            className={`p-3 rounded-lg transition-all ${donations[item.id]
+                              ? "bg-orange-500 text-white"
+                              : "bg-orange-100 text-orange-500"
+                              }`}
                           >
                             {item.icon}
                           </div>
+
                           <div>
                             <h4 className="text-[15px] font-bold text-gray-800">
                               {item.title}
@@ -410,6 +418,11 @@ const PindDanBooking = () => {
                             </p>
                           </div>
                         </div>
+
+                        {/* RIGHT SIDE PRICE */}
+                        <span className="text-[16px] font-bold text-orange-600 whitespace-nowrap">
+                          ₹{item.price}
+                        </span>
                       </button>
                     ))}
                   </div>
@@ -465,49 +478,85 @@ const PindDanBooking = () => {
           </div>
 
           {/* SIDEBAR SUMMARY */}
-          <aside className="lg:col-span-4 lg:sticky lg:top-24 self-start z-30">
-            <div className="bg-white rounded-3xl border border-gray-100 p-8 shadow-2xl shadow-slate-200/60">
-              {/* 1. Header with Underline */}
+          <aside className="lg:col-span-4 lg:sticky lg:top-24  self-start z-30">
+            <div className="bg-white rounded-3xl border border-orange-200 p-8 shadow-2xl shadow-slate-200/60">
+
+              {/* 1. Header Section */}
               <div className="mb-8">
-                <h3 className="text-[15px] font-black text-slate-700 uppercase tracking-[0.15em] mb-2">
+                <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-2">
                   Booking Summary
                 </h3>
                 <div className="flex gap-1">
-                  <div className="h-1.5 w-12 bg-orange-500 rounded-full" />
-                  <div className="h-1.5 w-4 bg-orange-100 rounded-full" />
+                  <div className="h-1 w-12 bg-orange-500 rounded-full" />
+                  <div className="h-1 w-4 bg-orange-100 rounded-full" />
                 </div>
               </div>
 
-              {/* 2. Pricing Section */}
-              <div className="space-y-6">
-                {/* Standard Price Row */}
-                <div className="flex justify-between items-center">
-                  <span className="text-[14px] font-bold text-slate-400 uppercase tracking-wider">
-                    Standard Booking
+              {/* 2. Pricing & Add-ons Section */}
+              <div className="space-y-5">
+
+                {/* Base Price Row */}
+                <div className="flex justify-between items-center px-1">
+                  <span className="text-[15px] font-bold text-slate-500  tracking-wider">
+                    Base Price
                   </span>
-                  <span className="text-[16px] font-black text-slate-800">
+                  <span className="text-[16px] font-bold text-slate-800">
                     ₹{Number(service?.standard_price).toLocaleString("en-IN")}
                   </span>
+                </div>
+
+                {/* CLICKABLE ADD CONTRIBUTIONS BUTTON (Same as your 2nd code) */}
+                <button
+                  onClick={() => scrollToSection("contributions")}
+                  className="w-full flex items-center justify-between p-3 rounded-2xl border border-orange-200 bg-orange-50/50 hover:bg-orange-100 hover:border-orange-300 transition-all group active:scale-[0.98]"
+                >
+                  <div className="flex items-center gap-2 text-orange-600 text-[14px] font-bold">
+                    <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
+                      <Heart size={16} fill="currentColor" className="text-orange-500" />
+                    </div>
+                    Add Contributions
+                  </div>
+                  <div className="flex items-center gap-1">
+                    {Object.values(donations).some((val, idx) => val && Object.keys(donations)[idx] !== "temple") ? (
+                      <span className="text-[14px] font-bold text-orange-600">
+                        +₹{contributionList.reduce((acc, item) => donations[item.id] ? acc + item.price : acc, 0)}
+                      </span>
+                    ) : (
+                      <ChevronRight size={16} className="text-orange-400 group-hover:translate-x-1 transition-transform" />
+                    )}
+                  </div>
+                </button>
+
+                {/* TEMPLE DONATION CHECKBOX (Same as your 2nd code) */}
+                <div className="flex items-center justify-between py-1 px-1 border-t border-gray-50 pt-4">
+                  <label className="flex items-center gap-3 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={donations.temple}
+                      onChange={(e) =>
+                        setDonations((prev) => ({ ...prev, temple: e.target.checked }))
+                      }
+                      className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
+                    />
+                    <span className="text-[14px] text-slate-500 font-bold uppercase tracking-wider group-hover:text-orange-600 transition-colors">
+                      Temple Donation
+                    </span>
+                  </label>
+                  <span className="text-[14px] font-black text-orange-500">+₹1</span>
                 </div>
 
                 {/* Dotted Divider */}
                 <div className="border-t border-dashed border-gray-300 w-full my-2" />
 
                 {/* Total Amount Row */}
-                <div className="flex justify-between items-start pt-2">
+                <div className="flex justify-between items-start pt-2 px-1">
                   <div className="flex flex-col gap-1">
                     <span className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
                       Total Amount
                     </span>
                     <div className="flex items-center gap-1.5 text-emerald-600">
-                      <ShieldCheck
-                        size={14}
-                        fill="currentColor"
-                        className="opacity-20"
-                      />
-                      <span className="text-[11px] font-bold">
-                        Inclusive of all taxes
-                      </span>
+                      <ShieldCheck size={14} fill="currentColor" className="opacity-20" />
+                      <span className="text-[11px] font-bold">Inclusive of all taxes</span>
                     </div>
                   </div>
                   <div className="text-right">
@@ -518,8 +567,8 @@ const PindDanBooking = () => {
                 </div>
               </div>
 
-              {/* 3. Action Section */}
-              <div className="mt-10 space-y-6">
+              {/* 3. Action Button */}
+              <div className="mt-10 space-y-4">
                 <button
                   onClick={() => handlePindDanPayment()}
                   disabled={isBooking}
@@ -530,18 +579,12 @@ const PindDanBooking = () => {
                       <Loader2 className="animate-spin" size={20} />
                     ) : (
                       <>
-                        <span>Proceed to Book</span>
-                        <ChevronRight
-                          size={18}
-                          strokeWidth={3}
-                          className="group-hover:translate-x-1 transition-transform"
-                        />
+                        <span>Proceed to Pay</span>
+                        <ChevronRight size={18} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
                       </>
                     )}
                   </div>
                 </button>
-
-                {/* Footer Text */}
                 <p className="text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">
                   Free cancellation up to 24 hours before
                 </p>
@@ -556,7 +599,7 @@ const PindDanBooking = () => {
 
 const BenefitSmall = ({ icon, title, desc }) => (
   <div className="flex items-center gap-4 bg-white p-5 rounded-xl border border-orange-200 group transition-all shadow-sm hover:border-orange-400">
-    <div className="p-3 bg-orange-50 text-orange-500 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm">
+    <div className="p-3 bg-orange-50 text-orange-500 rounded-xl transition-all shadow-sm">
       {React.cloneElement(icon, { size: 20 })}
     </div>
     <div>
@@ -570,21 +613,35 @@ const BenefitSmall = ({ icon, title, desc }) => (
   </div>
 );
 
-const FAQItem = ({ q, a }) => (
-  <details className="group py-2 cursor-pointer list-none">
-    <summary className="flex justify-between items-center font-bold text-[15px] text-gray-700 list-none [&::-webkit-details-marker]:hidden">
-      <span className="pr-5">{q}</span>
-      <ChevronRight 
-        size={18} 
-        className="group-open:rotate-90 transition-transform duration-300 text-orange-400 shrink-0" 
-      />
-    </summary>
-    <div className="overflow-hidden">
-      <p className="text-[14px] text-gray-500 mt-3 leading-relaxed font-medium animate-in fade-in slide-in-from-top-1">
-        {a}
-      </p>
+const FAQItem = ({ q, a }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div 
+      className="py-2 cursor-pointer border-b border-orange-50 last:border-none" 
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
+      </div>
+      
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
+      </div>
     </div>
-  </details>
-);
+  );
+};
 
 export default PindDanBooking;

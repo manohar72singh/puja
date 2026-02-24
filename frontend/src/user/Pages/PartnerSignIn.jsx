@@ -56,31 +56,30 @@ const PartnerSignIn = () => {
 
   return (
     <div className="min-h-screen bg-[#FDF8F1] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
-      
+
       {/* Background Blurs */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-100 rounded-full blur-[120px] opacity-60" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-orange-50 rounded-full blur-[120px] opacity-60" />
 
       {/* Container for Link and Card */}
-      <div className="w-full max-w-[440px] z-10">
-        
+      <div className="w-full max-w-lg z-10">
+
         {/* Properly Placed Back Link (Like Header style) */}
-        <div className="w-full flex justify-start mb-6">
-          <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-orange-500 transition-colors text-sm font-medium group">
-            <ArrowLeft size={16} className="group-hover:-translate-x-1 transition-transform" /> 
-            Back to Website
+        <div className="flex justify-start mb-4">
+          <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-orange-600 transition-colors text-xs font-bold group">
+            <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Website
           </Link>
         </div>
 
         {/* MAIN CARD */}
         <div className="bg-white rounded-[40px] shadow-[0_25px_80px_-10px_rgba(0,0,0,0.20)]
- border border-white/50 p-8 md:p-10 flex flex-col items-center">
-          
+          border border-white/50 p-8 md:p-10 flex flex-col items-center">
+
           {/* Logo with custom src */}
           <div className="w-20 h-20 bg-white rounded-[24px] flex items-center justify-center shadow-lg shadow-orange-100 mb-6 overflow-hidden border border-orange-50">
-            <img 
-              src="/img/download.jpg" 
-              alt="Sri Vedic Puja Logo" 
+            <img
+              src="/img/download.jpg"
+              alt="Sri Vedic Puja Logo"
               className="w-full h-full object-cover p-2"
             />
           </div>
@@ -93,11 +92,11 @@ const PartnerSignIn = () => {
           {/* Verification Badge with Shield Icon */}
           <div className="flex items-center gap-3 mb-8">
             <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 x-3 py-1.5 rounded-full uppercase tracking-wider ">
-               <ShieldCheck size={12} strokeWidth={3} />
-               Verified
+              <ShieldCheck size={12} strokeWidth={3} />
+              Verified
             </div>
             <div className="flex items-center gap-1 text-[10px] font-bold text-orange-600 px-3 py-1.5 rounded-full uppercase tracking-wide ">
-               ★ 4.8 Rating
+              ★ 4.8 Rating
             </div>
           </div>
 

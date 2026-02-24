@@ -46,7 +46,7 @@ export default function Pind_Dan() {
 
         {/* HEADER SECTION - CENTERED & LARGE TEXT */}
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="flex items-center justify-center gap-3 mb-6">
+          <div className="flex items-center justify-center gap-3 mb-4">
             <div className="h-[1px] w-12 bg-orange-300"></div>
             <span className="text-xs tracking-[0.3em] uppercase text-orange-600 font-bold">
               Sacred Luxury Rituals

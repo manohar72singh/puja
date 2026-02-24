@@ -219,11 +219,11 @@ const HomePujaBooking = () => {
             </div>
 
             {/* SECTION: FAQs */}
-            <section ref={sections.faqs} className="bg-white p-7 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
-              <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-6">
+            <section ref={sections.faqs} className="bg-white p-6 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
+              <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-5">
                 <HelpCircle size={20} /> Frequently Asked Questions
               </div>
-              <div className="space-y-4">
+              <div className="space-y-1">
                 <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
                 <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
                 <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits who are well-versed in Shastras and certified for performing complex rituals will conduct your puja." />
@@ -253,14 +253,14 @@ const HomePujaBooking = () => {
               <div className="space-y-3">
                 {/* Base Price Row */}
                 <div className="flex justify-between items-center text-[15px] font-bold">
-                  <span className="text-gray-500 uppercase tracking-wider">Base Price</span>
+                  <span className="text-gray-500  tracking-wider">Base Price</span>
                   <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
                 </div>
 
                 {/* Samagri Kit Row - Tabhi dikhega jab enabled ho */}
                 {samagriEnabled && (
                   <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
-                    <span className="text-gray-500 uppercase tracking-wider">Samagri Kit</span>
+                    <span className="text-gray-500  tracking-wider">Samagri Kit</span>
                     <span className=" tracking-tight">+₹600</span>
                   </div>
                 )}
@@ -316,7 +316,7 @@ const HomePujaBooking = () => {
 // --- HELPER: BENEFIT CARD ---
 const BenefitSmall = ({ icon, title, desc }) => (
   <div className="flex items-center gap-4 bg-[#FFFDF8] p-2 rounded-xl border border-orange-50 group border-orange-200 transition-all shadow-sm">
-    <div className="p-3 bg-white text-orange-500 rounded-xl shadow-sm group-hover:bg-orange-500 group-hover:text-white transition-all">
+    <div className="p-3 bg-white text-orange-500 rounded-xl shadow-sm transition-all">
       {React.cloneElement(icon, { size: 20 })}
     </div>
     <div>
@@ -326,22 +326,34 @@ const BenefitSmall = ({ icon, title, desc }) => (
   </div>
 );
 
-// --- HELPER: FAQ ITEM ---
-const FAQItem = ({ q, a }) => (
-  <details className="group py-2 cursor-pointer list-none">
-    <summary className="flex justify-between items-center font-bold text-[15px] text-gray-700 list-none [&::-webkit-details-marker]:hidden">
-      <span className="pr-5">{q}</span>
-      <ChevronRight 
-        size={18} 
-        className="group-open:rotate-90 transition-transform duration-300 text-orange-400 shrink-0" 
-      />
-    </summary>
-    <div className="overflow-hidden">
-      <p className="text-[14px] text-gray-500 mt-3 leading-relaxed font-medium animate-in fade-in slide-in-from-top-1">
-        {a}
-      </p>
-    </div>
-  </details>
-);
+const FAQItem = ({ q, a }) => {
+  const [open, setOpen] = useState(false);
 
+  return (
+    <div 
+      className="py-3 cursor-pointer border-b border-orange-50 last:border-none" 
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
+      </div>
+      
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
+      </div>
+    </div>
+  );
+};
 export default HomePujaBooking;

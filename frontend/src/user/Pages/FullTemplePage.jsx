@@ -1,15 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react'; // 1. useMemo add kiya
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { MapPin, Search, ChevronRight, Sparkles } from 'lucide-react';
+
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL; // Component ke bahar rakha hai performance ke liye
 
 const FullTemplePage = () => {
   const [temples, setTemples] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCity, setActiveCity] = useState("All");
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-
 
   const cities = ["All", "Gaya", "Varanasi", "Mathura", "Ayodhya", "Ujjain", "Puri", "Vrindavan", "Tirumala", "Amritsar"];
 
@@ -18,6 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
       try {
         const response = await axios.get(`${API_BASE_URL}/mandir/all`);
         setTemples(response.data);
+        console.log(response.data)
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -27,14 +28,19 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
     fetchTemples();
   }, []);
 
-  // Filter Logic: Search + City Button
-  const filteredTemples = temples.filter(t => {
-    const matchesSearch = t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                          t.location.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCity = activeCity === "All" || t.location.toLowerCase().includes(activeCity.toLowerCase());
-    
-    return matchesSearch && matchesCity;
-  });
+  // 2. Filter Logic ko Memoize kiya (Isse hang hona band ho jayega)
+  const filteredTemples = useMemo(() => {
+    return temples.filter(t => {
+      const matchesSearch = 
+        t.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        t.location.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCity = 
+        activeCity === "All" || 
+        t.location.toLowerCase().includes(activeCity.toLowerCase());
+      
+      return matchesSearch && matchesCity;
+    });
+  }, [temples, searchTerm, activeCity]); // Sirf tabhi chalega jab data ya filter badlega
 
   return (
     <div className="bg-orange-100 min-h-screen font-sans">
@@ -70,7 +76,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex flex-col md:flex-row gap-6 items-center">
             
-            {/* Search Input */}
             <div className="relative w-full md:w-80">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
               <input 
@@ -81,7 +86,6 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
               />
             </div>
 
-            {/* City Scrollable Buttons */}
             <div className="flex flex-1 gap-3 overflow-x-auto no-scrollbar pb-1 w-full">
               {cities.map((city) => (
                 <button
@@ -122,16 +126,16 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
                 <Link to={`/${temple.id}`} key={temple.id} className="group">
                   <div className="bg-white rounded-[1.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full flex flex-col">
                     
-                    {/* Image */}
-                    <div className="relative aspect-[4/3] m-2 overflow-hidden rounded-[1rem]">
+                    {/* Image Optimized with Loading Lazy */}
+                    <div className="relative aspect-[4/3] m-2 overflow-hidden rounded-[1rem] bg-gray-100">
                       <img 
-                        src={temple.image_url_1} 
+                        src={`${API_BASE_URL}/uploads/${temple.image_url_1}`}
+                        loading="lazy" // 3. Lazy loading add kiya
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                         alt={temple.name}
                       />
                     </div>
 
-                    {/* Content */}
                     <div className="p-6 pt-2 flex flex-col flex-1">
                       <div className="flex items-center gap-1.5 text-gray-400 mb-2">
                         <MapPin size={12} className="text-orange-500" />

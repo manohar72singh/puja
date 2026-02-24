@@ -219,7 +219,7 @@ const KathaPujaBooking = () => {
 
             {/* SECTION: FAQs */}
             <section ref={sections.faqs} className="bg-white p-7 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
-              <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-6">
+              <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-5">
                 <HelpCircle size={20} /> Frequently Asked Questions
               </div>
               <div className="space-y-4">
@@ -245,13 +245,13 @@ const KathaPujaBooking = () => {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-[15px] font-bold">
-                  <span className="text-gray-500 uppercase tracking-wider">Base Price</span>
+                  <span className="text-gray-500  tracking-wider">Base Price</span>
                   <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
                 </div>
 
                 {samagriEnabled && (
                   <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
-                    <span className="text-gray-500 uppercase tracking-wider">Samagri Kit</span>
+                    <span className="text-gray-500  tracking-wider">Samagri Kit</span>
                     <span className="tracking-tight">+₹600</span>
                   </div>
                 )}
@@ -296,7 +296,7 @@ const KathaPujaBooking = () => {
 // --- HELPER COMPONENTS ---
 const BenefitSmall = ({ icon, title, desc }) => (
   <div className="flex items-center gap-4 bg-[#FFFDF8] p-5 rounded-xl border border-orange-200 group transition-all shadow-sm">
-    <div className="p-3 bg-white text-orange-500 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm border border-orange-50">
+    <div className="p-3 bg-white text-orange-500 rounded-xl transition-all shadow-sm border border-orange-50">
       {React.cloneElement(icon, { size: 20 })}
     </div>
     <div>
@@ -306,21 +306,35 @@ const BenefitSmall = ({ icon, title, desc }) => (
   </div>
 );
 
-const FAQItem = ({ q, a }) => (
-  <details className="group py-2 cursor-pointer list-none">
-    <summary className="flex justify-between items-center font-bold text-[15px] text-gray-700 list-none [&::-webkit-details-marker]:hidden">
-      <span className="pr-5">{q}</span>
-      <ChevronRight 
-        size={18} 
-        className="group-open:rotate-90 transition-transform duration-300 text-orange-400 shrink-0" 
-      />
-    </summary>
-    <div className="overflow-hidden">
-      <p className="text-[14px] text-gray-500 mt-3 leading-relaxed font-medium animate-in fade-in slide-in-from-top-1">
-        {a}
-      </p>
+const FAQItem = ({ q, a }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div 
+      className="py-2 cursor-pointer border-b border-orange-50 last:border-none" 
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
+      </div>
+      
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
+      </div>
     </div>
-  </details>
-);
+  );
+};
 
 export default KathaPujaBooking;

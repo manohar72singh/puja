@@ -93,9 +93,9 @@ const TemplePujaBooking = () => {
       date: new Date().toISOString().split("T")[0],
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          hour: "2-digit",
+          minute: "2-digit",
+        })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "default city",
@@ -371,7 +371,6 @@ const TemplePujaBooking = () => {
               </div>
             </div>
 
-            {/* 4. SACRED CONTRIBUTIONS BLOCK (Separate Horizontal Section) */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
               <div className="p-7 bg-white">
                 <section
@@ -391,14 +390,22 @@ const TemplePujaBooking = () => {
                             [item.id]: !p[item.id],
                           }))
                         }
-                        className={`flex items-center justify-between p-5 rounded-xl border transition-all shadow-sm ${donations[item.id] ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"}`}
+                        className={`flex items-center justify-between p-5 rounded-xl border transition-all shadow-sm ${donations[item.id]
+                          ? "border-orange-400 bg-orange-50"
+                          : "border-orange-200 bg-white hover:border-orange-300"
+                          }`}
                       >
+                        {/* LEFT SIDE */}
                         <div className="flex items-center gap-4 text-left">
                           <div
-                            className={`p-3 rounded-lg transition-all ${donations[item.id] ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}
+                            className={`p-3 rounded-lg transition-all ${donations[item.id]
+                              ? "bg-orange-500 text-white"
+                              : "bg-orange-100 text-orange-500"
+                              }`}
                           >
                             {item.icon}
                           </div>
+
                           <div>
                             <h4 className="text-[15px] font-bold text-gray-800">
                               {item.title}
@@ -408,7 +415,9 @@ const TemplePujaBooking = () => {
                             </p>
                           </div>
                         </div>
-                        <span className="text-[15px] font-bold text-orange-600">
+
+                        {/* RIGHT SIDE PRICE */}
+                        <span className="text-[16px] font-bold text-orange-600 whitespace-nowrap">
                           ₹{item.price}
                         </span>
                       </button>
@@ -467,7 +476,7 @@ const TemplePujaBooking = () => {
 
           {/* SIDEBAR SUMMARY */}
           <aside className="lg:col-span-4 lg:sticky lg:top-[100px] self-start z-30">
-            <div className="bg-white rounded-3xl border border-orange-100 p-6 shadow-xl shadow-orange-50/50 space-y-6">
+            <div className="bg-white rounded-3xl border border-orange-200 p-6 shadow-xl shadow-orange-50/50 space-y-6">
               {/* 1. Ticket Type Section */}
               <div>
                 <h3 className="text-[16px] font-bold text-gray-800 mb-4 tracking-tight">
@@ -478,18 +487,16 @@ const TemplePujaBooking = () => {
                     <button
                       key={t.label}
                       onClick={() => setSelectedTicket(t.label)}
-                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${
-                        selectedTicket === t.label
-                          ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
-                          : "border-gray-100 bg-white hover:border-orange-200"
-                      }`}
+                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${selectedTicket === t.label
+                        ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
+                        : "border-gray-100 bg-white hover:border-orange-200"
+                        }`}
                     >
                       <div
-                        className={`mb-2 p-2.5 rounded-xl ${
-                          selectedTicket === t.label
-                            ? "bg-orange-500 text-white shadow-md"
-                            : "bg-gray-50 text-gray-400"
-                        }`}
+                        className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label
+                          ? "bg-orange-500 text-white shadow-md"
+                          : "bg-gray-50 text-gray-400"
+                          }`}
                       >
                         {t.icon}
                       </div>
@@ -629,7 +636,7 @@ const TemplePujaBooking = () => {
 
 const BenefitSmall = ({ icon, title, desc }) => (
   <div className="flex items-center gap-4 bg-white p-5 rounded-xl border border-orange-200 group transition-all shadow-sm hover:border-orange-400">
-    <div className="p-3 bg-orange-50 text-orange-500 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-all shadow-sm">
+    <div className="p-3 bg-orange-50 transition-all rounded-xl text-orange-500 shadow-sm">
       {React.cloneElement(icon, { size: 20 })}
     </div>
     <div>
@@ -643,21 +650,35 @@ const BenefitSmall = ({ icon, title, desc }) => (
   </div>
 );
 
-const FAQItem = ({ q, a }) => (
-  <details className="group py-2 cursor-pointer list-none">
-    <summary className="flex justify-between items-center font-bold text-[15px] text-gray-700 list-none [&::-webkit-details-marker]:hidden">
-      <span className="pr-5">{q}</span>
-      <ChevronRight 
-        size={18} 
-        className="group-open:rotate-90 transition-transform duration-300 text-orange-400 shrink-0" 
-      />
-    </summary>
-    <div className="overflow-hidden">
-      <p className="text-[14px] text-gray-500 mt-3 leading-relaxed font-medium animate-in fade-in slide-in-from-top-1">
-        {a}
-      </p>
+const FAQItem = ({ q, a }) => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div 
+      className="py-2 cursor-pointer border-b border-orange-50 last:border-none" 
+      onClick={() => setOpen(!open)}
+    >
+      <div className="flex justify-between items-center gap-4">
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
+      </div>
+      
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
+        }`}
+      >
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
+      </div>
     </div>
-  </details>
-);
+  );
+};
 
 export default TemplePujaBooking;

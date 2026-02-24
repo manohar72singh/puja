@@ -443,3 +443,30 @@ export const PindDanSingle = async (req, res) => {
     });
   }
 };
+
+// Booking cancel karne ka controller
+export const cancelBooking = async (req, res) => {
+    try {
+        const { id } = req.params;
+        // User ID ko verify karein (Agar aap req.user use kar rahe hain toh)
+        const userId = req.user ? req.user.id : null; 
+
+        console.log("Cancelling Booking ID:", id); // Check karein console mein ID aa rahi hai?
+
+        // Database query - dhyaan dein ki aapka table name 'puja_request' hi ho
+        const [result] = await db.query(
+            "DELETE FROM puja_requests WHERE id = ?", 
+            [id]
+        );
+
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ success: false, message: "Booking nahi mili." });
+        }
+
+        return res.status(200).json({ success: true, message: "Deleted successfully" });
+
+    } catch (error) {
+        console.error("Backend Error:", error); // Terminal mein error dekhein
+        return res.status(500).json({ success: false, message: error.message });
+    }
+};

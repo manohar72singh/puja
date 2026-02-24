@@ -196,9 +196,9 @@ export default function Home() {
           </p>
 
           {/* CARDS GRID */}
-          <div className="grid md:grid-cols-2 max-w-4xl mx-auto gap-8">
+          <div className="grid md:grid-cols-2 max-w-4xl mx-auto gap-8 ">
 
-            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/homePuja")}>
+            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer hover:-translate-y-2" onClick={() => navigate("/homePuja")}>
               <div className="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
                 <HomeIcon size={28} />
               </div>
@@ -211,7 +211,7 @@ export default function Home() {
               </button>
             </div>
 
-            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer" onClick={() => navigate("/temple-puja")}>
+            <div className="group p-8 rounded-[20px] bg-[#FFFDF8] border border-orange-200 text-left hover:shadow-2xl hover:border-orange-400 transition-all duration-300 cursor-pointer hover:-translate-y-2" onClick={() => navigate("/temple-puja")}>
               <div className="w-14 h-14 bg-orange-500 text-white rounded-2xl flex items-center justify-center mb-6 shadow-lg shadow-orange-200 group-hover:scale-110 transition-transform">
                 <Video size={28} />
               </div>

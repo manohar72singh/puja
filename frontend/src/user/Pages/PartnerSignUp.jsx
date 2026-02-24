@@ -85,10 +85,10 @@ const PartnerSignUp = () => {
             {/* Background Blurs */}
             <div className="absolute top-[-5%] left-[-5%] w-[300px] h-[300px] bg-orange-200/20 rounded-full blur-[80px]" />
             
-            <div className="w-full max-w-[520px] z-10 mt-4">
+            <div className="w-full max-w-[500px] z-10 mt-4">
                 <div className="flex justify-start mb-4">
                     <Link to="/" className="flex items-center gap-2 text-gray-400 hover:text-orange-600 transition-colors text-xs font-bold group">
-                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> BACK TO HOME
+                        <ArrowLeft size={14} className="group-hover:-translate-x-1 transition-transform" /> Back to Website
                     </Link>
                 </div>
 

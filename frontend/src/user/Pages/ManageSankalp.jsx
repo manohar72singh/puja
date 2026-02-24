@@ -1,16 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { ChevronLeft, Users, Plus, ShieldCheck, User, Trash2, X, Calendar, Moon, Heart } from 'lucide-react';
+import { ChevronLeft, Users, Plus, ShieldCheck, User, Trash2, X, Calendar, Heart, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const ManageSankalp = () => {
   const navigate = useNavigate();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(false);
-
-  // Modal aur Form States
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isRashiOpen, setIsRashiOpen] = useState(false);
+
+  // Form States
   const [formData, setFormData] = useState({
     name: "",
     relation: "",
@@ -19,19 +20,25 @@ const ManageSankalp = () => {
     rashi: "",
   });
 
+  const rashiOptions = [
+    { name: "Mesh", hindi: "मेष", icon: "♈", eng: "Aries" },
+    { name: "Vrish", hindi: "वृष", icon: "♉", eng: "Taurus" },
+    { name: "Mithun", hindi: "मिथुन", icon: "♊", eng: "Gemini" },
+    { name: "Karka", hindi: "कर्क", icon: "♋", eng: "Cancer" },
+    { name: "Simha", hindi: "सिंह", icon: "♌", eng: "Leo" },
+    { name: "Kanya", hindi: "कन्या", icon: "♍", eng: "Virgo" },
+    { name: "Tula", hindi: "तुला", icon: "♎", eng: "Libra" },
+    { name: "Vrishchik", hindi: "वृश्चिक", icon: "♏", eng: "Scorpio" },
+    { name: "Dhanu", hindi: "धनु", icon: "♐", eng: "Sagittarius" },
+    { name: "Makar", hindi: "मकर", icon: "♑", eng: "Capricorn" },
+    { name: "Kumbh", hindi: "कुंभ", icon: "♒", eng: "Aquarius" },
+    { name: "Meen", hindi: "मीन", icon: "♓", eng: "Pisces" }
+  ];
+
   const rashiSymbols = {
-    "mesh": "♈",
-    "vrish": "♉",
-    "mithun": "♊",
-    "karka": "♋",
-    "simha": "♌",
-    "kanya": "♍",
-    "tula": "♎",
-    "vrishchik": "♏",
-    "dhanu": "♐",
-    "makar": "♑",
-    "kumbh": "♒",
-    "meen": "♓"
+    "mesh": "♈", "vrish": "♉", "mithun": "♊", "karka": "♋",
+    "simha": "♌", "kanya": "♍", "tula": "♎", "vrishchik": "♏",
+    "dhanu": "♐", "makar": "♑", "kumbh": "♒", "meen": "♓"
   };
 
   const fetchMembers = async () => {
@@ -110,12 +117,22 @@ const ManageSankalp = () => {
           <span className="text-sm">Back</span>
         </button>
 
-        <div className="mb-10">
-          <h1 className="text-3xl font-serif font-bold text-gray-900 leading-tight">Manage Sankalp</h1>
-          <p className="text-[#8E97A4] text-[11px] font-bold tracking-[0.15em] uppercase mt-1">Family details for sacred rituals</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-10">
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-gray-900 leading-tight">Manage Sankalp</h1>
+            <p className="text-[#8E97A4] text-[11px] font-bold tracking-[0.15em] uppercase mt-1">Family details for sacred rituals</p>
+          </div>
+
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="w-full md:w-auto px-4 bg-[#FF822D] text-white py-2 rounded-[12px] flex justify-center items-center gap-2 font-bold text-sm shadow-lg active:scale-95 transition-all"
+          >
+            <Plus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300" />
+            <span>Add Family Member</span>
+          </button>
         </div>
 
-        {/* Members List - Is block ko fetchMembers ke niche loading check ke baad lagayein */}
+        {/* Members List */}
         {loading ? (
           <div className="py-20 text-center text-orange-400 animate-pulse font-bold italic">Connecting...</div>
         ) : members.length === 0 ? (
@@ -126,64 +143,39 @@ const ManageSankalp = () => {
         ) : (
           <div className="space-y-4 mb-10">
             {members.map((member) => (
-              <div
-                key={member.id}
-                className="bg-white p-5 rounded-[28px] shadow-sm border border-orange-100 hover:shadow-md transition-all group relative overflow-hidden"
-              >
-                <div className="relative z-10">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
-                      <div className="p-3 bg-[#FFF9F2] text-[#FF822D] rounded-2xl">
-                        <User size={24} />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-[#1A2B47] leading-none mb-1.5">
-                          {member.name}
-                        </h3>
-                        <span className="inline-block px-2 py-0.5 bg-orange-100 text-[#FF822D] text-[10px] font-extrabold uppercase rounded-lg">
-                          {member.relation}
-                        </span>
-                      </div>
+              <div key={member.id} className="bg-white p-5 rounded-[28px] shadow-sm border border-orange-100 group relative">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="p-3 bg-[#FFF9F2] text-[#FF822D] rounded-2xl">
+                      <User size={24} />
                     </div>
-
-                    <button
-                      onClick={() => handleDelete(member.id)}
-                      className="p-2 text-orange-500 bg-orange-200 hover:text-red-500 hover:bg-red-50 hover:border-1 rounded-xl transition-all"
-                    >
-                      <Trash2 size={20} />
-                    </button>
+                    <div>
+                      <h3 className="text-lg font-bold text-[#1A2B47] leading-none mb-1.5 capitalize">{member.name}</h3>
+                      <span className="inline-block px-2 py-0.5 bg-orange-100 text-[#FF822D] text-[10px] font-extrabold uppercase rounded-lg">{member.relation}</span>
+                    </div>
                   </div>
-
-                  {/* Grid for Additional Details */}
-                  <div className="grid grid-cols-3 gap-2 pt-4 border-t border-orange-50">
-                    {/* Date of Birth */}
-                    <div className="flex flex-col">
-                      <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Birthday</span>
-                      <div className="flex items-center gap-1 text-[#1A2B47]">
-                        <Calendar size={15} className="text-orange-300" />
-                        <span className="text-[14px] font-bold">{member.dob ? new Date(member.dob).toLocaleDateString() : "—"}</span>
-                      </div>
+                  <button onClick={() => handleDelete(member.id)} className="p-2 text-gray-400 hover:text-red-500 rounded-xl transition-all"><Trash2 size={20} /></button>
+                </div>
+                <div className="grid grid-cols-3 gap-2 pt-4 border-t border-orange-50">
+                  <div className="flex flex-col">
+                    <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Birthday</span>
+                    <div className="flex items-center gap-1 text-[#1A2B47]">
+                      <Calendar size={15} className="text-orange-300" />
+                      <span className="text-[14px] font-bold">{member.dob ? new Date(member.dob).toLocaleDateString() : "—"}</span>
                     </div>
-
-                    {/* Rashi */}
-                    <div className="flex flex-col">
-                      <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Rashi</span>
-                      <div className="flex items-center gap-2 text-[#1A2B47]">
-                        {/* Agar rashi hai toh symbol dikhao, varna sparkle icon ya default */}
-                        <span className="text-lg leading-none">
-                          {member.rashi ? (rashiSymbols[member.rashi.toLowerCase().trim()] || "✨") : "—"}
-                        </span>
-                        <span className="text-[14px] font-bold">{member.rashi || "—"}</span>
-                      </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Rashi</span>
+                    <div className="flex items-center gap-2 text-[#1A2B47]">
+                      <span className="text-lg leading-none">{member.rashi ? (rashiSymbols[member.rashi.toLowerCase().trim()] || "✨") : "—"}</span>
+                      <span className="text-[14px] font-bold">{member.rashi || "—"}</span>
                     </div>
-
-                    {/* Gotra */}
-                    <div className="flex flex-col">
-                      <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Gotra</span>
-                      <div className="flex items-center gap-1 text-[#1A2B47]">
-                        <Heart size={15} className="text-orange-300" />
-                        <span className="text-[14px] font-bold truncate">{member.gotra || "—"}</span>
-                      </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[13px] text-[#8E97A4] font-bold uppercase mb-0.5">Gotra</span>
+                    <div className="flex items-center gap-1 text-[#1A2B47]">
+                      <Heart size={15} className="text-orange-300" />
+                      <span className="text-[14px] font-bold truncate">{member.gotra || "—"}</span>
                     </div>
                   </div>
                 </div>
@@ -192,16 +184,7 @@ const ManageSankalp = () => {
           </div>
         )}
 
-        {/* Add Button */}
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="w-full bg-[#FF822D] text-white py-4 rounded-[20px] flex justify-center items-center gap-2 font-bold text-lg shadow-lg active:scale-95 transition-all"
-        >
-          <Plus size={22} strokeWidth={3} />
-          <span>Add Family Member</span>
-        </button>
-
-        {/* --- MODAL POP-UP --- */}
+        {/* MODAL POP-UP */}
         {isModalOpen && (
           <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/40 backdrop-blur-sm p-4">
             <div className="bg-white w-full max-w-md rounded-t-[40px] md:rounded-[32px] p-6 md:p-8 shadow-2xl animate-in slide-in-from-bottom duration-300 max-h-[90vh] overflow-y-auto">
@@ -245,24 +228,50 @@ const ManageSankalp = () => {
 
                 {/* Rashi & Gotra Grid */}
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
+                  <div className="relative">
                     <label className={labelClass}>Rashi</label>
-                    <select name="rashi" value={formData.rashi} onChange={handleChange} className={inputClass}>
-                      <option value="">Select Rashi</option>
-                      <option value="Mesh">♈ Mesh (Aries)</option>
-                      <option value="Vrish">♉ Vrish (Taurus)</option>
-                      <option value="Mithun">♊ Mithun (Gemini)</option>
-                      <option value="Karka">♋ Karka (Cancer)</option>
-                      <option value="Simha">♌ Simha (Leo)</option>
-                      <option value="Kanya">♍ Kanya (Virgo)</option>
-                      <option value="Tula">♎ Tula (Libra)</option>
-                      <option value="Vrishchik">♏ Vrishchik (Scorpio)</option>
-                      <option value="Dhanu">♐ Dhanu (Sagittarius)</option>
-                      <option value="Makar">♑ Makar (Capricorn)</option>
-                      <option value="Kumbh">♒ Kumbh (Aquarius)</option>
-                      <option value="Meen">♓ Meen (Pisces)</option>
-                    </select>
+                    <div 
+                      onClick={() => setIsRashiOpen(!isRashiOpen)}
+                      className={`${inputClass} cursor-pointer flex justify-between items-center`}
+                    >
+                      <span className="truncate">
+                        {formData.rashi ? (
+                          <div className="flex items-center gap-2">
+                            <span>{rashiOptions.find(r => r.name === formData.rashi)?.icon}</span>
+                            <span>{formData.rashi}</span>
+                          </div>
+                        ) : "Select Rashi"}
+                      </span>
+                      <ChevronDown size={16} className={`text-orange-300 transition-transform ${isRashiOpen ? 'rotate-180' : ''}`} />
+                    </div>
+                    
+                    {isRashiOpen && (
+                      <>
+                        <div className="fixed inset-0 z-40" onClick={() => setIsRashiOpen(false)}></div>
+                        <div className="absolute bottom-full left-0 right-0 mb-2 bg-white border border-orange-100 rounded-2xl shadow-2xl z-50 max-h-72 overflow-y-auto animate-in fade-in slide-in-from-bottom-2 duration-200">
+                          {rashiOptions.map((r) => (
+                            <div 
+                              key={r.name}
+                              onClick={() => {
+                                handleChange({ target: { name: 'rashi', value: r.name } });
+                                setIsRashiOpen(false);
+                              }}
+                              className="p-3 text-sm hover:bg-orange-50 flex items-center justify-between cursor-pointer border-b border-orange-50 last:border-none group"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-xl">{r.icon}</span>
+                                <div className="flex flex-col">
+                                  <span className="font-bold text-[#1A2B47] group-hover:text-orange-600">{r.hindi} ({r.name})</span>
+                                  <span className="text-[10px] text-gray-400 uppercase font-medium">{r.eng}</span>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
                   </div>
+
                   <div>
                     <label className={labelClass}>Gotra</label>
                     <input name="gotra" type="text" value={formData.gotra} onChange={handleChange} placeholder="Bhardwaj" className={inputClass} />
