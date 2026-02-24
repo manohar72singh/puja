@@ -1,4 +1,107 @@
 import db from "../config/db.js";
+import jwt from "jsonwebtoken";
+const otpStore = {}; // In-memory OTP store (phone: { otp, type, expires })
+
+// Admin sign-in with OTP
+export const AdminLoginRequest = async (req, res) => {
+  try {
+    const { phone, role } = req.body;
+
+    // Database mein check karein ki user hai aur uska role 'admin' hai
+    const [rows] = await db.query(
+      "SELECT id, role FROM users WHERE phone = ? AND role = ?",
+      [phone, role],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ message: "Admin account not found." });
+    }
+
+    // Role Strict Check: Agar role 'admin' nahi hai toh block karein
+    if (rows[0].role !== "admin") {
+      return res.status(403).json({
+        message: "Access denied. Only administrators can login here.",
+      });
+    }
+
+    // Generate 6 Digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000);
+
+    // Store in memory (expires in 5 mins)
+    otpStore[phone] = {
+      otp,
+      type: "ADMIN_LOGIN",
+      expires: Date.now() + 5 * 60 * 1000,
+    };
+
+    // Logging for development (Sms gateway yaha integrate hoga)
+    console.log(`\n--- ADMIN LOGIN OTP FOR ${phone}: ${otp} ---\n`);
+
+    res.status(200).json({ message: "Admin OTP sent successfully" });
+  } catch (error) {
+    console.error("Admin Login Error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const AdminVerifyOtp = async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    const session = otpStore[phone];
+
+    // BYPASS LOGIC (Sirf testing ke liye)
+    const isBypass = otp.toString() === "123456";
+
+    // Validation: OTP match hona chahiye, type ADMIN_LOGIN hona chahiye aur expire nahi hona chahiye
+    const isValidOtp =
+      session &&
+      session.type === "ADMIN_LOGIN" &&
+      session.otp.toString() === otp.toString() &&
+      Date.now() < session.expires;
+
+    if (isBypass || isValidOtp) {
+      // Fetch fresh admin details
+      const [rows] = await db.query(
+        "SELECT id, name, phone, email, role FROM users WHERE phone = ? AND role = 'admin'",
+        [phone],
+      );
+
+      if (rows.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "Admin authentication failed." });
+      }
+
+      // Session delete karein
+      if (session) delete otpStore[phone];
+
+      // Generate Admin JWT Token
+      const token = jwt.sign(
+        {
+          id: rows[0].id,
+          name: rows[0].name,
+          phone: rows[0].phone,
+          role: rows[0].role, // isme 'admin' value hogi
+        },
+        process.env.JWT_SECRET || "admin_secret_key", // Admin ke liye alag secret bhi use kar sakte hain
+        { expiresIn: "1d" }, // Admin session security ke liye chota rakhein (e.g. 1 day)
+      );
+
+      res.status(200).json({
+        message: isBypass
+          ? "Admin Login success (Bypass)"
+          : "Admin Login success",
+        token,
+        role: rows[0].role,
+      });
+    } else {
+      res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+  } catch (error) {
+    console.error("Admin Verify Error:", error);
+    res.status(500).json({ message: "Admin verification failed" });
+  }
+};
 
 // Admin Dashboard Stats show all activities
 export const getDashboardStats = async (req, res) => {
@@ -137,17 +240,57 @@ export const getMonthlyGrowthChart = async (req, res) => {
 // Get all users for admin dashboard
 export const getAllUsers = async (req, res) => {
   try {
-    const [users] = await db.execute(
-      "SELECT id, name, email, phone, role, created_at FROM users WHERE role='user' ORDER BY created_at DESC",
-    );
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
 
-    res.json({ success: true, users });
+    let query = `
+      SELECT id, name, email, phone, role, created_at
+      FROM users
+      WHERE role='user'
+    `;
+
+    const params = [];
+
+    // if (search && search.trim() !== "") {
+    //   query += ` AND (name LIKE ? OR email LIKE ? OR phone LIKE ?)`;
+    //   params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    // }
+
+    query += ` ORDER BY created_at DESC LIMIT ${limit} OFFSET ${offset}`;
+
+    // ⚠️ IMPORTANT: remove placeholders for limit/offset
+
+    const [users] = await db.execute(query, params);
+
+    res.json({
+      success: true,
+      users,
+      currentPage: page,
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });
   }
 };
 
+// create new user for admin dashboard (optional, since users can sign up themselves)
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, phone } = req.body;
+
+    await db.execute(
+      `INSERT INTO users (name, email, phone, role)
+       VALUES (?, ?, ?, 'user')`,
+      [name, email, phone],
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({ success: false });
+  }
+};
 // Get Single user details for admin dashboard
 export const getUserById = async (req, res) => {
   try {
@@ -284,75 +427,132 @@ export const getAllPandits = async (req, res) => {
 //================= Service Management, CRUD operations of service =========================
 
 // Get all services for admin dashboard with filter and search
+
+// export const getAllServices = async (req, res) => {
+//   try {
+//     const { puja_type, search } = req.query;
+//     const page = parseInt(req.query.page) || 1;
+//     const limit = parseInt(req.query.limit) || 5;
+//     const offset = (page - 1) * limit;
+
+//     let whereClause = `WHERE 1=1`;
+//     const params = [];
+
+//     if (puja_type) {
+//       whereClause += ` AND puja_type = ?`;
+//       params.push(puja_type);
+//     }
+
+//     if (search) {
+//       whereClause += ` AND puja_name LIKE ?`;
+//       params.push(`%${search}%`);
+//     }
+
+//     // ✅ Total Count (ONLY services table)
+//     const [countResult] = await db.query(
+//       `SELECT COUNT(*) as total FROM services ${whereClause}`,
+//       params,
+//     );
+
+//     const totalServices = countResult[0].total;
+//     const totalPages = Math.ceil(totalServices / limit);
+
+//     // ✅ Get paginated services FIRST
+//     const [services] = await db.query(
+//       `SELECT * FROM services
+//        ${whereClause}
+//        ORDER BY created_at DESC
+//        LIMIT ? OFFSET ?`,
+//       [...params, limit, offset],
+//     );
+
+//     const serviceIds = services.map((s) => s.id);
+
+//     let prices = [];
+
+//     if (serviceIds.length > 0) {
+//       const [priceRows] = await db.query(
+//         `SELECT * FROM service_prices
+//          WHERE service_id IN (?)`,
+//         [serviceIds],
+//       );
+//       prices = priceRows;
+//     }
+
+//     // ✅ Group prices
+//     const finalServices = services.map((service) => ({
+//       ...service,
+//       prices: prices.filter((p) => p.service_id === service.id),
+//     }));
+
+//     res.json({
+//       success: true,
+//       currentPage: page,
+//       totalPages,
+//       totalServices,
+//       services: finalServices,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false });
+//   }
+// };
 export const getAllServices = async (req, res) => {
   try {
-    const { puja_type, search } = req.query;
+    const { puja_type, search, status } = req.query;
 
-    let query = `
-      SELECT 
-        s.id,
-        s.puja_name,
-        s.puja_type,
-        s.description,
-        s.image_url,
-        s.created_at,
-        sp.id AS price_id,
-        sp.pricing_type,
-        sp.price
-      FROM services s
-      LEFT JOIN service_prices sp 
-        ON s.id = sp.service_id
-      WHERE 1=1
-    `;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 5;
+    const offset = (page - 1) * limit;
 
+    let whereClause = `WHERE 1=1`;
     const params = [];
 
+    // ✅ Puja Type Filter
     if (puja_type) {
-      query += ` AND s.puja_type = ?`;
+      whereClause += ` AND puja_type = ?`;
       params.push(puja_type);
     }
 
+    // ✅ Search Filter
     if (search) {
-      query += ` AND s.puja_name LIKE ?`;
+      whereClause += ` AND puja_name LIKE ?`;
       params.push(`%${search}%`);
     }
 
-    query += ` ORDER BY s.created_at DESC`;
+    // ✅ Status Filter (NEW)
+    if (status && status !== "all") {
+      whereClause += ` AND status = ?`;
+      params.push(status);
+    }
 
-    const [rows] = await db.query(query, params);
+    // ✅ Total Count
+    const [countResult] = await db.query(
+      `SELECT COUNT(*) as total FROM services ${whereClause}`,
+      params,
+    );
 
-    // 🔥 Group pricing under each service
-    const grouped = {};
+    const totalServices = countResult[0].total;
+    const totalPages = Math.ceil(totalServices / limit);
 
-    rows.forEach((row) => {
-      if (!grouped[row.id]) {
-        grouped[row.id] = {
-          id: row.id,
-          puja_name: row.puja_name,
-          puja_type: row.puja_type === "temple_puja" ? "event" : row.puja_type,
-          description: row.description,
-          image_url: row.image_url,
-          created_at: row.created_at,
-          prices: [],
-        };
-      }
-
-      if (row.price_id) {
-        grouped[row.id].prices.push({
-          price_id: row.price_id,
-          pricing_type: row.pricing_type,
-          price: row.price,
-        });
-      }
-    });
+    // ✅ Paginated Data
+    const [services] = await db.query(
+      `SELECT * FROM services
+       ${whereClause}
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset],
+    );
 
     res.json({
       success: true,
-      totalServices: Object.keys(grouped).length,
-      services: Object.values(grouped),
+      currentPage: page,
+      totalPages,
+      totalServices,
+      services,
     });
   } catch (error) {
-    console.error(error);
+    console.error("Get Services Error:", error);
     res.status(500).json({ success: false });
   }
 };
@@ -408,7 +608,10 @@ export const getServiceById = async (req, res) => {
 export const createService = async (req, res) => {
   const connection = await db.getConnection();
   try {
-    const { puja_name, puja_type, description, image_url, prices } = req.body;
+    const { puja_name, puja_type, description } = req.body;
+    const prices = JSON.parse(req.body.prices || "[]");
+
+    const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
     await connection.beginTransaction();
 
@@ -430,7 +633,7 @@ export const createService = async (req, res) => {
 
     await connection.commit();
 
-    res.json({ success: true, message: "Service created successfully" });
+    res.json({ success: true });
   } catch (error) {
     await connection.rollback();
     console.error(error);
@@ -443,29 +646,51 @@ export const createService = async (req, res) => {
 // Update service details for admin dashboard
 export const updateService = async (req, res) => {
   const connection = await db.getConnection();
+
   try {
     const { id } = req.params;
-    const { puja_name, puja_type, description, image_url, prices } = req.body;
+    let { puja_name, puja_type, description, prices } = req.body;
+
+    if (typeof prices === "string") {
+      prices = JSON.parse(prices);
+    }
 
     await connection.beginTransaction();
 
-    await connection.query(
-      `UPDATE services 
-       SET puja_name=?, puja_type=?, description=?, image_url=? 
-       WHERE id=?`,
-      [puja_name, puja_type, description, image_url, id],
-    );
+    let image_url = null;
+
+    if (req.file) {
+      image_url = `/uploads/${req.file.filename}`;
+    }
+
+    if (image_url) {
+      await connection.query(
+        `UPDATE services 
+         SET puja_name=?, puja_type=?, description=?, image_url=? 
+         WHERE id=?`,
+        [puja_name, puja_type, description, image_url, id],
+      );
+    } else {
+      await connection.query(
+        `UPDATE services 
+         SET puja_name=?, puja_type=?, description=? 
+         WHERE id=?`,
+        [puja_name, puja_type, description, id],
+      );
+    }
 
     await connection.query(`DELETE FROM service_prices WHERE service_id=?`, [
       id,
     ]);
 
-    for (let price of prices) {
-      await connection.query(
-        `INSERT INTO service_prices (service_id, pricing_type, price)
-         VALUES (?, ?, ?)`,
-        [id, price.pricing_type, price.price],
-      );
+    if (Array.isArray(prices)) {
+      for (let price of prices) {
+        await connection.query(
+          `INSERT INTO service_prices (service_id, pricing_type, price)
+           VALUES (?, ?, ?)`,
+          [id, price.pricing_type, price.price],
+        );
+      }
     }
 
     await connection.commit();
@@ -502,28 +727,46 @@ export const deleteService = async (req, res) => {
 // GET /admin/bookings?date=2026-02-23
 // GET /admin/bookings?search=BK123
 // GET /admin/bookings?page=1&limit=10
+
 export const getAllBookings = async (req, res) => {
   try {
-    const { status, date, search, page = 1, limit = 10 } = req.query;
-
+    const { status, date, search } = req.query;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
     let query = `
       SELECT 
-        pr.*,
+        pr.id,
+        pr.bookingId,
+        pr.status,
+        pr.preferred_date,
+        pr.preferred_time,
+
         u.name AS user_name,
         u.phone AS user_phone,
+
         s.puja_name,
         s.puja_type,
-        p.name AS pandit_name,
+
+        -- ✅ Pandit Name (Safe)
+        COALESCE(p.name, 'Not Assigned') AS pandit_name,
+
         sp.price
+
       FROM puja_requests pr
+
       LEFT JOIN users u ON pr.user_id = u.id
       LEFT JOIN services s ON pr.service_id = s.id
       LEFT JOIN users p ON pr.pandit_id = p.id
-      LEFT JOIN service_prices sp 
-        ON pr.service_id = sp.service_id
-        AND pr.ticket_type = sp.pricing_type
+
+      -- ✅ No duplication price join
+      LEFT JOIN (
+         SELECT service_id, MIN(price) as price
+         FROM service_prices
+         GROUP BY service_id
+      ) sp ON pr.service_id = sp.service_id
+
       WHERE 1=1
     `;
 
@@ -545,15 +788,14 @@ export const getAllBookings = async (req, res) => {
     }
 
     query += ` ORDER BY pr.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(Number(limit), Number(offset));
+    params.push(limit, offset);
 
     const [rows] = await db.query(query, params);
 
     res.json({
       success: true,
-      page: Number(page),
-      count: rows.length,
       bookings: rows,
+      currentPage: page,
     });
   } catch (error) {
     console.error(error);
@@ -620,8 +862,8 @@ export const getTodayBookings = async (req, res) => {
       LEFT JOIN service_prices sp 
         ON pr.service_id = sp.service_id
         AND pr.ticket_type = sp.pricing_type
-      WHERE DATE(pr.created_at)=CURDATE()
-      ORDER BY pr.created_at DESC
+      WHERE DATE(pr.completed_at)=CURDATE()
+      ORDER BY pr.completed_at DESC
     `);
 
     res.json({

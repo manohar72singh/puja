@@ -45,6 +45,7 @@ import EventsPage from "./user/Pages/EventsPage";
 import AartiPage  from "./user/Pages/AartiPage";
 
 import AdminDashboard from "./admin/pages/AdminDashboard";
+import AdminLogin from "./admin/pages/AdminLogin";
 
 function App() {
   const location = useLocation();
@@ -149,7 +150,13 @@ function App() {
             element={<CustomerCareDashboard />}
           />
         </Route>
+
+        {/* admin routes */}
+        <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        {/* <Route element={<ProtectedLayout allowedRoles={["admin"]} />}>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+        </Route> */}
 
         {/* ================= 404 ================= */}
         <Route path="*" element={<h1>Not Found</h1>} />
