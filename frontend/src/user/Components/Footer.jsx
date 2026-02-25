@@ -4,22 +4,22 @@ import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, MapPin, ArrowUpRigh
 const Footer = () => {
   const footerLinks = {
     services: [
-      { label: "Book a Puja", to: "/puja" },
-      { label: "Vedic Katha", to: "/katha" },
-      { label: "Pind Dan", to: "/pind_dan" },
-      { label: "Pooja Products", to: "/products" },
+      { label: "Home Puja", to: "/homePuja" },
+      { label: "Temple Puja", to: "/temple-puja" },
+      { label: "Pind Dan", to: "/pind-dan" },
+      { label: "Katha/Jaap", to: "/katha-jaap" },
     ],
     support: [
       { label: "About Us", to: "/about" },
-      { label: "Contact Us", to: "/contact" },
-      { label: "FAQs", to: "/faqs" },
+      { label: "Contact Us", to: "/help" },
+      { label: "FAQs", to: "/help" },
       { label: "Privacy Policy", to: "/privacy" },
     ],
     community: [
-      { label: "Temple Gallery", to: "/gallery" },
-      { label: "Mantra Library", to: "/mantras" },
-      { label: "Panchang", to: "/panchang" },
-      { label: "Volunteer", to: "/join" },
+      { label: "Temple Gallery", to: "/temples" },
+      { label: "Events Gallery", to: "/events" },
+      { label: "Aarti Gallery", to: "/aarti" },
+
     ]
   };
 

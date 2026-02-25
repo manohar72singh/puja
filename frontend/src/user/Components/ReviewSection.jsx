@@ -49,7 +49,7 @@ export default function ReviewSection() {
     <section className="bg-[#FFF4E1] py-16">
       {/* Heading + Google Rating */}
       <div className="max-w-7xl mx-auto px-6 md:px-20 text-center mb-8">
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-10 md:mb-15">
           What Our Customers Say
         </h2>
         <div className="inline-flex items-center bg-white px-6 py-3 rounded-full shadow">

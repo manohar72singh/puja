@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Calendar, Clock, MapPin, Info, Trash2, AlertTriangle } from "lucide-react";
+import { Calendar, Clock, MapPin, Info, Trash2 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -154,15 +154,15 @@ const MyBookings = () => {
               return (
                 <div
                   key={b.id}
-                  className="relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-orange-300 transition-all hover:shadow-md flex flex-col md:flex-row md:items-center gap-4 sm:gap-6"
+                  className="relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-orange-300 transition-all hover:shadow-md flex flex-col md:flex-row md:items-stretch gap-4 sm:gap-6"
                 >
                   {/* Category Ribbon */}
                   <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest text-white ${isTemplePuja ? "bg-orange-500" : "bg-blue-500"}`}>
                     {isTemplePuja ? "Temple Ceremony" : "Home Ritual"}
                   </div>
 
-                  {/* Image */}
-                  <div className="w-full md:w-32 h-40 sm:h-32 shrink-0">
+                  {/* Image — self-stretch so it grows with content */}
+                  <div className="w-full md:w-36 shrink-0 self-stretch min-h-[120px]">
                     <img
                       src={`${API_BASE_URL}/uploads/${b.image_url}`}
                       className="w-full h-full object-cover rounded-2xl shadow-sm"
@@ -205,13 +205,11 @@ const MyBookings = () => {
 
                     {/* ── MOBILE: ID + Status + Cancel ── */}
                     <div className="mt-4 flex items-center justify-between gap-2 md:hidden">
-                      {/* Booking ID — same as desktop */}
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">
                         ID: <span className="text-orange-600">{b.bookingId}</span>
                       </p>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        {/* Status Badge */}
                         <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
                           b.status === "pending"
                             ? "bg-orange-100 text-orange-600 border border-orange-200"
@@ -222,7 +220,6 @@ const MyBookings = () => {
                           {b.status}
                         </div>
 
-                        {/* Cancel Button */}
                         {b.status === "pending" && (
                           <button
                             onClick={() => setShowConfirm({ show: true, id: b.id, data: b })}
@@ -235,7 +232,7 @@ const MyBookings = () => {
                     </div>
                   </div>
 
-                  {/* ── DESKTOP RIGHT COLUMN: ID + Status + Cancel ── */}
+                  {/* ── DESKTOP RIGHT COLUMN ── */}
                   <div className="hidden md:flex flex-col justify-center items-end border-l border-gray-100 pl-6 min-w-[140px]">
                     <p className="my-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
                       ID: <span className="ml-1 text-orange-600">{b.bookingId}</span>

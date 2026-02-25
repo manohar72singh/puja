@@ -21,16 +21,16 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="bg-[#FFF4E1] py-12 px-6 font-sans">
-      <div className="max-w-5xl mx-auto">
+    <section className="bg-[#FFF4E1] max-w-4xl py-20 mx-auto px-6 font-sans">
+      <div className="text-center mb-8 md:mb-20">
         
         {/* SECTION TITLE - Smaller & Tight */}
-        <h2 className="text-3xl md:text-4xl font-serif text-center text-[#3b2a1a] mb-12">
+        <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-6 md:mb-16">
           How Sri Vedic Puja Works
         </h2>
 
         {/* STEPS GRID - Tight gap */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3 mb-16">
           {steps.map((step) => (
             <div key={step.id} className="flex flex-col items-center text-center">
               {/* COMPACT ICON BOX */}

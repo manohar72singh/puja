@@ -33,7 +33,7 @@ export default function SpecialPujas() {
     <div className="min-h-screen bg-[#FFF4E1] text-[#2D1B08] pt-16 md:pt-20 selection:bg-orange-100">
       {/* Reduced px-6 to px-4 and pt-10 to pt-6 for mobile */}
       <section className="relative max-w-7xl mx-auto px-4 md:px-6 pt-6 md:pt-10 pb-16 md:pb-20">
-        
+
         {/* TOP HEADER - Scaled for Mobile */}
         <div className="text-center mb-8 md:mb-12">
           <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#3b2a1a] mb-2 md:mb-4">
@@ -100,55 +100,47 @@ export default function SpecialPujas() {
                       {service.about}
                     </p>
 
-                    {/* Location */}
-                    <div className="flex items-center gap-2 mb-2">
-                      <MapPin size={12} className="text-orange-500 shrink-0" />
-                      <p className="text-gray-500 text-[12px] md:text-[13px] line-clamp-1">
-                        {service.address}
-                      </p>
-                    </div>
+                    <div className="flex items-center justify-between w-full mt-2">
+                      {/* Left Side: Address and Time together */}
+                      <div className="flex flex-col gap-1.5 min-w-0">
 
-                    {/* Date & Time */}
-                    <div className="flex items-center gap-2 mb-4">
-                      <Calendar size={12} className="text-orange-500 shrink-0" />
-                      <div className="flex items-center gap-1.5 font-bold text-[12px] md:text-[13px] text-gray-700">
-                        <span>
-                          {new Date(service.dateOfStart).toLocaleDateString('en-GB', {
-                            day: '2-digit',
-                            month: 'short'
-                          })}
-                        </span>
-                        <span className="text-orange-300">|</span>
-                        <span className="text-gray-500 font-medium">
-                          {new Date(service.dateOfStart).toLocaleTimeString('en-US', {
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            hour12: true
-                          })}
-                        </span>
+                        {/* 1. Location Row */}
+                        <div className="flex items-center gap-2">
+                          <MapPin size={12} className="text-orange-500 shrink-0" />
+                          <p className="text-gray-500 text-xs line-clamp-1">
+                            {service.address}
+                          </p>
+                        </div>
+
+                        {/* 2. Date & Time Row */}
+                        <div className="flex items-center gap-2">
+                          <Calendar size={12} className="text-orange-500 shrink-0" />
+                          <div className="flex items-center gap-1.5 font-bold text-[12px] md:text-[13px] text-gray-700 whitespace-nowrap">
+                            <span>
+                              {new Date(service.dateOfStart).toLocaleDateString('en-GB', {
+                                day: '2-digit',
+                                month: 'short'
+                              })}
+                            </span>
+                            <span className="text-orange-300">|</span>
+                            <span className="text-gray-500 font-medium">
+                              {new Date(service.dateOfStart).toLocaleTimeString('en-US', {
+                                hour: '2-digit',
+                                minute: '2-digit',
+                                hour12: true
+                              })}
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Footer Bar - Compact */}
-                  <div className="flex items-center justify-between pt-4 border-t border-orange-50 mt-auto">
-                    <div className="flex items-center gap-1.5">
-                      <Ticket size={14} className="text-orange-600" />
-                      <div className="flex items-baseline gap-0.5">
-                        <span className="text-lg md:text-xl font-serif font-bold text-orange-600">₹{service.single_price}</span>
-                        <span className="text-xs md:text-sm font-semibold text-gray-400">/pp</span>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 md:gap-4">
-                      <span className="hidden sm:inline-block text-[11px] font-black uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500 text-orange-600">
-                        Enroll Now
-                      </span>
-                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl border border-orange-100 bg-orange-50 group-hover:bg-orange-600 flex items-center justify-center text-orange-600 group-hover:text-white transition-all duration-500 shadow-sm">
+                      {/* Right Side: Arrow Button (Now perfectly centered to both lines) */}
+                      <div className="w-10 h-10 md:w-12 md:h-12 rounded-xl md:rounded-2xl border border-orange-100 bg-orange-50 group-hover:bg-orange-600 flex items-center justify-center text-orange-600 group-hover:text-white transition-all duration-500 shadow-sm shrink-0 ml-4">
                         <ArrowRight size={18} />
                       </div>
                     </div>
                   </div>
+
                 </div>
               </div>
             ))}
@@ -157,7 +149,7 @@ export default function SpecialPujas() {
         {/* Bottom Button - Scaled for mobile */}
         <div className="flex pt-8 md:pt-10 justify-center px-4">
           <button
-            onClick={() => navigate('/all-events')}
+            onClick={() => navigate('/temple-puja')}
             className="group relative flex items-center justify-center gap-2 bg-orange-500 text-white w-full md:w-auto md:px-10 py-3.5 md:py-4 rounded-xl md:rounded-2xl font-bold tracking-widest text-[11px] md:text-[12px] shadow-lg active:scale-95 transition-all"
           >
             <span className="relative z-10">View All Group Pujas</span>

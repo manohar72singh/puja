@@ -45,11 +45,10 @@ export default function TrendingPuja() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1]">
-      {/* Reduced padding from p-10 to p-5 for mobile */}
+    <div className="min-h-fit bg-[#FFF4E1] pb-30">
       <section className="relative max-w-7xl mx-auto p-5 md:p-10">
 
-        {/* HEADER SECTION - More compact on mobile */}
+        {/* HEADER SECTION */}
         <div className="mb-8 md:mb-12 flex flex-row items-center justify-between pb-4 md:pb-6 border-b border-orange-200 lg:border-none">
           <div className="flex flex-col">
             <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#3b2a1a]">
@@ -69,7 +68,7 @@ export default function TrendingPuja() {
           </button>
         </div>
 
-        {/* Services Grid - Reduced gap for mobile */}
+        {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           {filteredServices.map((service) => (
             <div
@@ -77,7 +76,7 @@ export default function TrendingPuja() {
               onClick={() => navigate(`/homePuja/${service.id}`)}
               className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-500 border border-orange-200 cursor-pointer flex flex-col hover:-translate-y-2 active:scale-[0.98]"
             >
-              {/* Image - Height reduced from h-64 to h-48 on mobile */}
+              {/* Image */}
               <div className="relative h-48 md:h-64 overflow-hidden">
                 <img
                   src={`${API_BASE_URL}/uploads/${service.image_url}`}
@@ -94,12 +93,22 @@ export default function TrendingPuja() {
                 </div>
               </div>
 
-              {/* Content - Smaller padding on mobile */}
-              <div className="p-5 md:p-7 flex flex-col flex-1">
-                <div className="mb-4 md:mb-6">
-                  <h3 className="text-lg md:text-2xl font-serif text-[#2f1e12] leading-tight group-hover:text-orange-600 transition-colors line-clamp-1 mb-1">
-                    {service.title || service.puja_name}
-                  </h3>
+              {/* Content */}
+              <div className="p-5 md:p-4 flex flex-col flex-1">
+                <div className="mb-4 md:mb-2">
+
+                  {/* Title + Arrow */}
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <h3 className="text-lg md:text-2xl font-serif text-[#2f1e12] leading-tight group-hover:text-orange-600 transition-colors line-clamp-1">
+                      {service.title || service.puja_name}
+                    </h3>
+
+                    <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border border-orange-200 bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-500 shrink-0">
+                      <ArrowRight size={18} />
+                    </div>
+                  </div>
+
+                  {/* Meta info */}
                   <div className="flex items-center text-gray-400 text-[10px] md:text-xs font-medium gap-2">
                     <div className="flex items-center gap-1 bg-orange-50 px-2 py-0.5 rounded">
                       <Calendar size={10} className="text-orange-500" />
@@ -108,30 +117,14 @@ export default function TrendingPuja() {
                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
                     <span>At Home</span>
                   </div>
-                </div>
 
-                {/* Footer */}
-                <div className="mt-auto pt-4 border-t border-orange-50 flex items-center justify-between">
-                  <div className="flex flex-col items-start">
-                    <span className="text-[9px] md:text-[10px] text-gray-400 uppercase font-black tracking-widest">
-                      Dakshina
-                    </span>
-                    <div className="flex items-baseline">
-                      <span className="text-xs font-bold text-gray-900 mr-0.5">₹</span>
-                      <span className="text-xl md:text-2xl font-serif font-black text-[#3D2B1D]">
-                        {service.standard_price}
-                      </span>
-                    </div>
-                  </div>
+                  {/* Description — 3 lines */}
+                  {service.description && (
+                    <p className="mt-2 text-gray-500 text-[12px] md:text-[13px] leading-relaxed line-clamp-3">
+                      {service.description}
+                    </p>
+                  )}
 
-                  <div className="flex items-center gap-2">
-                    <span className="hidden sm:inline-block text-sm font-bold text-[#2f1e12] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
-                      Book Now
-                    </span>
-                    <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border border-orange-200 bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-500">
-                      <ArrowRight size={18} />
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>

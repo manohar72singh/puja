@@ -27,6 +27,7 @@ import {
   Star,
   User,
   House,
+  Gem
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -67,7 +68,6 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
-        console.log("Fetched Service Details:", data.data[0]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -96,9 +96,9 @@ const TemplePujaBooking = () => {
       date: new Date().toISOString().split("T")[0],
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          hour: "2-digit",
+          minute: "2-digit",
+        })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "default city",
@@ -161,17 +161,17 @@ const TemplePujaBooking = () => {
   };
 
   const contributionList = [
-    { id: "vastra",  title: "Vastra Daan",   price: 251,  icon: <Shirt size={18} />,         sub: "Holy cloth offering"   },
-    { id: "annadan", title: "Annadan",        price: 501,  icon: <Coffee size={18} />,         sub: "Feed the community"    },
-    { id: "deepdan", title: "Deepdan",        price: 101,  icon: <Flame size={18} />,          sub: "Light the path"        },
-    { id: "brahmin", title: "Brahmin Bhoj",   price: 1100, icon: <UtensilsCrossed size={18} />,sub: "Blessings of Priests"  },
-    { id: "gau",     title: "Gau Seva",       price: 100,  icon: <span className="text-xl">🐄</span>, sub: "Feed the Gau Mata" },
+    { id: "vastra", title: "Vastra Daan", price: 251, icon: <Shirt size={18} />, sub: "Holy cloth offering" },
+    { id: "annadan", title: "Annadan", price: 501, icon: <Coffee size={18} />, sub: "Feed the community" },
+    { id: "deepdan", title: "Deepdan", price: 101, icon: <Flame size={18} />, sub: "Light the path" },
+    { id: "brahmin", title: "Brahmin Bhoj", price: 1100, icon: <UtensilsCrossed size={18} />, sub: "Blessings of Priests" },
+    { id: "gau", title: "Gau Seva", price: 100, icon: <span className="text-xl">🐄</span>, sub: "Feed the Gau Mata" },
   ];
 
   const tickets = [
-    { label: "Single", person: "1 person",  price: Number(service?.single_price  || 251), icon: <User size={18} />  },
-    { label: "Couple", person: "2 persons", price: Number(service?.couple_price  || 452), icon: <Heart size={18} />  },
-    { label: "Family", person: "Up to 5",   price: Number(service?.family_price  || 628), icon: <House size={18} /> },
+    { label: "Single", person: "1 person", price: Number(service?.single_price || 251), icon: <User size={18} /> },
+    { label: "Couple", person: "2 persons", price: Number(service?.couple_price || 452), icon: <Heart size={18} /> },
+    { label: "Family", person: "Up to 5", price: Number(service?.family_price || 628), icon: <House size={18} /> },
   ];
 
   const calculateTotal = () => {
@@ -239,9 +239,8 @@ const TemplePujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${
-                      activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"
-                    }`}
+                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"
+                      }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -292,16 +291,16 @@ const TemplePujaBooking = () => {
               {/* BENEFITS — icons hidden on mobile */}
               <div className="p-5 md:p-7 bg-[#FFFDF8]">
                 <section ref={sections.benefits} className="scroll-mt-44 space-y-4">
-                  <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-800">
-                    Benefits of {service?.puja_name}
-                  </h3>
+                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
+                    <Gem size={20} /> Benefits of {service?.puja_name}
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <BenefitSmall icon={<Heart />}    title="Spiritual Peace"   desc="Inner calm through sacred rituals"  />
-                    <BenefitSmall icon={<Shield />}   title="Protection"        desc="Divine protection for family"        />
-                    <BenefitSmall icon={<Zap />}      title="Prosperity"        desc="Remove obstacles from path"          />
-                    <BenefitSmall icon={<Users />}    title="Harmony"           desc="Strengthen family bonds"             />
-                    <BenefitSmall icon={<Sparkles />} title="Positive Energy"   desc="Purify soul with mantras"            />
-                    <BenefitSmall icon={<Star />}     title="Karma"             desc="Balance spiritual energies"          />
+                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
+                    <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection for family" />
+                    <BenefitSmall icon={<Zap />} title="Prosperity" desc="Remove obstacles from path" />
+                    <BenefitSmall icon={<Users />} title="Harmony" desc="Strengthen family bonds" />
+                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify soul with mantras" />
+                    <BenefitSmall icon={<Star />} title="Karma" desc="Balance spiritual energies" />
                   </div>
                 </section>
               </div>
@@ -368,10 +367,10 @@ const TemplePujaBooking = () => {
                   <HelpCircle size={20} /> Frequently Asked Questions
                 </div>
                 <div className="space-y-4">
-                  <FAQItem q="I don't know my Gotra, what should I do?"  a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
-                  <FAQItem q="Who will perform the Puja?"                a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name." />
-                  <FAQItem q="How will I know the Puja has been done?"   a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly." />
-                  <FAQItem q="What is the significance of Dakshina?"     a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual." />
+                  <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
+                  <FAQItem q="Who will perform the Puja?" a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name." />
+                  <FAQItem q="How will I know the Puja has been done?" a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly." />
+                  <FAQItem q="What is the significance of Dakshina?" a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual." />
                 </div>
               </section>
             </div>
@@ -391,11 +390,10 @@ const TemplePujaBooking = () => {
                     <button
                       key={t.label}
                       onClick={() => setSelectedTicket(t.label)}
-                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${
-                        selectedTicket === t.label
-                          ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
-                          : "border-gray-100 bg-white hover:border-orange-200"
-                      }`}
+                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${selectedTicket === t.label
+                        ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
+                        : "border-gray-100 bg-white hover:border-orange-200"
+                        }`}
                     >
                       <div className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white shadow-md" : "bg-gray-50 text-gray-400"}`}>
                         {t.icon}
@@ -423,7 +421,9 @@ const TemplePujaBooking = () => {
                     <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
                       <Heart size={16} fill="currentColor" className="text-orange-500" />
                     </div>
-                    Add Contributions
+                    <span className="font-bold text-[13px]">
+                      {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     {selectedContributionsTotal > 0 ? (
@@ -504,9 +504,9 @@ const TemplePujaBooking = () => {
             <p className="text-xl font-black text-orange-600 leading-tight">
               ₹{calculateTotal().toLocaleString("en-IN")}
             </p>
-           <div className="flex justify-between items-center text-[10px]">
-                  <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
-                </div>
+            <div className="flex justify-between items-center text-[10px]">
+              <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
+            </div>
           </div>
           <button
             id="mobile-cta-btn"
@@ -524,9 +524,6 @@ const TemplePujaBooking = () => {
             )}
           </button>
         </div>
-        <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-          Free cancellation up to 24 hours before
-        </p>
       </div>
     </div>
   );
@@ -569,11 +566,10 @@ const MobileSummarySection = ({
           <button
             key={t.label}
             onClick={() => setSelectedTicket(t.label)}
-            className={`flex flex-col items-center py-2 px-2 rounded-2xl border-2 transition-all ${
-              selectedTicket === t.label
-                ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
-                : "border-gray-100 bg-white hover:border-orange-200"
-            }`}
+            className={`flex flex-col items-center py-2 px-2 rounded-2xl border-2 transition-all ${selectedTicket === t.label
+              ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
+              : "border-gray-100 bg-white hover:border-orange-200"
+              }`}
           >
             <div className={`mb-1.5 p-2 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-400"}`}>
               {t.icon}
@@ -605,7 +601,9 @@ const MobileSummarySection = ({
           <div className="p-1.5 bg-white rounded-lg shadow-sm">
             <Heart size={14} fill="currentColor" className="text-orange-500" />
           </div>
-          Add Contributions
+          <span className="font-bold text-[13px]">
+            {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {selectedContributionsTotal > 0 ? (
@@ -649,7 +647,7 @@ const MobileSummarySection = ({
       </div>
     </div>
 
-    
+
   </div>
 );
 
@@ -661,9 +659,8 @@ const MobileSummarySection = ({
 const ContributionCard = ({ item, selected, onToggle }) => (
   <button
     onClick={onToggle}
-    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${
-      selected ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"
-    }`}
+    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${selected ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"
+      }`}
   >
     <div className="flex items-center gap-3 text-left">
       <div className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}>
@@ -672,11 +669,7 @@ const ContributionCard = ({ item, selected, onToggle }) => (
       <div>
         <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 leading-tight">{item.title}</h4>
         <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">{item.sub}</p>
-        {selected && (
-          <div className="mt-1 flex items-center gap-1 text-orange-600 text-[10px] font-bold">
-            <CheckCircle size={11} fill="currentColor" /> Added
-          </div>
-        )}
+
       </div>
     </div>
     <span className="text-[13px] md:text-[16px] font-black text-orange-600 whitespace-nowrap shrink-0">

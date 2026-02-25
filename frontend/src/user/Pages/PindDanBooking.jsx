@@ -14,7 +14,7 @@ import {
   Loader2,
   Users,
   Shield,
-  Lock,
+  Gem,
   Plus,
   CheckCircle,
   Ticket,
@@ -93,9 +93,9 @@ const PindDanBooking = () => {
       date: new Date().toISOString().split("T")[0],
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-            hour: "2-digit",
-            minute: "2-digit",
-          })
+          hour: "2-digit",
+          minute: "2-digit",
+        })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "Default City",
@@ -265,11 +265,10 @@ const PindDanBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${
-                      activeTab === tab
-                        ? "text-orange-600 bg-orange-50/50"
-                        : "text-gray-400"
-                    }`}
+                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
+                      ? "text-orange-600 bg-orange-50/50"
+                      : "text-gray-400"
+                      }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -305,9 +304,8 @@ const PindDanBooking = () => {
                   </div>
                   <div>
                     <p
-                      className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${
-                        !aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""
-                      }`}
+                      className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""
+                        }`}
                     >
                       {service?.description}
                     </p>
@@ -330,9 +328,9 @@ const PindDanBooking = () => {
               {/* BENEFITS */}
               <div className="p-5 md:p-7 bg-[#FFFDF8]">
                 <section ref={sections.benefits} className="scroll-mt-44 space-y-4">
-                  <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-800">
-                    Benefits of {service?.puja_name}
-                  </h3>
+                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
+                    <Gem size={20} /> Benefits of {service?.puja_name}
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
                     <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection for family" />
@@ -456,7 +454,9 @@ const PindDanBooking = () => {
                     <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
                       <Heart size={16} fill="currentColor" className="text-orange-500" />
                     </div>
-                    Add Contributions
+                    <span className="font-bold text-[13px]">
+                      {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     {selectedContributionsTotal > 0 ? (
@@ -565,9 +565,6 @@ const PindDanBooking = () => {
             )}
           </button>
         </div>
-        <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
-          Free cancellation up to 24 hours before
-        </p>
       </div>
     </div>
   );
@@ -612,7 +609,9 @@ const MobileSummarySection = ({
           <div className="p-1.5 bg-white rounded-lg shadow-sm">
             <Heart size={15} fill="currentColor" className="text-orange-500" />
           </div>
-          Add Contributions
+          <span className="font-bold text-[13px]">
+            {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+          </span>
         </div>
         <div className="flex items-center gap-1">
           {selectedContributionsTotal > 0 ? (
@@ -670,17 +669,15 @@ const MobileSummarySection = ({
 const ContributionCard = ({ item, selected, onToggle }) => (
   <button
     onClick={onToggle}
-    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${
-      selected
-        ? "border-orange-400 bg-orange-50"
-        : "border-orange-200 bg-white hover:border-orange-300"
-    }`}
+    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${selected
+      ? "border-orange-400 bg-orange-50"
+      : "border-orange-200 bg-white hover:border-orange-300"
+      }`}
   >
     <div className="flex items-center gap-3 text-left">
       <div
-        className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${
-          selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"
-        }`}
+        className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"
+          }`}
       >
         {item.icon}
       </div>
@@ -689,11 +686,7 @@ const ContributionCard = ({ item, selected, onToggle }) => (
           {item.title}
         </h4>
         <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">{item.sub}</p>
-        {selected && (
-          <div className="mt-1 flex items-center gap-1 text-orange-600 text-[10px] font-bold">
-            <CheckCircle size={11} fill="currentColor" /> Added
-          </div>
-        )}
+
       </div>
     </div>
     <span className="text-[13px] md:text-[16px] font-black text-orange-600 whitespace-nowrap shrink-0">
@@ -741,9 +734,8 @@ const FAQItem = ({ q, a }) => {
         />
       </div>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"
-        }`}
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"
+          }`}
       >
         <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
       </div>

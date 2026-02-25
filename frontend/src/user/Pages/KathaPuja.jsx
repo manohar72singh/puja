@@ -79,79 +79,64 @@ export default function KathaPuja() {
         </div>
 
         {/* SERVICES GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-10">
           {filteredServices.map((service) => (
             <div
               key={service.id}
               onClick={() => navigate(`/katha-jaap/${service.id}`)}
-              className="group relative bg-white rounded-[20px] overflow-hidden transition-all duration-500 hover:shadow-[0_25px_50px_-12px_rgba(234,88,12,0.15)] border border-orange-300 cursor-pointer flex flex-col hover:-translate-y-2 active:scale-[0.98]"
+              className="group relative bg-white rounded-2xl overflow-hidden transition-all duration-500 border border-orange-200 cursor-pointer flex flex-col hover:-translate-y-2 active:scale-[0.98]"
             >
-              {/* Image Container */}
-              <div className="relative h-64 overflow-hidden">
+              {/* Image */}
+              <div className="relative h-48 md:h-64 overflow-hidden">
                 <img
                   src={`${API_BASE_URL}/uploads/${service.image_url}`}
                   alt={service.puja_name}
                   className="w-full h-full object-cover transition-transform duration-[1.2s] group-hover:scale-110"
                 />
-
-                {/* Visible Luxury Price Badge */}
-                <div className="absolute top-3 right-4 z-20">
-                  <div className="bg-orange-400 text-white px-2 py-1 rounded-full flex items-center gap-2">
-                    <Sparkles size={12} fill="white" className="text-white" />
-                    <span className="text-[13px] font-semibold tracking-wide">
+                <div className="absolute top-3 right-3 z-20">
+                  <div className="bg-orange-500/90 backdrop-blur-sm text-white px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
+                    <Sparkles size={10} fill="white" />
+                    <span className="text-[11px] md:text-[13px] font-bold tracking-wide">
                       Trending
                     </span>
                   </div>
                 </div>
-
-                {/* Bottom Image Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 transition-opacity group-hover:opacity-80"></div>
               </div>
 
-              {/* Content Section */}
-              <div className="p-7 flex flex-col flex-1">
-                <div className="mb-6">
-                  <h3 className="text-2xl font-serif text-[#2f1e12] leading-tight group-hover:text-orange-600 transition-colors line-clamp-1 mb-2">
-                    {service.title || service.puja_name}
-                  </h3>
-                  <div className="flex items-center text-gray-400 text-xs font-medium gap-2">
-                    <div className="flex items-center gap-1 bg-orange-50 px-2 py-1 rounded-md">
-                      <Calendar size={12} className="text-orange-500" />
-                      <span className="text-orange-700 font-bold">Vedic Path</span>
+              {/* Content */}
+              <div className="p-5 md:p-4 flex flex-col flex-1">
+                <div className="mb-4 md:mb-2">
+
+                  {/* Title + Arrow */}
+                  <div className="flex items-center justify-between gap-3 mb-1">
+                    <h3 className="text-lg md:text-2xl font-serif text-[#2f1e12] leading-tight group-hover:text-orange-600 transition-colors line-clamp-1">
+                      {service.title || service.puja_name}
+                    </h3>
+
+                    <div className="w-9 h-9 md:w-11 md:h-11 rounded-xl md:rounded-2xl border border-orange-200 bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white transition-all duration-500 shrink-0">
+                      <ArrowRight size={18} />
+                    </div>
+                  </div>
+
+                  {/* Meta info */}
+                  <div className="flex items-center text-gray-400 text-[10px] md:text-xs font-medium gap-2">
+                    <div className="flex items-center gap-1 bg-orange-50 px-2 py-0.5 rounded">
+                      <Calendar size={10} className="text-orange-500" />
+                      <span className="text-orange-700">Available Daily</span>
                     </div>
                     <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                    <span>Verified Pandit</span>
-                  </div>
-                </div>
-
-                {/* Action Bar */}
-                <div className="mt-auto pt-5 border-t border-orange-50 flex items-center justify-between">
-                  <div className="flex flex-col items-start">
-                    <span className="text-[10px] text-gray-400 uppercase font-black tracking-[0.15em] mb-0.5">
-                      Dakshina
-                    </span>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-sm font-bold text-gray-900">₹</span>
-                      <span className="text-2xl font-serif font-black text-[#3D2B1D] tracking-tighter">
-                        {service.standard_price}
-                      </span>
-                      <span className="text-[11px] font-bold text-gray-400 ml-0.5">/-</span>
-                    </div>
+                    <span>At Home</span>
                   </div>
 
-                  <div className="flex items-center gap-3">
-                    <span className="text-sm font-bold text-[#2f1e12] opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
-                      Book Now
-                    </span>
-                    <div className="w-11 h-11 rounded-2xl border border-orange-200 bg-orange-50 flex items-center justify-center text-orange-600 group-hover:bg-orange-600 group-hover:text-white group-hover:rotate-[-45deg] transition-all duration-500 shadow-sm">
-                      <ArrowRight size={20} />
-                    </div>
-                  </div>
+                  {/* Description — 3 lines */}
+                  {service.description && (
+                    <p className="mt-2 text-gray-500 text-[12px] md:text-[13px] leading-relaxed line-clamp-3">
+                      {service.description}
+                    </p>
+                  )}
+
                 </div>
               </div>
-
-              {/* Subtle Bottom Glow Line */}
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
             </div>
           ))}
         </div>

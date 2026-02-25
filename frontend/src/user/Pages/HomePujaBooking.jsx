@@ -2,7 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 
 import {
   ChevronRight, ChevronLeft, Star, HelpCircle, Info, Box,
-  Heart, Shield, Zap, Users, Download, CheckCircle, MessageSquare, MapPin, Sparkles
+  Heart, Shield, Zap, Users, Download, CheckCircle, MessageSquare, MapPin, Sparkles,
+  Gem
 } from "lucide-react";
 
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -205,7 +206,9 @@ const HomePujaBooking = () => {
 
                 {/* SECTION: Benefits */}
                 <section ref={sections.benefits} className="scroll-mt-32 space-y-6">
-                  <h3 className="text-2xl font-serif font-bold text-gray-800">Benefits of {service?.puja_name}</h3>
+                  <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
+                    <Gem size={20} /> Benefits of {service?.puja_name}
+                  </div>
                   {/* grid-cols-2 lagane se mobile par 2 boxes side by side aayenge */}
                   <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
                     <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
@@ -321,7 +324,7 @@ const HomePujaBooking = () => {
           </div>
           <button
             onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
-            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-xl text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-100 active:scale-95 transition-transform"
+            className="w-40 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-xl text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-100 active:scale-95 transition-transform"
           >
             Proceed <ChevronRight size={18} />
           </button>

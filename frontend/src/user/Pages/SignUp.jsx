@@ -72,17 +72,17 @@ const SignUp = () => {
 
     return (
         <div className="min-h-screen bg-[#FFFCF5] font-sans flex flex-col items-center px-4">
-            
+
             {/* Header: Back Button & Logo */}
             <div className="w-full max-w-xl pt-6 pb-4 flex flex-col items-center relative">
-                <Link to="/" className="absolute left-0 top-6 flex items-center gap-1 text-[#E79A37] hover:text-orange-600 transition-colors text-xs font-bold">
+                <Link to="/" className="absolute left-0 top-6 flex items-center gap-1 text-gray-500 hover:text-orange-600 transition-colors text-xs font-bold">
                     <ArrowLeft size={14} /> HOME
                 </Link>
 
                 <div className="flex flex-col items-center mt-6">
-                    <img 
-                        src="/img/download.jpg" 
-                        alt="logo" 
+                    <img
+                        src="/img/download.jpg"
+                        alt="logo"
                         className="w-12 h-12 md:w-16 md:h-16 bg-orange-400 p-2 md:p-3 rounded-2xl mb-2 shadow-sm"
                     />
                     <h1 className="text-xl md:text-3xl font-serif font-bold text-gray-800">Join Sri Vedic Puja</h1>
@@ -90,31 +90,55 @@ const SignUp = () => {
                 </div>
             </div>
 
-            {/* STEPPER - Mobile Optimized */}
-            <div className="flex flex-col items-center my-4 w-full max-w-[320px] md:max-w-sm">
-                <div className="flex items-center justify-between w-full px-2 mb-2 relative">
-                    <div className="absolute top-1/2 left-0 w-full h-[1px] bg-gray-200 -z-10 -translate-y-1/2 px-8">
-                        <div className={`h-full transition-all duration-500 ${step === 2 ? 'w-1/2' : step === 3 ? 'w-full' : 'w-0'} bg-[#FFB347]`} />
-                    </div>
-                    
-                    {[1, 2, 3].map((s) => (
-                        <div key={s} className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base font-bold transition-all z-10 ${step >= s ? 'bg-orange-400 text-white shadow-md' : 'bg-gray-200 text-gray-500'}`}>
-                            {s}
+            <div className="w-full max-w-xl mx-auto m-8 text-center">
+
+                {/* Steps */}
+                <div className="grid grid-cols-3 items-center">
+
+                    {/* Step 1 */}
+                    <div className="flex flex-col items-center">
+                        <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold
+        ${step === 1 ? "bg-orange-400 text-white shadow-lg" : "bg-gray-200 text-gray-600"}`}>
+                            1
                         </div>
-                    ))}
+                        <span className={`mt-2 text-[10px] md:text-xs font-bold uppercase
+        ${step === 1 ? "text-orange-400" : "text-gray-400"}`}>
+                            Profile
+                        </span>
+                    </div>
+
+                    {/* Step 2 */}
+                    <div className="flex flex-col items-center">
+                        <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold
+        ${step === 2 ? "bg-orange-400 text-white shadow-lg" : "bg-gray-200 text-gray-600"}`}>
+                            2
+                        </div>
+                        <span className={`mt-2 text-[10px] md:text-xs font-bold uppercase
+        ${step === 2 ? "text-orange-400" : "text-gray-400"}`}>
+                            Contact
+                        </span>
+                    </div>
+
+                    {/* Step 3 */}
+                    <div className="flex flex-col items-center">
+                        <div className={`w-12 h-12 flex items-center justify-center rounded-full font-bold
+        ${step === 3 ? "bg-orange-400 text-white shadow-lg" : "bg-gray-200 text-gray-600"}`}>
+                            3
+                        </div>
+                        <span className={`mt-2 text-[10px] md:text-xs font-bold uppercase
+        ${step === 3 ? "text-orange-400" : "text-gray-400"}`}>
+                            Verify
+                        </span>
+                    </div>
+
                 </div>
 
-                <div className="flex justify-between w-full text-[9px] md:text-[10px] uppercase tracking-tighter md:tracking-widest font-bold text-gray-400">
-                    <span className={`w-20 text-center ${step === 1 ? "text-orange-400" : ""}`}>Profile</span>
-                    <span className={`w-20 text-center ${step === 2 ? "text-orange-400" : ""}`}>Contact</span>
-                    <span className={`w-20 text-center ${step === 3 ? "text-orange-400" : ""}`}>Verify</span>
-                </div>
             </div>
 
             {/* Main Form Card - Darker Shadow applied here */}
             <div className="w-full max-w-xl pb-10">
                 <div className="bg-white rounded-[24px] md:rounded-[32px] shadow-[0_20px_50px_-12px_rgba(0,0,0,0.25)] border border-gray-100 p-5 md:p-12">
-                    
+
                     {error && <p className="mb-4 text-red-500 text-center text-xs font-medium bg-red-50 p-2 rounded-lg">{error}</p>}
 
                     {/* STEP 1: Personal Info */}
@@ -124,18 +148,18 @@ const SignUp = () => {
                                 <h2 className="text-lg md:text-2xl font-serif font-bold text-gray-800">Tell us about yourself</h2>
                                 <p className="text-gray-400 text-xs mt-1">Personalize your Puja Sankalp</p>
                             </div>
-                            
+
                             <div className="space-y-4">
                                 <div className="space-y-1.5">
                                     <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
                                         <User size={12} className="text-[#E79A37]" /> Full Name
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         placeholder="Enter your name"
                                         className="w-full px-4 py-3.5 bg-[#FFFCF5]/50 border border-gray-200 rounded-xl outline-none focus:border-[#FFB347] transition-all text-sm text-gray-700 placeholder:text-gray-300"
                                         value={formData.name}
-                                        onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
                                 </div>
 
@@ -143,17 +167,17 @@ const SignUp = () => {
                                     <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
                                         <span className="text-sm">ॐ</span> Your Gotra
                                     </label>
-                                    <input 
+                                    <input
                                         type="text"
                                         placeholder="e.g., Kashyap, Vatsa"
                                         className="w-full px-4 py-3.5 bg-[#FFFCF5]/50 border border-gray-200 rounded-xl outline-none focus:border-[#FFB347] transition-all text-sm text-gray-700 placeholder:text-gray-300"
                                         value={formData.gotra}
-                                        onChange={(e) => setFormData({...formData, gotra: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, gotra: e.target.value })}
                                     />
                                     <p className="text-[10px] text-gray-400 italic">Gotra is essential for Puja rituals</p>
                                 </div>
 
-                                <button 
+                                <button
                                     onClick={() => setStep(2)}
                                     disabled={!isStep1Valid}
                                     className="w-full py-4 mt-2 bg-orange-500 text-white font-bold rounded-xl shadow-lg shadow-orange-100 active:scale-[0.98] transition-all disabled:opacity-50"
@@ -177,13 +201,13 @@ const SignUp = () => {
                                     <label className="text-[11px] font-bold text-gray-500 uppercase">Mobile Number</label>
                                     <div className="flex border border-gray-200 rounded-xl overflow-hidden focus-within:border-[#FFB347] transition-all">
                                         <span className="bg-gray-50 px-3 py-3.5 text-gray-500 border-r border-gray-200 font-bold text-sm">+91</span>
-                                        <input 
+                                        <input
                                             type="tel"
                                             maxLength={10}
                                             className="w-full px-4 py-3.5 outline-none text-sm text-gray-700 bg-[#FFFCF5]/50"
                                             placeholder="00000 00000"
                                             value={formData.phone}
-                                            onChange={(e) => setFormData({...formData, phone: e.target.value.replace(/\D/g, '')})}
+                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/\D/g, '') })}
                                         />
                                     </div>
                                 </div>
@@ -192,23 +216,23 @@ const SignUp = () => {
                                     <label className="text-[11px] font-bold text-gray-500 uppercase flex items-center gap-2">
                                         <Mail size={12} className="text-[#E79A37]" /> Email <span className="text-[9px] lowercase font-normal opacity-60">(optional)</span>
                                     </label>
-                                    <input 
+                                    <input
                                         type="email"
                                         placeholder="yourname@gmail.com"
                                         className="w-full px-4 py-3.5 bg-[#FFFCF5]/50 border border-gray-200 rounded-xl outline-none focus:border-[#FFB347] transition-all text-sm text-gray-700 placeholder:text-gray-300"
                                         value={formData.email}
-                                        onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     />
                                 </div>
 
-                                <button 
+                                <button
                                     onClick={handleSendOTP}
                                     disabled={isLoading || !isStep2Valid}
                                     className="w-full py-4 mt-2 bg-orange-500 text-white font-bold rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-50"
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" /> : "Send OTP"}
                                 </button>
-                                
+
                                 <button onClick={() => setStep(1)} className="w-full text-[10px] font-bold text-gray-400 uppercase tracking-widest">Back to Profile</button>
                             </div>
                         </div>
@@ -223,23 +247,23 @@ const SignUp = () => {
                             </div>
 
                             <div className="space-y-4">
-                                <input 
+                                <input
                                     type="text"
                                     maxLength={6}
                                     className="w-full px-4 py-4 border border-gray-200 rounded-xl text-center text-2xl font-bold tracking-[0.4em] focus:border-[#FFB347] outline-none transition-all bg-[#FFFCF5]/50"
                                     placeholder="000000"
                                     value={formData.otp}
-                                    onChange={(e) => setFormData({...formData, otp: e.target.value.replace(/\D/g, '')})}
+                                    onChange={(e) => setFormData({ ...formData, otp: e.target.value.replace(/\D/g, '') })}
                                 />
 
-                                <button 
+                                <button
                                     onClick={handleFinalVerify}
                                     disabled={isLoading || formData.otp.length !== 6}
                                     className="w-full py-4 mt-2 bg-[#2D1B0B] text-white font-bold rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center disabled:opacity-50"
                                 >
                                     {isLoading ? <Loader2 className="animate-spin" /> : "Verify & Register"}
                                 </button>
-                                
+
                                 <button onClick={() => setStep(2)} className="w-full text-[10px] font-bold text-gray-400 uppercase tracking-widest">Change Phone Number</button>
                             </div>
                         </div>
