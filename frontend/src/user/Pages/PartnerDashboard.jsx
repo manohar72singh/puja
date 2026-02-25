@@ -154,12 +154,6 @@ const PartnerDashboard = () => {
 
           {/* Left */}
           <div className="flex items-center gap-3 min-w-0">
-            <button
-              onClick={() => navigate(-1)}
-              className="w-8 h-8 flex items-center justify-center rounded-xl bg-[#F0EBE1] hover:bg-[#e8e0d0] transition"
-            >
-              <ChevronLeft size={18} className="text-[#6b5840]" />
-            </button>
 
             <button
               onClick={() => setShowProfile(true)}
