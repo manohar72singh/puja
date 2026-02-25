@@ -11,14 +11,15 @@ import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";
+
 const storage = multer.diskStorage({
   destination: "./uploads",
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
+    cb(null, file.originalname);
   },
 });
 
-const upload = multer({ storage: storage });
+export const upload = multer({ storage: storage });
 
 // Load Environment Variables
 dotenv.config();

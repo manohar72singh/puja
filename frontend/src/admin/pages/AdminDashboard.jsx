@@ -13,6 +13,7 @@ import RecentBookings from "../AdminComponets/RecentBookings";
 import Bookings from "../AdminComponets/BookingTable"; // 👈 import this
 import Users from "../AdminComponets/Users";
 import Services from "../AdminComponets/AdminServices";
+import Pandit from "../AdminComponets/Pandit";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({});
@@ -92,11 +93,12 @@ const AdminDashboard = () => {
               <RecentBookings bookings={stats.recentBookings || []} />
             </>
           )}
-
           {/* 🔥 Bookings Tab */}
           {active === "Bookings" && <Bookings />}
           {/* 🔥 Users Tab */}
           {active === "Users" && <Users />}
+          {/* pandit */}
+          {active === "Pandits" && <Pandit />}
           {/* 🔥 Services Tab */}
           {active === "Services" && <Services />}
         </div>
