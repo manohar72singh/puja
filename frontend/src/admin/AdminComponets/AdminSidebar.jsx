@@ -1,7 +1,7 @@
 import React from "react";
 
 const AdminSidebar = ({ active, setActive }) => {
-  const menus = ["Dashboard", "Bookings", "Users", "Services"];
+  const menus = ["Dashboard", "Bookings", "Users", "Pandits", "Services"];
 
   return (
     <div className="w-64 h-screen bg-gray-900 text-white p-5 fixed">
