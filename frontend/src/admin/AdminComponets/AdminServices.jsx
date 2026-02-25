@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import ServiceModal from "./ServiceModel";
 import { API } from "../../services/adminApi";
+
 const AdminServices = () => {
   const [services, setServices] = useState([]);
   const [page, setPage] = useState(1);
@@ -13,7 +14,7 @@ const AdminServices = () => {
     const { data } = await API.get(`/services`, {
       params: {
         page,
-        limit: 5,
+        limit: 12,
       },
     });
 
@@ -56,7 +57,7 @@ const AdminServices = () => {
             <tr>
               <th className="p-3 text-left">Name</th>
               <th className="p-3 text-center">Category</th>
-              <th className="p-3 text-center">Base Price</th>
+              <th className="p-3 text-center">Prices</th>
               <th className="p-3 text-center">Actions</th>
             </tr>
           </thead>
@@ -76,7 +77,22 @@ const AdminServices = () => {
                 </td>
 
                 <td className="p-3 text-center text-green-400">
-                  ₹{service.prices[0]?.price || "—"}
+                  <div className="flex flex-col gap-1">
+                    {(service.prices && service.prices.length > 0
+                      ? service.prices
+                      : [
+                          {
+                            price_id: null,
+                            pricing_type: "standard",
+                            price: "",
+                          },
+                        ]
+                    ).map((p, index) => (
+                      <span key={p.price_id ?? index}>
+                        {p.pricing_type}: {p.price ? `₹${p.price}` : "—"}
+                      </span>
+                    ))}
+                  </div>
                 </td>
 
                 <td className="p-3 flex justify-center gap-3">
@@ -103,7 +119,7 @@ const AdminServices = () => {
         </table>
       </div>
 
-      {/* 🔥 Pagination UI */}
+      {/* Pagination */}
       <div className="flex justify-center mt-6 gap-2">
         <button
           disabled={page === 1}

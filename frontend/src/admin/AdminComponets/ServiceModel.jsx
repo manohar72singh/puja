@@ -6,7 +6,10 @@ const ServiceModal = ({ close, editData, refresh }) => {
     puja_name: editData?.puja_name || "",
     puja_type: editData?.puja_type || "",
     description: editData?.description || "",
-    prices: editData?.prices || [{ pricing_type: "", price: "" }],
+    prices:
+      editData?.prices?.length > 0
+        ? editData.prices
+        : [{ pricing_type: "standard", price: "" }],
   });
 
   const [image, setImage] = useState(null);
@@ -22,19 +25,22 @@ const ServiceModal = ({ close, editData, refresh }) => {
       JSON.stringify(form.prices.filter((p) => p.pricing_type && p.price)),
     );
 
-    // Agar new image select hui hai
     if (image) {
       formData.append("image", image);
     }
 
-    if (editData) {
-      await API.put(`/services/${editData.id}`, formData);
-    } else {
-      await API.post(`/services`, formData);
+    try {
+      if (editData) {
+        await API.put(`/services/${editData.id}`, formData);
+      } else {
+        await API.post(`/services`, formData);
+      }
+      refresh();
+      close();
+    } catch (err) {
+      console.error(err);
+      alert("Error saving service.");
     }
-
-    refresh();
-    close();
   };
 
   return (
@@ -55,11 +61,30 @@ const ServiceModal = ({ close, editData, refresh }) => {
         <select
           className="w-full mb-3 p-2 rounded bg-[#0f172a]"
           value={form.puja_type}
-          onChange={(e) => setForm({ ...form, puja_type: e.target.value })}
+          onChange={(e) => {
+            const type = e.target.value;
+            let prices = form.prices;
+
+            if (type === "temple_puja") {
+              if (prices.length === 1) {
+                prices = [
+                  { pricing_type: "standard", price: "" },
+                  { pricing_type: "single", price: "" },
+                  { pricing_type: "couple", price: "" },
+                ];
+              }
+            } else {
+              prices = [{ pricing_type: "standard", price: "" }];
+            }
+
+            setForm({ ...form, puja_type: type, prices });
+          }}
         >
           <option value="">Select Type</option>
           <option value="home_puja">Home Puja</option>
+          <option value="katha">Katha</option>
           <option value="temple_puja">Temple Puja</option>
+          <option value="pind_dan">Pind Dan</option>
         </select>
 
         <textarea
@@ -69,7 +94,72 @@ const ServiceModal = ({ close, editData, refresh }) => {
           onChange={(e) => setForm({ ...form, description: e.target.value })}
         />
 
-        {/* 🔥 Image Upload */}
+        {/* Prices */}
+        <div className="mb-3">
+          <label className="block mb-1">Prices</label>
+
+          {form.prices.map((p, index) => (
+            <div key={index} className="flex gap-2 mb-2">
+              {form.puja_type === "temple_puja" && (
+                <select
+                  className="p-2 rounded bg-[#0f172a] flex-1"
+                  value={p.pricing_type}
+                  onChange={(e) => {
+                    const updated = [...form.prices];
+                    updated[index].pricing_type = e.target.value;
+                    setForm({ ...form, prices: updated });
+                  }}
+                >
+                  <option value="">Select Type</option>
+                  <option value="standard">Standard</option>
+                  <option value="single">Single</option>
+                  <option value="couple">Couple</option>
+                  <option value="family">Family</option>
+                </select>
+              )}
+
+              <input
+                type="number"
+                placeholder="Price"
+                className="p-2 rounded bg-[#0f172a] flex-1"
+                value={p.price}
+                onChange={(e) => {
+                  const updated = [...form.prices];
+                  updated[index].price = e.target.value;
+                  setForm({ ...form, prices: updated });
+                }}
+              />
+
+              {form.puja_type === "temple_puja" && (
+                <button
+                  onClick={() => {
+                    const updated = form.prices.filter((_, i) => i !== index);
+                    setForm({ ...form, prices: updated });
+                  }}
+                  className="bg-red-500 px-2 rounded text-white"
+                >
+                  X
+                </button>
+              )}
+            </div>
+          ))}
+
+          {form.puja_type === "temple_puja" && (
+            <button
+              onClick={() =>
+                setForm({
+                  ...form,
+                  prices: [...form.prices, { pricing_type: "", price: "" }],
+                })
+              }
+              className="bg-green-500 px-3 py-1 rounded text-white"
+            >
+              Add Price
+            </button>
+          )}
+        </div>
+
+        {/* Image */}
         <input
           type="file"
           accept="image/*"

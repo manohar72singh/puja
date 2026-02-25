@@ -413,11 +413,196 @@ export const filtarUsers = async (req, res) => {
 // pandit management, CRUD operations of pandit
 //========================================================================
 
+// export const getAllPandits = async (req, res) => {
+//   try {
+//     const [pandits] = await db.execute(
+//       "SELECT id, name, email, phone, role, created_at FROM users WHERE role='pandit' ORDER BY created_at DESC",
+//     );
+//     const totalPandits = pandits.length;
+//     res.status(200).json({ success: true, totalPandits, pandits });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false });
+//   }
+// };
+
+// =====================================
+// 1️⃣ Create Pandit
+// =====================================
+export const createPandit = async (req, res) => {
+  try {
+    const { name, gotra, email, phone } = req.body;
+
+    if (!name || !phone) {
+      return res.status(400).json({
+        success: false,
+        message: "Name and phone are required",
+      });
+    }
+
+    await db.query(
+      `INSERT INTO users (name, gotra, email, phone, role, is_blocked)
+       VALUES (?, ?, ?, ?, 'pandit', 0)`,
+      [name, gotra || null, email || null, phone],
+    );
+
+    res.json({
+      success: true,
+      message: "Pandit created successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+// =====================================
+// 2️⃣ Get All Pandits (Pagination + Search)
+// =====================================
 export const getAllPandits = async (req, res) => {
   try {
-    const [pandits] = await db.execute(
-      "SELECT id, name, email, phone, role, created_at FROM users WHERE role='pandit' ORDER BY created_at DESC",
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const offset = (page - 1) * limit;
+
+    let whereClause = `WHERE role='pandit'`;
+    const params = [];
+
+    if (search) {
+      whereClause += ` AND (name LIKE ? OR phone LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    // Total Count
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM users ${whereClause}`,
+      params,
     );
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Fetch Pandits
+    const [rows] = await db.query(
+      `SELECT id, name, gotra, email, phone, is_blocked, created_at
+       FROM users
+       ${whereClause}
+       ORDER BY created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset],
+    );
+
+    res.json({
+      success: true,
+      pandits: rows,
+      currentPage: page,
+      totalPages,
+      total,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+// =====================================
+// 3️⃣ Get Single Pandit
+// =====================================
+export const getSinglePandit = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [[pandit]] = await db.query(
+      `SELECT id, name, gotra, email, phone, is_blocked, created_at
+       FROM users
+       WHERE id=? AND role='pandit'`,
+      [id],
+    );
+
+    if (!pandit) {
+      return res.status(404).json({
+        success: false,
+        message: "Pandit not found",
+      });
+    }
+
+    res.json({ success: true, pandit });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+// =====================================
+// 4️⃣ Update Pandit
+// =====================================
+export const updatePandit = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, gotra, email, phone } = req.body;
+
+    await db.query(
+      `UPDATE users
+       SET name=?, gotra=?, email=?, phone=?
+       WHERE id=? AND role='pandit'`,
+      [name, gotra, email, phone, id],
+    );
+
+    res.json({
+      success: true,
+      message: "Pandit updated successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+// =====================================
+// 5️⃣ Block / Unblock Pandit
+// =====================================
+export const togglePanditBlock = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const [[pandit]] = await db.query(
+      `SELECT is_blocked FROM users WHERE id=? AND role='pandit'`,
+      [id],
+    );
+
+    if (!pandit) {
+      return res.status(404).json({ success: false });
+    }
+
+    const newStatus = pandit.is_blocked ? 0 : 1;
+
+    await db.query(`UPDATE users SET is_blocked=? WHERE id=?`, [newStatus, id]);
+
+    res.json({
+      success: true,
+      message: newStatus
+        ? "Pandit blocked successfully"
+        : "Pandit unblocked successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false });
+  }
+};
+
+// =====================================
+// 6️⃣ Delete Pandit
+// =====================================
+export const deletePandit = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await db.query(`DELETE FROM users WHERE id=? AND role='pandit'`, [id]);
+
+    res.json({
+      success: true,
+      message: "Pandit deleted successfully",
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false });
@@ -428,121 +613,85 @@ export const getAllPandits = async (req, res) => {
 
 // Get all services for admin dashboard with filter and search
 
-// export const getAllServices = async (req, res) => {
-//   try {
-//     const { puja_type, search } = req.query;
-//     const page = parseInt(req.query.page) || 1;
-//     const limit = parseInt(req.query.limit) || 5;
-//     const offset = (page - 1) * limit;
-
-//     let whereClause = `WHERE 1=1`;
-//     const params = [];
-
-//     if (puja_type) {
-//       whereClause += ` AND puja_type = ?`;
-//       params.push(puja_type);
-//     }
-
-//     if (search) {
-//       whereClause += ` AND puja_name LIKE ?`;
-//       params.push(`%${search}%`);
-//     }
-
-//     // ✅ Total Count (ONLY services table)
-//     const [countResult] = await db.query(
-//       `SELECT COUNT(*) as total FROM services ${whereClause}`,
-//       params,
-//     );
-
-//     const totalServices = countResult[0].total;
-//     const totalPages = Math.ceil(totalServices / limit);
-
-//     // ✅ Get paginated services FIRST
-//     const [services] = await db.query(
-//       `SELECT * FROM services
-//        ${whereClause}
-//        ORDER BY created_at DESC
-//        LIMIT ? OFFSET ?`,
-//       [...params, limit, offset],
-//     );
-
-//     const serviceIds = services.map((s) => s.id);
-
-//     let prices = [];
-
-//     if (serviceIds.length > 0) {
-//       const [priceRows] = await db.query(
-//         `SELECT * FROM service_prices
-//          WHERE service_id IN (?)`,
-//         [serviceIds],
-//       );
-//       prices = priceRows;
-//     }
-
-//     // ✅ Group prices
-//     const finalServices = services.map((service) => ({
-//       ...service,
-//       prices: prices.filter((p) => p.service_id === service.id),
-//     }));
-
-//     res.json({
-//       success: true,
-//       currentPage: page,
-//       totalPages,
-//       totalServices,
-//       services: finalServices,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 export const getAllServices = async (req, res) => {
   try {
     const { puja_type, search, status } = req.query;
 
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 5;
+    const limit = parseInt(req.query.limit) || 12;
     const offset = (page - 1) * limit;
 
     let whereClause = `WHERE 1=1`;
     const params = [];
 
-    // ✅ Puja Type Filter
     if (puja_type) {
-      whereClause += ` AND puja_type = ?`;
+      whereClause += ` AND s.puja_type = ?`;
       params.push(puja_type);
     }
 
-    // ✅ Search Filter
     if (search) {
-      whereClause += ` AND puja_name LIKE ?`;
+      whereClause += ` AND s.puja_name LIKE ?`;
       params.push(`%${search}%`);
     }
 
-    // ✅ Status Filter (NEW)
     if (status && status !== "all") {
-      whereClause += ` AND status = ?`;
+      whereClause += ` AND s.status = ?`;
       params.push(status);
     }
 
     // ✅ Total Count
     const [countResult] = await db.query(
-      `SELECT COUNT(*) as total FROM services ${whereClause}`,
+      `SELECT COUNT(*) as total FROM services s ${whereClause}`,
       params,
     );
 
     const totalServices = countResult[0].total;
     const totalPages = Math.ceil(totalServices / limit);
 
-    // ✅ Paginated Data
-    const [services] = await db.query(
-      `SELECT * FROM services
-       ${whereClause}
-       ORDER BY created_at DESC
-       LIMIT ? OFFSET ?`,
+    // ✅ Get Services with Prices (include pricing_type)
+    const [rows] = await db.query(
+      `
+      SELECT 
+        s.*, 
+        sp.id as price_id,
+        sp.pricing_type,
+        sp.price
+      FROM services s
+      LEFT JOIN service_prices sp 
+        ON s.id = sp.service_id
+      ${whereClause}
+      ORDER BY s.created_at DESC
+      LIMIT ? OFFSET ?
+      `,
       [...params, limit, offset],
     );
+
+    // 🔥 Group prices inside each service
+    const serviceMap = {};
+
+    rows.forEach((row) => {
+      if (!serviceMap[row.id]) {
+        serviceMap[row.id] = {
+          id: row.id,
+          puja_name: row.puja_name,
+          puja_type: row.puja_type,
+          description: row.description,
+          status: row.status,
+          created_at: row.created_at,
+          prices: [],
+        };
+      }
+
+      if (row.price_id) {
+        serviceMap[row.id].prices.push({
+          price_id: row.price_id,
+          pricing_type: row.pricing_type, // ✅ include pricing type
+          price: row.price,
+        });
+      }
+    });
+
+    const services = Object.values(serviceMap);
 
     res.json({
       success: true,
@@ -644,6 +793,7 @@ export const createService = async (req, res) => {
 };
 
 // Update service details for admin dashboard
+
 export const updateService = async (req, res) => {
   const connection = await db.getConnection();
 
@@ -651,39 +801,59 @@ export const updateService = async (req, res) => {
     const { id } = req.params;
     let { puja_name, puja_type, description, prices } = req.body;
 
+    // Agar frontend ne string me bheja → parse kar lo
     if (typeof prices === "string") {
       prices = JSON.parse(prices);
     }
 
     await connection.beginTransaction();
 
+    // Image handling
     let image_url = null;
-
     if (req.file) {
       image_url = `/uploads/${req.file.filename}`;
     }
 
-    if (image_url) {
-      await connection.query(
-        `UPDATE services 
-         SET puja_name=?, puja_type=?, description=?, image_url=? 
-         WHERE id=?`,
-        [puja_name, puja_type, description, image_url, id],
-      );
-    } else {
-      await connection.query(
-        `UPDATE services 
-         SET puja_name=?, puja_type=?, description=? 
-         WHERE id=?`,
-        [puja_name, puja_type, description, id],
-      );
+    // 1️⃣ Update service table
+    const updateFields = [];
+    const updateValues = [];
+
+    if (puja_name !== undefined) {
+      updateFields.push("puja_name=?");
+      updateValues.push(puja_name);
     }
 
-    await connection.query(`DELETE FROM service_prices WHERE service_id=?`, [
-      id,
-    ]);
+    if (puja_type !== undefined) {
+      updateFields.push("puja_type=?");
+      updateValues.push(puja_type);
+    }
 
-    if (Array.isArray(prices)) {
+    if (description !== undefined) {
+      updateFields.push("description=?");
+      updateValues.push(description);
+    }
+
+    if (image_url) {
+      updateFields.push("image_url=?");
+      updateValues.push(image_url);
+    }
+
+    if (updateFields.length > 0) {
+      const updateQuery = `UPDATE services SET ${updateFields.join(
+        ", ",
+      )} WHERE id=?`;
+      updateValues.push(id);
+      await connection.query(updateQuery, updateValues);
+    }
+
+    // 2️⃣ Update prices ONLY if frontend sent prices
+    if (Array.isArray(prices) && prices.length > 0) {
+      // Delete old prices
+      await connection.query(`DELETE FROM service_prices WHERE service_id=?`, [
+        id,
+      ]);
+
+      // Insert new prices
       for (let price of prices) {
         await connection.query(
           `INSERT INTO service_prices (service_id, pricing_type, price)
@@ -695,11 +865,11 @@ export const updateService = async (req, res) => {
 
     await connection.commit();
 
-    res.json({ success: true, message: "Service updated successfully" });
+    res.json({ success: true, message: "Service updated successfully!" });
   } catch (error) {
     await connection.rollback();
-    console.error(error);
-    res.status(500).json({ success: false });
+    console.error("Update Service Error:", error);
+    res.status(500).json({ success: false, message: "Something went wrong" });
   } finally {
     connection.release();
   }
@@ -735,71 +905,71 @@ export const getAllBookings = async (req, res) => {
     const limit = Number(req.query.limit) || 10;
     const offset = (page - 1) * limit;
 
-    let query = `
+    const params = [];
+    let whereClause = "WHERE 1=1";
+
+    if (status) {
+      whereClause += " AND pr.status=?";
+      params.push(status);
+    }
+
+    if (date) {
+      whereClause += " AND pr.preferred_date=?";
+      params.push(date);
+    }
+
+    if (search) {
+      whereClause += " AND pr.bookingId LIKE ?";
+      params.push(`%${search}%`);
+    }
+
+    // 1️⃣ Total count for pagination
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM puja_requests pr ${whereClause}`,
+      params,
+    );
+    const totalPages = Math.ceil(total / limit);
+
+    // 2️⃣ Fetch actual bookings with joins
+    const [rows] = await db.query(
+      `
       SELECT 
         pr.id,
         pr.bookingId,
         pr.status,
         pr.preferred_date,
         pr.preferred_time,
-
         u.name AS user_name,
         u.phone AS user_phone,
-
         s.puja_name,
         s.puja_type,
-
-        -- ✅ Pandit Name (Safe)
         COALESCE(p.name, 'Not Assigned') AS pandit_name,
-
         sp.price
-
       FROM puja_requests pr
-
       LEFT JOIN users u ON pr.user_id = u.id
       LEFT JOIN services s ON pr.service_id = s.id
       LEFT JOIN users p ON pr.pandit_id = p.id
-
-      -- ✅ No duplication price join
       LEFT JOIN (
          SELECT service_id, MIN(price) as price
          FROM service_prices
          GROUP BY service_id
       ) sp ON pr.service_id = sp.service_id
-
-      WHERE 1=1
-    `;
-
-    const params = [];
-
-    if (status) {
-      query += ` AND pr.status=?`;
-      params.push(status);
-    }
-
-    if (date) {
-      query += ` AND pr.preferred_date=?`;
-      params.push(date);
-    }
-
-    if (search) {
-      query += ` AND pr.bookingId LIKE ?`;
-      params.push(`%${search}%`);
-    }
-
-    query += ` ORDER BY pr.created_at DESC LIMIT ? OFFSET ?`;
-    params.push(limit, offset);
-
-    const [rows] = await db.query(query, params);
+      ${whereClause}
+      ORDER BY pr.created_at DESC
+      LIMIT ? OFFSET ?
+      `,
+      [...params, limit, offset],
+    );
 
     res.json({
       success: true,
       bookings: rows,
       currentPage: page,
+      totalPages,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ success: false });
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
 
@@ -876,3 +1046,28 @@ export const getTodayBookings = async (req, res) => {
     res.status(500).json({ success: false });
   }
 };
+
+// =====================================
+// 7️⃣ Assign Pandit To Booking
+// =====================================
+// export const assignPanditToBooking = async (req, res) => {
+//   try {
+//     const { bookingId } = req.params;
+//     const { pandit_id } = req.body;
+
+//     await db.query(
+//       `UPDATE puja_requests
+//        SET pandit_id=?, status='accepted'
+//        WHERE id=?`,
+//       [pandit_id, bookingId],
+//     );
+
+//     res.json({
+//       success: true,
+//       message: "Pandit assigned successfully",
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false });
+//   }
+// };
