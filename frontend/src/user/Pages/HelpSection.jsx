@@ -1,11 +1,13 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Headphones,
   Phone,
   Mail,
   Send,
   ChevronDown,
-  ArrowLeft
+  ArrowLeft,
+  MessageSquare,
+  Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
@@ -16,6 +18,33 @@ const HelpSection = () => {
   const submitLock = useRef(false); // 🔥 Prevent double submit
 
   const [loading, setLoading] = useState(false);
+
+  const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+  const [conversations, setConversations] = useState([]);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem("token");
+      const response = await fetch(`${API_BASE_URL}/puja/my-support-queries`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const result = await response.json();
+        setConversations(Array.isArray(result) ? result : result.data || []);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
 
   const [formData, setFormData] = useState({
     category: "General Query",
@@ -130,7 +159,7 @@ const HelpSection = () => {
         </div>
 
         {/* Form */}
-        <div className="bg-white p-6 rounded-[32px] border border-orange-200 shadow-sm">
+        <div className="bg-white p-6 rounded-[15px] border mb-8 border-orange-200 shadow-sm">
           <div className="flex items-center gap-2 mb-6 font-bold text-gray-800 text-lg">
             <Send
               size={18}
@@ -221,6 +250,50 @@ const HelpSection = () => {
               )}
             </button>
           </form>
+        </div>
+
+        {/* My Support Tickets Section */}
+        <div className="bg-white rounded-[1rem] border border-orange-200 p-6 md:p-8 shadow-sm mb-8">
+          <h3 className="text-xl font-serif font-bold text-gray-800 mb-6">My Support Tickets</h3>
+
+          {loading ? (
+            <div className="py-20 text-center flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-sm text-gray-400 font-medium">Fetching your tickets...</p>
+            </div>
+          ) : conversations.length > 0 ? (
+            <div className="space-y-4">
+              {conversations.map((query, i) => (
+                <div key={i} className="p-5 bg-white rounded-2xl border border-orange-200 shadow-sm hover:border-orange-300 transition-all">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h4 className="text-base font-bold text-gray-800 mb-1">{query.subject}</h4>
+                      <p className="text-sm text-gray-500 leading-relaxed mb-4">{query.message}</p>
+                    </div>
+                    <span className={`text-[10px] font-bold px-3 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider ${query.status === "Open" ? "bg-red-500 text-white" : "bg-yellow-500 text-white"
+                      }`}>
+                      {query.status === "Open" ? "● Open" : "✓ Resolved"}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-3 py-1 rounded-md uppercase">
+                      {query.category}
+                    </span>
+                    <span className="text-[11px] text-gray-400 flex items-center gap-1 font-medium">
+                      <Clock size={12} />
+                      {new Date(query.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="py-16 text-center border-2 border-dashed border-gray-100 rounded-3xl">
+              <MessageSquare size={40} className="text-gray-200 mx-auto mb-4" />
+              <p className="text-gray-400 font-bold">No support tickets found</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

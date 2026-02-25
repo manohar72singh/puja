@@ -173,7 +173,7 @@ const MyBookings = () => {
                   {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2 pr-24">
-                      {b.puja_name} {isTemplePuja && <span className="text-sm">⛩️</span>}
+                      {b.puja_name}
                     </h3>
 
                     <div className="grid grid-cols-2 gap-y-2 gap-x-4 mt-3 text-sm text-gray-600">

@@ -55,7 +55,7 @@ export default function TrendingPuja() {
             <h2 className="text-2xl md:text-4xl font-serif font-bold text-[#3b2a1a]">
               Trending Pujas
             </h2>
-            <p className="text-gray-500 text-xs md:text-base opacity-90">
+            <p className="text-gray-500 text-sm md:text-lg opacity-90">
               Most booked ceremonies this month.
             </p>
           </div>

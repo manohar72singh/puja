@@ -504,9 +504,9 @@ const TemplePujaBooking = () => {
             <p className="text-xl font-black text-orange-600 leading-tight">
               ₹{calculateTotal().toLocaleString("en-IN")}
             </p>
-            <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-              <ShieldCheck size={10} /> Incl. all taxes
-            </p>
+           <div className="flex justify-between items-center text-[10px]">
+                  <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
+                </div>
           </div>
           <button
             id="mobile-cta-btn"
