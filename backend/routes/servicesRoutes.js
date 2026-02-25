@@ -12,7 +12,7 @@ import {
   homeORKathaPujaBookingDetails,
   cancelBooking,
   postSupportQuery,
-  getUserSupportQueries
+  getUserSupportQueries,
 } from "../controllers/servicesController.js";
 
 const router = express.Router();
@@ -39,12 +39,10 @@ router.get("/temple-puja/:id", templePujaSingle);
 router.get("/pind-dan", pindDan);
 router.get("/pind-dan/:id", PindDanSingle);
 
-
 // 1. Nayi query post karne ke liye
 router.post("/support-query", verifyToken, postSupportQuery);
 
 // 2. User ko uski purani conversations dikhane ke liye (GET Request)
 router.get("/my-support-queries", verifyToken, getUserSupportQueries);
-
 
 export default router;

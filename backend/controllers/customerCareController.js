@@ -415,45 +415,6 @@ export const getAllPandits = async (req, res) => {
   }
 };
 
-// export const getAllUsers = async (req, res) => {
-//   try {
-//     const query = `
-//       SELECT
-//         u.id,
-//         u.name,
-//         u.gotra,
-//         u.email,
-//         u.phone,
-
-//         a.id AS address_id,
-//         a.address_line1,
-//         a.city,
-//         a.state,
-//         a.pincode
-
-//       FROM users u
-//       LEFT JOIN addresses a ON u.id = a.user_id
-//       WHERE u.role = 'user'
-//       ORDER BY u.id DESC
-//     `;
-
-//     const [rows] = await db.query(query);
-
-//     res.status(200).json({
-//       success: true,
-//       count: rows.length,
-//       users: rows
-//     });
-
-//   } catch (error) {
-//     console.error("Error fetching users:", error.message);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server Error"
-//     });
-//   }
-// };
-
 export const getAllUsers = async (req, res) => {
   try {
     const query = `
@@ -533,5 +494,110 @@ export const assignPandit = async (req, res) => {
   } catch (error) {
     console.error("Assign Error:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+// customercare resolve query show query and change status
+
+// show all querys
+export const getAllSupportQueries = async (req, res) => {
+  try {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const status = req.query.status || "";
+    const offset = (page - 1) * limit;
+
+    let whereClause = "";
+    const params = [];
+
+    if (status) {
+      whereClause = "WHERE sq.status = ?";
+      params.push(status);
+    }
+
+    // Total count
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total 
+       FROM support_queries sq 
+       ${whereClause}`,
+      params,
+    );
+
+    const totalPages = Math.ceil(total / limit);
+
+    // Fetch queries with user details (JOIN)
+    const [rows] = await db.query(
+      `SELECT 
+          sq.id,
+          sq.category,
+          sq.subject,
+          sq.message,
+          sq.status,
+          sq.created_at,
+          u.id        AS user_id,
+          u.name      AS user_name,
+          u.email     AS user_email,
+          u.phone     AS user_phone
+       FROM support_queries sq
+       LEFT JOIN users u ON sq.user_id = u.id
+       ${whereClause}
+       ORDER BY sq.created_at DESC
+       LIMIT ? OFFSET ?`,
+      [...params, limit, offset],
+    );
+
+    res.json({
+      success: true,
+      queries: rows,
+      total,
+      currentPage: page,
+      totalPages,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+};
+
+// =====================================
+// 2️⃣ Update Support Query Status
+// =====================================
+export const updateQueryStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const allowedStatuses = ["Open", "Resolved", "Closed"];
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid status. Allowed: ${allowedStatuses.join(", ")}`,
+      });
+    }
+
+    const [[query]] = await db.query(
+      `SELECT id, status FROM support_queries WHERE id = ?`,
+      [id],
+    );
+
+    if (!query) {
+      return res.status(404).json({
+        success: false,
+        message: "Query not found",
+      });
+    }
+
+    await db.query(`UPDATE support_queries SET status = ? WHERE id = ?`, [
+      status,
+      id,
+    ]);
+
+    res.json({
+      success: true,
+      message: `Query marked as ${status}`,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: "Internal server error" });
   }
 };
