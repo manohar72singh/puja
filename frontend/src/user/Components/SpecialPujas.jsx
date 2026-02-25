@@ -41,7 +41,7 @@ export default function SpecialPujas() {
           </h2>
 
           <p className="text-gray-500 text-sm md:text-lg leading-relaxed max-w-2xl mx-auto opacity-90 px-2">
-            Join thousands of devotees in collective worship — receiving blessings from anywhere
+            Join thousands of devotees in collective worship - receiving blessings from anywhere
           </p>
         </div>
 

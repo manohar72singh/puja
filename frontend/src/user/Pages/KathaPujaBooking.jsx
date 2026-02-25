@@ -18,6 +18,7 @@ const KathaPujaBooking = () => {
 
   const [activeTab, setActiveTab] = useState("about");
   const [service, setService] = useState(null);
+  const [aboutExpanded, setAboutExpanded] = useState(false); // NEW
 
   const sections = {
     about: useRef(null),
@@ -71,7 +72,7 @@ const KathaPujaBooking = () => {
   const totalAmount = samagriEnabled ? basePrice + 600 : basePrice;
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800">
+    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800 pb-28 md:pb-6">
       <div className="max-w-6xl mx-auto">
 
         <button
@@ -82,7 +83,6 @@ const KathaPujaBooking = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
           <div className="lg:col-span-8 space-y-5">
 
             {/* HERO SECTION */}
@@ -98,11 +98,9 @@ const KathaPujaBooking = () => {
                   <h1 className="text-3xl md:text-4xl font-serif font-bold text-white leading-tight">
                     {service?.puja_name}
                   </h1>
-                  <div className="flex items-center">
-                    <span className="text-white text-[13px] font-bold uppercase tracking-wider">
-                      Certified Vedic Ritual
-                    </span>
-                  </div>
+                  <span className="text-white text-[13px] font-bold uppercase tracking-wider">
+                    Certified Vedic Ritual
+                  </span>
                 </div>
               </div>
             </div>
@@ -114,10 +112,9 @@ const KathaPujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
-                      ? "text-orange-600 bg-orange-50/50"
-                      : "text-gray-400"
-                      }`}
+                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                      activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"
+                    }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -128,7 +125,7 @@ const KathaPujaBooking = () => {
               </div>
             </nav>
 
-            {/* SAMAGRI TOGGLE SECTION */}
+            {/* SAMAGRI TOGGLE */}
             <div className={`bg-white rounded-xl p-5 border transition-all duration-300 shadow-sm ${samagriEnabled ? 'border-orange-400' : 'border-orange-200'}`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
@@ -137,14 +134,11 @@ const KathaPujaBooking = () => {
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">All-in-One Samagri Kit</h3>
-
                     {samagriEnabled ? (
-                      /* ON State Text */
                       <p className="text-gray-500 text-[13px]">
                         <span className="text-orange-600 font-bold">Relax.</span> We bring Flowers, Ghee & Vessels.
                       </p>
                     ) : (
-                      /* OFF State Content */
                       <div className="space-y-3">
                         <p className="text-gray-500 text-[13px]">
                           You'll need to buy <span className="text-red-500 font-bold">30+ items.</span>
@@ -156,7 +150,6 @@ const KathaPujaBooking = () => {
                     )}
                   </div>
                 </div>
-
                 <div className="flex flex-col items-end gap-1">
                   <button
                     onClick={() => setSamagriEnabled(!samagriEnabled)}
@@ -171,69 +164,83 @@ const KathaPujaBooking = () => {
               </div>
             </div>
 
-            {/* CONTENT CONTAINER (About, Benefits, Included) */}
+            {/* CONTENT CONTAINER */}
             <div className="bg-white rounded-2xl border border-orange-200 overflow-hidden shadow-sm">
-              <div className="p-7 space-y-4">
+              <div className="p-5 md:p-7 space-y-4">
 
-                {/* SECTION: About */}
-                <section ref={sections.about} className="scroll-mt-32 space-y-5">
+                {/* ABOUT — Read More on mobile */}
+                <section ref={sections.about} className="scroll-mt-32 space-y-4">
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Info size={20} /> About The Ritual
                   </div>
-                  <p className="text-[15px] text-gray-600 leading-relaxed text-justify">
-                    {service?.description}
-                  </p>
-                </section>
-
-                <div className="border-t border-orange-50" />
-
-                {/* SECTION: Benefits */}
-                <section ref={sections.benefits} className="scroll-mt-32 space-y-6">
-                  <h3 className="text-2xl font-serif font-bold text-gray-800">Benefits of {service?.puja_name}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                    <BenefitSmall icon={<Shield />} title="Protection & Blessings" desc="Divine protection for family" />
-                    <BenefitSmall icon={<Zap />} title="Prosperity & Success" desc="Remove obstacles from your path" />
-                    <BenefitSmall icon={<Users />} title="Family Harmony" desc="Strengthen family bonds" />
-                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify home with mantras" />
-                    <BenefitSmall icon={<MapPin />} title="Vastu Benefits" desc="Harmonize living space" />
+                  <div>
+                    <p className={`text-[15px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}>
+                      {service?.description}
+                    </p>
+                    <button
+                      onClick={() => setAboutExpanded(!aboutExpanded)}
+                      className="mt-2 text-orange-600 font-bold text-[13px] uppercase tracking-wider flex items-center gap-1 md:hidden"
+                    >
+                      {aboutExpanded ? "Read Less" : "Read More"}
+                      <ChevronRight size={14} className={`transition-transform ${aboutExpanded ? "rotate-90" : ""}`} />
+                    </button>
                   </div>
                 </section>
 
                 <div className="border-t border-orange-50" />
 
+                {/* BENEFITS — mobile: 2-col no icons | desktop: 2-col with icons */}
+                <section ref={sections.benefits} className="scroll-mt-32 space-y-4">
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-800">
+                    Benefits of {service?.puja_name}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-3">
+                    <BenefitSmall icon={<Heart />}    title="Spiritual Peace"   desc="Inner calm through sacred rituals" />
+                    <BenefitSmall icon={<Shield />}   title="Protection"        desc="Divine protection for family"      />
+                    <BenefitSmall icon={<Zap />}      title="Prosperity"        desc="Remove obstacles from your path"   />
+                    <BenefitSmall icon={<Users />}    title="Harmony"           desc="Strengthen family bonds"           />
+                    <BenefitSmall icon={<Sparkles />} title="Positive Energy"   desc="Purify home with mantras"          />
+                    <BenefitSmall icon={<MapPin />}   title="Vastu Benefits"    desc="Harmonize living space"            />
+                  </div>
+                </section>
+
+                <div className="border-t border-orange-50" />
 
               </div>
             </div>
 
             {/* WhatsApp Note */}
-            <div className="bg-white rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
-              <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
+            <div className="bg-white rounded-xl p-5 md:p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
+              <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm shrink-0">
+                <MessageSquare size={20} />
+              </div>
               <div>
-                <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
+                <h4 className="text-[15px] md:text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
                 <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">
-                  Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.
+                  Your assigned Pandit's contact and details will be shared on{" "}
+                  <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span>{" "}
+                  on the day of your booking.
                 </p>
               </div>
             </div>
 
-            {/* SECTION: FAQs */}
-            <section ref={sections.faqs} className="bg-white p-7 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
+            {/* FAQs */}
+            <section ref={sections.faqs} className="bg-white p-5 md:p-7 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
               <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-5">
                 <HelpCircle size={20} /> Frequently Asked Questions
               </div>
               <div className="space-y-4">
-                <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
-                <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp." />
+                <FAQItem q="Who will perform the Puja?"                         a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
+                <FAQItem q="I don't know my Gotra, what should I do?"           a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp." />
                 <FAQItem q="How will I know the Puja has been done in my name?" a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja." />
-                <FAQItem q="What will I get after the Puja is done?" a="After completion, you will receive divine blessings and Prasad (if samagri is selected)." />
+                <FAQItem q="What will I get after the Puja is done?"            a="After completion, you will receive divine blessings and Prasad (if samagri is selected)." />
               </div>
             </section>
 
           </div>
 
-          {/* SIDEBAR SUMMARY (Sticky) */}
-          <aside className="lg:col-span-4 lg:sticky lg:top-[100px] self-start">
+          {/* DESKTOP SIDEBAR */}
+          <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-[100px] self-start">
             <div className="bg-white rounded-2xl border border-orange-200 p-8 shadow-sm space-y-8">
               <div>
                 <h2 className="text-[15px] font-bold uppercase tracking-[0.2em] text-gray-700 mb-2">Booking Summary</h2>
@@ -245,17 +252,15 @@ const KathaPujaBooking = () => {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-[15px] font-bold">
-                  <span className="text-gray-500  tracking-wider">Base Price</span>
+                  <span className="text-gray-500 tracking-wider">Base Price</span>
                   <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
                 </div>
-
                 {samagriEnabled && (
                   <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
-                    <span className="text-gray-500  tracking-wider">Samagri Kit</span>
+                    <span className="text-gray-500 tracking-wider">Samagri Kit</span>
                     <span className="tracking-tight">+₹600</span>
                   </div>
                 )}
-
                 <div className="pt-6 mt-2 border-t border-dashed border-orange-200">
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
@@ -264,9 +269,7 @@ const KathaPujaBooking = () => {
                         <Shield size={10} className="stroke-[3]" /> Inclusive of all taxes
                       </span>
                     </div>
-                    <div className="text-right">
-                      <span className="text-2xl font-bold text-orange-600 tracking-tighter">₹{totalAmount}</span>
-                    </div>
+                    <span className="text-2xl font-bold text-orange-600 tracking-tighter">₹{totalAmount}</span>
                   </div>
                 </div>
               </div>
@@ -289,49 +292,56 @@ const KathaPujaBooking = () => {
           </aside>
         </div>
       </div>
+
+      {/* MOBILE FIXED BOTTOM CTA */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 p-4 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <span className="text-2xl font-black text-orange-600">₹{totalAmount}</span>
+            <span className="text-[10px] text-green-600 font-bold flex items-center gap-1">
+              <Shield size={10} /> Secure Booking
+            </span>
+          </div>
+          <button
+            onClick={() => navigate(`/katha-jaap/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-xl text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-100 active:scale-95 transition-transform"
+          >
+            Proceed <ChevronRight size={18} />
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
 
-// --- HELPER COMPONENTS ---
+/* ─────────────────────────────────────────────
+   BENEFIT SMALL
+   Desktop: icon + text (horizontal)
+   Mobile:  no icon, compact (2-col grid)
+───────────────────────────────────────────── */
 const BenefitSmall = ({ icon, title, desc }) => (
-  <div className="flex items-center gap-4 bg-[#FFFDF8] p-5 rounded-xl border border-orange-200 group transition-all shadow-sm">
-    <div className="p-3 bg-white text-orange-500 rounded-xl transition-all shadow-sm border border-orange-50">
-      {React.cloneElement(icon, { size: 20 })}
+  <div className="flex items-center gap-3 bg-[#FFFDF8] p-3 md:p-5 rounded-xl border border-orange-200 transition-all shadow-sm">
+    {/* Icon hidden on mobile */}
+    <div className="hidden md:flex p-2.5 bg-white text-orange-500 rounded-xl shadow-sm border border-orange-50 shrink-0">
+      {React.cloneElement(icon, { size: 18 })}
     </div>
     <div>
-      <h4 className="text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
-      <p className="text-[13px] text-gray-500 mt-2 leading-tight font-medium">{desc}</p>
+      <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
+      <p className="text-[11px] md:text-[13px] text-gray-500 mt-1 leading-tight font-medium">{desc}</p>
     </div>
   </div>
 );
 
 const FAQItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
-
   return (
-    <div 
-      className="py-2 cursor-pointer border-b border-orange-50 last:border-none" 
-      onClick={() => setOpen(!open)}
-    >
+    <div className="py-2 cursor-pointer border-b border-orange-50 last:border-none" onClick={() => setOpen(!open)}>
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
-          {q}
-        </span>
-        <ChevronRight
-          size={18}
-          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
-        />
+        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
+        <ChevronRight size={18} className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`} />
       </div>
-      
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
-          {a}
-        </p>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
       </div>
     </div>
   );

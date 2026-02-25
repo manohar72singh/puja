@@ -21,6 +21,8 @@ import KathaPujaBookingDetails from "./user/Pages/KathaPujaBookingDetails";
 
 import ProfileSection from "./user/Pages/ProfileSection";
 import HelpSupportSection from "./user/Pages/HelpSupportSection";
+import HelpSection from "./user/Pages/HelpSection"
+
 import ManageSankalp from "./user/Pages/ManageSankalp";
 import SavedAddresses from "./user/Pages/SavedAddresses";
 import MyBookings from "./user/Pages/MyBooking";
@@ -42,7 +44,7 @@ import CustomerCareDashboard from "./admin/pages/CustomerCareDashboard";
 import FullTemplePage from "./user/Pages/FullTemplePage";
 import MandirDetailsPage from "./user/Pages/MandirDetailsPage";
 import EventsPage from "./user/Pages/EventsPage";
-import AartiPage  from "./user/Pages/AartiPage";
+import AartiPage from "./user/Pages/AartiPage";
 
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import AdminLogin from "./admin/pages/AdminLogin";
@@ -73,9 +75,9 @@ function App() {
           <Route path="/" element={<Home />} />
 
           <Route path="/temples" element={<FullTemplePage />} />
-          <Route path="/:id" element={<MandirDetailsPage />} />
-          <Route path="/events" element={<EventsPage/>}/>
-          <Route path="/aarti" element={<AartiPage/>}/>
+          <Route path="/temples/:id" element={<MandirDetailsPage />} />
+          <Route path="/events" element={<EventsPage />} />
+          <Route path="/aarti" element={<AartiPage />} />
 
           {/* Home Puja */}
           <Route path="/homePuja">
@@ -125,10 +127,13 @@ function App() {
             <Route path="/profile" element={<ProfileSection />} />
             <Route path="/manageSankalp" element={<ManageSankalp />} />
             <Route path="/savedAddresses" element={<SavedAddresses />} />
-            <Route path="/my-booking" element={<MyBookings />} />
+            <Route path="/my-booking" element={<MyBookings/>} />
           </Route>
 
-          <Route path="/help" element={<HelpSupportSection />} />
+          <Route path="/help">
+            <Route index element={<HelpSupportSection />} />
+            <Route path="support" element={<HelpSection />} />
+          </Route>
         </Route>
 
         {/* ================= AUTH ROUTES ================= */}

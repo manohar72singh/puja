@@ -10,13 +10,15 @@ import {
   pindDan,
   PindDanSingle,
   homeORKathaPujaBookingDetails,
-  cancelBooking
+  cancelBooking,
+  postSupportQuery,
+  getUserSupportQueries
 } from "../controllers/servicesController.js";
 
 const router = express.Router();
 
 router.get("/allServices/:type", getServicesByType);
-router.get("/bookPuja/:id", verifyToken, bookPuja);
+router.get("/bookPuja/:id", bookPuja);
 
 //jo user puja book kar rha hai vo sabhi booking puja requests mai ja rahi hai
 router.post("/bookingDetails", verifyToken, bookingDetails);
@@ -36,5 +38,13 @@ router.get("/temple-puja/:id", templePujaSingle);
 
 router.get("/pind-dan", pindDan);
 router.get("/pind-dan/:id", PindDanSingle);
+
+
+// 1. Nayi query post karne ke liye
+router.post("/support-query", verifyToken, postSupportQuery);
+
+// 2. User ko uski purani conversations dikhane ke liye (GET Request)
+router.get("/my-support-queries", verifyToken, getUserSupportQueries);
+
 
 export default router;

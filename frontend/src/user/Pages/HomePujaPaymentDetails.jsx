@@ -7,6 +7,7 @@ import {
   MessageCircle,
   Heart,
   ChevronRight,
+  ChevronLeft,
   Shirt,
   Flame,
   Sparkles,
@@ -14,6 +15,7 @@ import {
   UtensilsCrossed,
   Coffee,
   CheckCircle,
+  ShieldCheck,
 } from "lucide-react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { FaWhatsapp } from "react-icons/fa";
@@ -23,121 +25,57 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const HomePujaPaymentDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const location = useLocation(); // Required to read state from previous page
+  const location = useLocation();
 
-  // State for API data
   const [puja, setPuja] = useState(null);
   const [loading, setLoading] = useState(true);
-  // const [address, setAddress] = useState(null);
   const dharmicRef = useRef(null);
 
-  // Get Samagri status from navigation state
   const isSamagriSelected = location.state?.isSamagriSelected || false;
-
   const [errorMsg, setErrorMsg] = useState("");
 
-  // generate booking Id
-  const generateBookingId = () => {
-    const randomStr = Math.random().toString(36).substring(2, 8);
-    return `BK-${randomStr}`;
-  };
+  const generateBookingId = () => `BK-${Math.random().toString(36).substring(2, 8)}`;
   const token = localStorage.getItem("token");
-  const userName = token
-    ? JSON.parse(atob(token.split(".")[1])).name
-    : "Guest User";
+  const userName = token ? JSON.parse(atob(token.split(".")[1])).name : "Guest User";
   const bookingId = generateBookingId();
+
   const [formData, setFormData] = useState({
-    date: "",
-    time: "",
-    location: "",
-    state: "", // Naya field
-    city: "", // Naya field
-    pincode: "",
-    devoteeName: userName,
-    gotra: "",
+    date: "", time: "", location: "", state: "", city: "", pincode: "",
+    devoteeName: userName, gotra: "",
   });
 
   const [donations, setDonations] = useState({
-    vastra: false,
-    annadan: false,
-    deepdan: false,
-    bhoj: false,
-    gau: false,
-    temple: false,
+    vastra: false, annadan: false, deepdan: false, bhoj: false, gau: false, temple: false,
   });
 
   const contributionOptions = [
-    {
-      id: "vastra",
-      name: "Vastra Daan",
-      price: 251,
-      icon: <Shirt size={18} />,
-      desc: "Donate clothes to the needy",
-    },
-    {
-      id: "annadan",
-      name: "Annadan",
-      price: 501,
-      icon: <Coffee size={18} />,
-      desc: "Provide meals to the hungry",
-    },
-    {
-      id: "deepdan",
-      name: "Deepdan",
-      price: 101,
-      icon: <Flame size={18} />,
-      desc: "Light lamps at sacred temples",
-    },
-    {
-      id: "bhoj",
-      name: "Brahmin Bhoj",
-      price: 1100,
-      icon: <UtensilsCrossed size={18} />,
-      desc: "Feed Brahmins after ceremony",
-    },
+    { id: "vastra",  name: "Vastra Daan",   price: 251,  icon: <Shirt size={16} />,         desc: "Donate clothes to the needy"     },
+    { id: "annadan", name: "Annadan",        price: 501,  icon: <Coffee size={16} />,         desc: "Provide meals to the hungry"     },
+    { id: "deepdan", name: "Deepdan",        price: 101,  icon: <Flame size={16} />,          desc: "Light lamps at sacred temples"   },
+    { id: "bhoj",    name: "Brahmin Bhoj",   price: 1100, icon: <UtensilsCrossed size={16} />,desc: "Feed Brahmins after ceremony"    },
   ];
 
   const handlePayment = async () => {
-    // Basic validation
     if (!formData.date || !formData.devoteeName || !formData.city) {
-  setErrorMsg("Please fill all mandatory fields (Date, Name, City)");
-  
-  // 3 second baad error apne aap gayab ho jaye
-  setTimeout(() => setErrorMsg(""), 3000); 
-  return;
-}
-
+      setErrorMsg("Please fill all mandatory fields (Date, Name, City)");
+      setTimeout(() => setErrorMsg(""), 3000);
+      return;
+    }
     const payload = {
-      puja_id: id,
-      date: formData.date,
-      time: formData.time,
+      puja_id: id, date: formData.date, time: formData.time,
       location: `${formData.location} - ${formData.pincode}`,
-      city: formData.city,
-      state: formData.state,
-      devoteeName: formData.devoteeName,
-      bookingId: bookingId,
+      city: formData.city, state: formData.state,
+      devoteeName: formData.devoteeName, bookingId,
     };
-
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(payload),
-        },
-      );
-
+      const response = await fetch(`${API_BASE_URL}/puja/home_KathaPujaBookingDetails`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      });
       const data = await response.json();
-
-      if (data.success) {
-        navigate("/my-booking"); // Home ya My Bookings page par bhejien
-      } else {
-        alert("Error: " + data.message);
-      }
+      if (data.success) navigate("/my-booking");
+      else alert("Error: " + data.message);
     } catch (error) {
       console.error("Booking submission failed:", error);
       alert("Server error. Please check if backend is running.");
@@ -150,29 +88,15 @@ const HomePujaPaymentDetails = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/puja/bookPuja/${id}`, {
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
-        console.log("Puja booking response:", data);
-        // Handling both array and object response patterns
-        if (Array.isArray(data)) {
-          setPuja(data[0]);
-        } else {
-          setPuja(data);
-        }
+        setPuja(Array.isArray(data) ? data[0] : data);
 
-        //fetch default address and prefill form
         const addressRes = await fetch(`${API_BASE_URL}/user/default-address`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
-
         const addressData = await addressRes.json();
-        console.log("Default address response:", addressData);
         if (addressData) {
           setFormData((prev) => ({
             ...prev,
@@ -196,437 +120,449 @@ const HomePujaPaymentDetails = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const toggleDonation = (id) =>
-    setDonations((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleDonation = (id) => setDonations((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const getDharmicTotal = () => {
-    let sum = contributionOptions.reduce((acc, opt) => {
-      return donations[opt.id] ? acc + opt.price : acc;
-    }, 0);
+    let sum = contributionOptions.reduce((acc, opt) => donations[opt.id] ? acc + opt.price : acc, 0);
     if (donations.gau) sum += 100;
     return sum;
   };
 
-  // Calculations
   const basePrice = Number(puja?.standard_price || 0);
   const samagriPrice = isSamagriSelected ? 600 : 0;
   const dharmicTotal = getDharmicTotal();
   const templeDonation = donations.temple ? 1 : 0;
   const grandTotal = basePrice + samagriPrice + dharmicTotal + templeDonation;
 
-  // Shared Styling
-  const mainCardStyle =
-    "bg-white rounded-2xl border border-orange-200 shadow-sm hover:shadow-md transition-shadow duration-200";
-  const innerDivStyle = "border border-orange-200 rounded-xl p-5";
-  const inputBaseClass =
-    "w-full bg-gray-50 border border-orange-200 rounded-xl px-4 py-3.5 text-gray-800 placeholder:text-gray-500 focus:outline-none focus:border-orange-500 transition-all font-medium text-sm";
-  const labelClass =
-    "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-700 mb-2 ml-1";
+  const inputBaseClass = "w-full bg-gray-50 border border-orange-200 rounded-xl px-3 py-3 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-orange-500 transition-all font-medium text-sm";
+  const labelClass = "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-700 mb-1.5 ml-1";
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FFF4E1] flex items-center justify-center">
-        <p className="text-orange-600 font-bold animate-pulse">
-          Loading Sacred Details...
-        </p>
+        <p className="text-orange-600 font-bold animate-pulse">Loading Sacred Details...</p>
       </div>
     );
   }
 
   return (
-
-<>
-    {/* Error Alert Box */}
-{errorMsg && (
-  <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
-    <div className="bg-red-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white">
-      <span className="text-xl">⚠️</span>
-      <p className="font-bold text-sm tracking-wide">{errorMsg}</p>
-    </div>
-  </div>
-)}
-
-    <div className="min-h-screen bg-[#FFF4E1] font-sans text-[#2D2D2D] antialiased pb-20">
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Back Button */}
-        <button
-          onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-sm font-bold text-gray-700 hover:text-orange-600 mb-8 transition-colors"
-        >
-          <ChevronRight className="rotate-180" size={16} />
-          <span>Back to Puja</span>
-        </button>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          <div className="lg:col-span-8 space-y-6">
-            {/* 1. E-SANKALP FORM */}
-            <div className={`${mainCardStyle} p-8`}>
-              <div className="flex items-center gap-4 mb-8">
-                <div className="bg-orange-500 p-2 rounded-full text-white shadow-md">
-                  <Sparkles size={18} />
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900">E-Sankalp</h3>
-                  <p className="text-xs text-gray-500 font-bold uppercase tracking-widest mt-1">
-                    Complete your sacred booking
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-1">
-                    <label className={labelClass}>
-                      <Calendar size={13} /> Puja Date
-                    </label>
-                    <input
-                      type="date"
-                      name="date"
-                      value={formData.date}
-                      onChange={handleInputChange}
-                      className={inputBaseClass}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className={labelClass}>
-                      <Clock size={13} /> Preferred Time
-                    </label>
-                    <input
-                      type="time"
-                      name="time"
-                      value={formData.time}
-                      onChange={handleInputChange}
-                      className={inputBaseClass}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <label className={labelClass}>
-                    <MapPin size={13} /> Puja Location (Full Address)
-                  </label>
-                  <textarea
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    placeholder="Enter complete address with landmarks..."
-                    rows="3"
-                    className={inputBaseClass}
-                    required
-                  />
-                </div>
-                {/* Location Textarea ke baad ye grid insert karein */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-                  <div className="space-y-1">
-                    <label className={labelClass}>State</label>
-                    <input
-                      type="text"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleInputChange}
-                      placeholder="e.g. Uttar Pradesh"
-                      className={inputBaseClass}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className={labelClass}>City</label>
-                    <input
-                      type="text"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      placeholder="e.g. Varanasi"
-                      className={inputBaseClass}
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className={labelClass}>Pincode</label>
-                    <input
-                      type="text"
-                      name="pincode"
-                      maxLength="6"
-                      value={formData.pincode}
-                      onChange={handleInputChange}
-                      placeholder="6 Digit PIN"
-                      className={inputBaseClass}
-                      onKeyPress={(e) =>
-                        !/[0-9]/.test(e.key) && e.preventDefault()
-                      } // Sirf numbers allow karne ke liye
-                    />
-                  </div>
-                </div>
-
-                <div className="pt-4">
-                  <h3 className="text-sm font-bold mb-1 flex items-center gap-2">
-                    <User size={16} className="text-orange-500" /> Sankalp
-                    Details
-                  </h3>
-                  <p className="text-[11px] text-gray-500 mb-4 font-medium">
-                    These details will be used during the sacred Sankalp (ritual
-                    pledge)
-                  </p>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-1">
-                      <label className={labelClass}>Name of Devotee *</label>
-                      <input
-                        type="text"
-                        name="devoteeName"
-                        value={formData.devoteeName}
-                        onChange={handleInputChange}
-                        placeholder="Full name as per tradition"
-                        className={inputBaseClass}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <label className={labelClass}>Gotra (Lineage)</label>
-                      <input
-                        type="text"
-                        name="gotra"
-                        value={formData.gotra}
-                        onChange={handleInputChange}
-                        placeholder="e.g., Kashyap, Bharadwaj"
-                        className={inputBaseClass}
-                      />
-                      <p className="text-[10px] text-gray-500 mt-1 ml-1 italic">
-                        Optional - Ask family elders if unknown
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* WhatsApp Help Box */}
-                <div
-                  className={`${innerDivStyle} bg-orange-50/20 flex flex-col md:flex-row items-center justify-between border-dashed mt-8 p-4 md:p-5 gap-4`}
-                >
-                  {/* Left Side: Icon & Text */}
-                  <div className="flex items-center gap-3 w-full md:w-auto">
-                    <div className="p-2 bg-white rounded-lg border border-orange-200 shrink-0">
-                      <MessageCircle size={20} className="text-orange-500" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-800">
-                        Have custom requirements?
-                      </h4>
-                      <p className="text-xs text-gray-700 font-medium">
-                        Chat with us for special requests
-                      </p>
-                    </div>
-                  </div>
-
-                  <button className="w-full md:w-auto bg-white border border-green-400 px-6 py-3 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-green-50 active:scale-95 transition-all shadow-sm">
-                    <FaWhatsapp className="text-green-600 text-lg" />
-                    <span className="text-green-700">WhatsApp Us</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            {/* 2. DHARMIC CONTRIBUTIONS */}
-            <div
-              ref={dharmicRef}
-              className={`${mainCardStyle} p-8 space-y-6 scroll-mt-28`}
-            >
-              <div>
-                <h3 className="text-lg font-bold flex items-center gap-2">
-                  <div className="bg-orange-500 p-1.5 rounded-full text-white shadow-md">
-                    <Heart size={14} fill="currentColor" />
-                  </div>
-                  Dharmic Contributions
-                </h3>
-                <p className="text-xs text-gray-500 font-bold mt-1 uppercase tracking-widest">
-                  Complete your Sankalp with sacred donations
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {contributionOptions.map((option) => (
-                  <div
-                    key={option.id}
-                    onClick={() => toggleDonation(option.id)}
-                    className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border-2 ${donations[option.id] ? "border-orange-500 bg-orange-50/30" : "border-orange-200 hover:border-orange-200"}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${donations[option.id] ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
-                      >
-                        {donations[option.id] && (
-                          <div className="w-2 h-2 bg-white rounded-full" />
-                        )}
-                      </div>
-                      <div className="text-orange-500">{option.icon}</div>
-                      <div>
-                        <h4 className="font-bold text-sm">{option.name}</h4>
-                        <p className="text-[10px] text-gray-500 font-medium">
-                          {option.desc}
-                        </p>
-                        <span className="text-orange-600 font-black text-sm">
-                          ₹{option.price}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Gau Seva Section */}
-              <div
-                onClick={() => toggleDonation("gau")}
-                className={`p-5 flex justify-between items-center transition-all cursor-pointer rounded-xl border ${donations.gau ? "border-orange-500 bg-orange-50/30" : "border-orange-200 hover:border-orange-200 bg-white"}`}
-              >
-                <div className="flex items-center gap-4">
-                  {/* Fixed: Added shrink-0 and ensured equal width/height */}
-                  <div
-                    className={`w-5 h-5 rounded-full border flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
-                  >
-                    {donations.gau && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    )}
-                  </div>
-
-                  <span className="text-2xl shrink-0">🐄</span>
-
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900 leading-tight">
-                      Complete your Sankalp with Gau Seva
-                    </h4>
-                    <p className="text-[11px] text-gray-500 font-medium">
-                      Feed a cow on your behalf — an auspicious addition to any
-                      puja
-                    </p>
-                    <span className="inline-block bg-orange-100 text-orange-600 px-2 py-0.5 rounded text-[10px] font-bold mt-1">
-                      +₹100
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Guarantees */}
-              <div className="space-y-4 pt-2">
-                <div className="flex flex-wrap gap-4">
-                  <div className="flex items-center gap-1.5 text-orange-600/70 font-bold text-[10px] uppercase tracking-wider">
-                    <CheckCircle size={12} /> 100% Moneyback Guarantee
-                  </div>
-                  <div className="flex items-center gap-1.5 text-orange-600/70 font-bold text-[10px] uppercase tracking-wider">
-                    <CheckCircle size={12} /> No Hidden Charges
-                  </div>
-                </div>
-                <div className="bg-[#F8F1E7] py-2.5 rounded-lg text-center border border-orange-200/50">
-                  <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">
-                    🙏 Fee includes Dakshina — No cash tips needed
-                  </p>
-                </div>
-              </div>
-            </div>
+    <>
+      {/* Error Alert */}
+      {errorMsg && (
+        <div className="fixed top-10 left-1/2 -translate-x-1/2 z-[100] animate-bounce">
+          <div className="bg-red-500 text-white px-6 py-3 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white">
+            <span className="text-xl">⚠️</span>
+            <p className="font-bold text-sm tracking-wide">{errorMsg}</p>
           </div>
+        </div>
+      )}
 
-          {/* RIGHT SIDEBAR (SUMMARY) */}
-          <aside className="lg:col-span-4 lg:sticky lg:top-8">
-            <div className={`${mainCardStyle} p-8 !rounded-[1.5rem] shadow-lg`}>
-              <h3 className="text-lg font-bold mb-4 text-gray-800">
-                Booking Summary
-              </h3>
-              <div className="space-y-4">
-                <div className="pb-4 border-b border-orange-200">
-                  <h4 className="text-sm font-black text-gray-900">
-                    {puja?.puja_name}
-                  </h4>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs font-bold text-gray-700">
-                      Samagri Kit
-                    </span>
-                    <span
-                      className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}
-                    >
-                      {isSamagriSelected ? "Included ✓" : "Not Selected"}
-                    </span>
+      {/* pb-28 on mobile so sticky CTA doesn't overlap */}
+      <div className="min-h-screen bg-[#FFF4E1] font-sans text-[#2D2D2D] antialiased pb-28 md:pb-12">
+        <div className="max-w-6xl mx-auto px-4 py-6 md:py-12">
+
+          {/* Back Button */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-orange-700 mb-5 hover:opacity-70 transition-all"
+          >
+            <ChevronLeft size={18} /> Back to Puja
+          </button>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-start">
+            <div className="lg:col-span-8 space-y-4 md:space-y-6">
+
+              {/* 1. E-SANKALP FORM */}
+              <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-8">
+                <div className="flex items-center gap-3 mb-5 md:mb-8">
+                  <div className="bg-orange-500 p-2 rounded-full text-white shadow-md">
+                    <Sparkles size={16} />
+                  </div>
+                  <div>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900">E-Sankalp</h3>
+                    <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+                      Complete your sacred booking
+                    </p>
                   </div>
                 </div>
 
-                <div
-                  onClick={() =>
-                    dharmicRef.current?.scrollIntoView({
-                      behavior: "smooth",
-                      block: "start",
-                    })
-                  }
-                  className="cursor-pointer group flex items-center justify-between p-3 rounded-xl border border-orange-200 bg-orange-50/50 hover:bg-orange-50 transition-all"
-                >
-                  <div className="flex items-center gap-2 text-orange-500 font-black uppercase text-[11px] tracking-widest">
-                    <Heart
-                      size={14}
-                      fill="currentColor"
-                      className="group-hover:scale-110 transition-transform"
+                <div className="space-y-4 md:space-y-6">
+                  {/* Date & Time */}
+                  <div className="grid grid-cols-2 gap-3 md:gap-6">
+                    <div className="space-y-1">
+                      <label className={labelClass}><Calendar size={12} /> Date</label>
+                      <input type="date" name="date" value={formData.date} onChange={handleInputChange} className={inputBaseClass} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={labelClass}><Clock size={12} /> Time</label>
+                      <input type="time" name="time" value={formData.time} onChange={handleInputChange} className={inputBaseClass} />
+                    </div>
+                  </div>
+
+                  {/* Address */}
+                  <div className="space-y-1">
+                    <label className={labelClass}><MapPin size={12} /> Full Address</label>
+                    <textarea
+                      name="location" value={formData.location} onChange={handleInputChange}
+                      placeholder="Enter complete address with landmarks..."
+                      rows="2" className={inputBaseClass}
                     />
-                    Dharmic Total
                   </div>
-                  <span className="text-orange-600 font-black text-sm">
-                    ₹{dharmicTotal}
-                  </span>
+
+                  {/* State / City / Pincode */}
+                  <div className="grid grid-cols-3 gap-2 md:gap-6">
+                    <div className="space-y-1">
+                      <label className={labelClass}>State</label>
+                      <input type="text" name="state" value={formData.state} onChange={handleInputChange} placeholder="State" className={inputBaseClass} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={labelClass}>City</label>
+                      <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" className={inputBaseClass} />
+                    </div>
+                    <div className="space-y-1">
+                      <label className={labelClass}>PIN</label>
+                      <input type="text" name="pincode" maxLength="6" value={formData.pincode} onChange={handleInputChange} placeholder="Pincode"
+                        className={inputBaseClass} onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()} />
+                    </div>
+                  </div>
+
+                  {/* Sankalp Details */}
+                  <div className="pt-2">
+                    <h3 className="text-sm font-bold mb-0.5 flex items-center gap-2">
+                      <User size={14} className="text-orange-500" /> Sankalp Details
+                    </h3>
+                    <p className="text-[11px] text-gray-500 mb-3 font-medium">
+                      These details will be used during the sacred ritual pledge
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
+                      <div className="space-y-1">
+                        <label className={labelClass}>Devotee Name *</label>
+                        <input type="text" name="devoteeName" value={formData.devoteeName} onChange={handleInputChange}
+                          placeholder="Full name as per tradition" className={inputBaseClass} />
+                      </div>
+                      <div className="space-y-1">
+                        <label className={labelClass}>Gotra (Lineage)</label>
+                        <input type="text" name="gotra" value={formData.gotra} onChange={handleInputChange}
+                          placeholder="e.g., Kashyap, Bharadwaj" className={inputBaseClass} />
+                        <p className="text-[10px] text-gray-400 mt-1 ml-1 italic">Optional — ask family elders if unknown</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* WhatsApp Help Box */}
+                  <div className="border border-dashed border-orange-200 rounded-xl bg-orange-50/20 p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 mt-2">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-white rounded-lg border border-orange-200 shrink-0">
+                        <MessageCircle size={18} className="text-orange-500" />
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-800">Have custom requirements?</h4>
+                        <p className="text-xs text-gray-500 font-medium">Chat with us for special requests</p>
+                      </div>
+                    </div>
+                    <button className="w-full md:w-auto bg-white border border-green-400 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-green-50 active:scale-95 transition-all shadow-sm">
+                      <FaWhatsapp className="text-green-600 text-lg" />
+                      <span className="text-green-700">WhatsApp Us</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. DHARMIC CONTRIBUTIONS */}
+              <div ref={dharmicRef} className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-8 space-y-4 md:space-y-6 scroll-mt-28">
+                <div>
+                  <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
+                    <div className="bg-orange-500 p-1.5 rounded-full text-white shadow-md">
+                      <Heart size={13} fill="currentColor" />
+                    </div>
+                    Dharmic Contributions
+                  </h3>
+                  <p className="text-[11px] text-gray-500 font-bold mt-1 uppercase tracking-widest">
+                    Complete your Sankalp with sacred donations
+                  </p>
                 </div>
 
-                <div className="space-y-3 pt-2">
-                  <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
-                    <span>Base Price</span>
-                    <span className="text-gray-900 font-black">
-                      ₹{basePrice}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
-                    <span>Samagri Kit</span>
-                    <span className="text-gray-900 font-black">
-                      +₹{samagriPrice}
-                    </span>
-                  </div>
+                {/* Mobile: compact card (no icon bg, inline layout) | Desktop: original */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {contributionOptions.map((option) => (
+                    <ContributionCard
+                      key={option.id}
+                      option={option}
+                      selected={donations[option.id]}
+                      onToggle={() => toggleDonation(option.id)}
+                    />
+                  ))}
+                </div>
 
-                  <div className="flex items-center justify-between py-2 border-y border-orange-200">
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={donations.temple}
-                        onChange={() => toggleDonation("temple")}
-                        className="w-3.5 h-3.5 accent-orange-500"
-                      />
-                      <span className="text-[10px] font-bold text-gray-700 uppercase">
-                        Temple Donation
-                      </span>
-                    </label>
-                    <span className="text-[10px] font-black text-orange-500">
-                      +₹1
-                    </span>
+                {/* Gau Seva */}
+                <div
+                  onClick={() => toggleDonation("gau")}
+                  className={`p-4 flex items-center gap-4 transition-all cursor-pointer rounded-xl border-2 ${
+                    donations.gau ? "border-orange-500 bg-orange-50/30" : "border-orange-200 bg-white hover:border-orange-300"
+                  }`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
+                    {donations.gau && <div className="w-2 h-2 bg-white rounded-full" />}
                   </div>
-
-                  <div className="flex justify-between items-center pt-2">
-                    <span className="text-lg font-bold text-gray-900">
-                      Total
-                    </span>
-                    <span className="text-2xl font-black text-orange-600">
-                      ₹{grandTotal}
-                    </span>
+                  <span className="text-xl shrink-0">🐄</span>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-sm text-gray-900 leading-tight">Complete your Sankalp with Gau Seva</h4>
+                    <p className="text-[11px] text-gray-500 font-medium">Feed a cow on your behalf</p>
                   </div>
+                  <span className="text-orange-600 font-black text-sm whitespace-nowrap">+₹100</span>
+                </div>
 
-                  <button
-                    className="w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
-                    onClick={handlePayment}
-                  >
-                    <ArrowRight size={16} /> Pay ₹{grandTotal}
-                  </button>
-
-                  <div className="bg-gray-100/50 py-2 rounded-lg text-center mt-4">
-                    <p className="text-[9px] font-bold text-gray-700 uppercase tracking-tighter">
-                      💰 Total Fee includes Dakshina — No tips required
+                {/* Guarantees */}
+                <div className="space-y-3 pt-1">
+                  <div className="flex flex-wrap gap-4">
+                    <div className="flex items-center gap-1.5 text-orange-600/70 font-bold text-[10px] uppercase tracking-wider">
+                      <CheckCircle size={12} /> 100% Moneyback Guarantee
+                    </div>
+                    <div className="flex items-center gap-1.5 text-orange-600/70 font-bold text-[10px] uppercase tracking-wider">
+                      <CheckCircle size={12} /> No Hidden Charges
+                    </div>
+                  </div>
+                  <div className="bg-[#F8F1E7] py-2.5 rounded-lg text-center border border-orange-200/50">
+                    <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">
+                      🙏 Fee includes Dakshina — No cash tips needed
                     </p>
                   </div>
                 </div>
               </div>
+
+              {/* MOBILE INLINE SUMMARY — above nothing, just before sticky CTA */}
+              <div id="mobile-summary" className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+                <MobileSummaryInline
+                  puja={puja}
+                  isSamagriSelected={isSamagriSelected}
+                  basePrice={basePrice}
+                  samagriPrice={samagriPrice}
+                  dharmicTotal={dharmicTotal}
+                  grandTotal={grandTotal}
+                  donations={donations}
+                  toggleDonation={toggleDonation}
+                  dharmicRef={dharmicRef}
+                />
+              </div>
+
             </div>
-          </aside>
+
+            {/* DESKTOP SIDEBAR */}
+            <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 self-start">
+              <div className="bg-white rounded-[1.5rem] border border-orange-200 shadow-lg p-8">
+                <h3 className="text-lg font-bold mb-4 text-gray-800">Booking Summary</h3>
+                <div className="space-y-4">
+                  <div className="pb-4 border-b border-orange-200">
+                    <h4 className="text-sm font-black text-gray-900">{puja?.puja_name}</h4>
+                    <div className="flex items-center justify-between mt-2">
+                      <span className="text-xs font-bold text-gray-700">Samagri Kit</span>
+                      <span className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}>
+                        {isSamagriSelected ? "Included ✓" : "Not Selected"}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div
+                    onClick={() => dharmicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    className="cursor-pointer group flex items-center justify-between p-3 rounded-xl border border-orange-200 bg-orange-50/50 hover:bg-orange-50 transition-all"
+                  >
+                    <div className="flex items-center gap-2 text-orange-500 font-black uppercase text-[11px] tracking-widest">
+                      <Heart size={14} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+                      Dharmic Total
+                    </div>
+                    <span className="text-orange-600 font-black text-sm">₹{dharmicTotal}</span>
+                  </div>
+
+                  <div className="space-y-3 pt-2">
+                    <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
+                      <span>Base Price</span>
+                      <span className="text-gray-900 font-black">₹{basePrice}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
+                      <span>Samagri Kit</span>
+                      <span className="text-gray-900 font-black">+₹{samagriPrice}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-2 border-y border-orange-200">
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" checked={donations.temple} onChange={() => toggleDonation("temple")} className="w-3.5 h-3.5 accent-orange-500" />
+                        <span className="text-[10px] font-bold text-gray-700 uppercase">Temple Donation</span>
+                      </label>
+                      <span className="text-[10px] font-black text-orange-500">+₹1</span>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-2">
+                      <span className="text-lg font-bold text-gray-900">Total</span>
+                      <span className="text-2xl font-black text-orange-600">₹{grandTotal}</span>
+                    </div>
+
+                    <button
+                      onClick={handlePayment}
+                      className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-bold py-3.5 rounded-xl shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
+                    >
+                      <ArrowRight size={16} /> Pay ₹{grandTotal}
+                    </button>
+
+                    <div className="bg-gray-100/50 py-2 rounded-lg text-center">
+                      <p className="text-[9px] font-bold text-gray-700 uppercase tracking-tighter">
+                        💰 Total Fee includes Dakshina — No tips required
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </aside>
+          </div>
         </div>
       </div>
-    </div>
 
+      {/* MOBILE STICKY BOTTOM BAR */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-orange-200 shadow-2xl px-4 py-3 cursor-pointer active:bg-orange-50 transition-colors"
+        onClick={(e) => {
+          if (e.target.closest("#mobile-pay-btn")) return;
+          const el = document.getElementById("mobile-summary");
+          if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+        }}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              Total Amount <ChevronRight size={11} className="text-orange-400" />
+            </p>
+            <p className="text-xl font-black text-orange-600 leading-tight">₹{grandTotal.toLocaleString("en-IN")}</p>
+            <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+              <ShieldCheck size={10} /> Incl. all taxes
+            </p>
+          </div>
+          <button
+            id="mobile-pay-btn"
+            onClick={handlePayment}
+            className="flex-1 max-w-[200px] bg-gradient-to-r from-orange-500 to-orange-700 text-white font-black py-3.5 rounded-2xl shadow-lg shadow-orange-200 flex items-center justify-center gap-2 text-[14px] uppercase tracking-[0.08em] active:scale-[0.97] transition-all"
+          >
+            <ArrowRight size={16} /> Pay ₹{grandTotal}
+          </button>
+        </div>
+        <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          100% Moneyback · No Hidden Charges
+        </p>
+      </div>
     </>
   );
 };
+
+/* ─────────────────────────────────────────────
+   MOBILE INLINE SUMMARY
+───────────────────────────────────────────── */
+const MobileSummaryInline = ({
+  puja, isSamagriSelected, basePrice, samagriPrice,
+  dharmicTotal, grandTotal, donations, toggleDonation, dharmicRef,
+}) => (
+  <div className="space-y-4">
+    <div>
+      <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-2">Booking Summary</h3>
+      <div className="flex gap-1">
+        <div className="h-1 w-12 bg-orange-500 rounded-full" />
+        <div className="h-1 w-4 bg-orange-100 rounded-full" />
+      </div>
+    </div>
+
+    <div className="pb-3 border-b border-orange-100">
+      <h4 className="text-sm font-black text-gray-900">{puja?.puja_name}</h4>
+      <div className="flex items-center justify-between mt-1.5">
+        <span className="text-xs font-bold text-gray-500">Samagri Kit</span>
+        <span className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}>
+          {isSamagriSelected ? "Included ✓" : "Not Selected"}
+        </span>
+      </div>
+    </div>
+
+    <div className="space-y-2.5">
+      <div className="flex justify-between items-center text-[13px] font-bold">
+        <span className="text-gray-500">Base Price</span>
+        <span className="text-gray-900">₹{basePrice}</span>
+      </div>
+      <div className="flex justify-between items-center text-[13px] font-bold">
+        <span className="text-gray-500">Samagri Kit</span>
+        <span className="text-gray-900">+₹{samagriPrice}</span>
+      </div>
+
+      {/* Dharmic contributions button */}
+      <button
+        onClick={() => dharmicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        className="w-full flex items-center justify-between p-3 rounded-xl border border-orange-200 bg-orange-50/50 hover:bg-orange-100 transition-all"
+      >
+        <div className="flex items-center gap-2 text-orange-600 text-[13px] font-bold">
+          <Heart size={14} fill="currentColor" className="text-orange-500" />
+          Dharmic Contributions
+        </div>
+        {dharmicTotal > 0 ? (
+          <span className="text-[13px] font-bold text-orange-600">+₹{dharmicTotal}</span>
+        ) : (
+          <ChevronRight size={14} className="text-orange-400" />
+        )}
+      </button>
+
+      {/* Temple donation */}
+      <div className="flex items-center justify-between py-1 px-1 border-t border-gray-100 pt-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input type="checkbox" checked={donations.temple} onChange={() => toggleDonation("temple")} className="w-4 h-4 accent-orange-500 cursor-pointer" />
+          <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">Temple Donation</span>
+        </label>
+        <span className="text-[13px] font-black text-orange-500">+₹1</span>
+      </div>
+
+      <div className="border-t border-dashed border-gray-300 w-full" />
+
+      <div className="flex justify-between items-center pt-1">
+        <div>
+          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+          <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
+            <ShieldCheck size={11} />
+            <span className="text-[10px] font-bold">Inclusive of all taxes</span>
+          </div>
+        </div>
+        <span className="text-xl font-black text-orange-600">₹{grandTotal.toLocaleString("en-IN")}</span>
+      </div>
+    </div>
+
+    <div className="bg-[#F8F1E7] py-2.5 rounded-lg text-center border border-orange-200/50">
+      <p className="text-[10px] font-bold text-gray-700 uppercase tracking-widest">
+        🙏 Fee includes Dakshina — No cash tips needed
+      </p>
+    </div>
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   CONTRIBUTION CARD
+   Desktop: radio + icon bg + title/desc/price
+   Mobile: compact — radio + title + price
+───────────────────────────────────────────── */
+const ContributionCard = ({ option, selected, onToggle }) => (
+  <div
+    onClick={onToggle}
+    className={`flex items-center gap-3 p-4 transition-all cursor-pointer rounded-xl border-2 ${
+      selected ? "border-orange-500 bg-orange-50/30" : "border-orange-200 hover:border-orange-300"
+    }`}
+  >
+    {/* Radio dot */}
+    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
+      {selected && <div className="w-2 h-2 bg-white rounded-full" />}
+    </div>
+
+    {/* Icon — visible on all sizes */}
+    <div className="text-orange-500 shrink-0">{option.icon}</div>
+
+    {/* Text */}
+    <div className="flex-1 min-w-0">
+      <h4 className="font-bold text-sm text-gray-900 leading-tight">{option.name}</h4>
+      <p className="text-[10px] text-gray-500 font-medium">{option.desc}</p>
+    </div>
+
+    {/* Price */}
+    <span className="text-orange-600 font-black text-sm whitespace-nowrap shrink-0">₹{option.price}</span>
+  </div>
+);
 
 export default HomePujaPaymentDetails;

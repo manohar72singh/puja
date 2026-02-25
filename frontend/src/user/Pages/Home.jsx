@@ -47,7 +47,7 @@ export default function Home() {
             </h1>
 
             <p className="mt-5 text-gray-600 text-sm sm:text-base md:text-lg leading-relaxed max-w-full sm:max-w-lg">
-              Book verified Pandits for your sacred ceremonies. We handle everything — from the sacred Samagri to the final Aarti.
+              Book verified Pandits for your sacred ceremonies. We handle everything - from the sacred Samagri to the final Aarti.
             </p>
 
             {/* ✅ Buttons - Always Side by Side */}
@@ -123,7 +123,7 @@ export default function Home() {
           </div>
 
           {/* RIGHT SIDE */}
-          <div className="relative w-full lg:w-1/2 h-[350px] sm:h-[420px] md:h-[500px] rounded-2xl overflow-hidden shadow-2xl bg-zinc-900 group">
+          <div className="relative w-full lg:w-1/2 h-[350px] sm:h-[420px] md:h-[500px] rounded-2xl overflow-hidden bg-zinc-900 group">
 
             {rituals.map((item, i) => (
               <div
@@ -190,7 +190,7 @@ export default function Home() {
 
           {/* PARAGRAPH - 2 lines balanced text */}
           <p className="text-gray-500 text-base md:text-lg leading-relaxed max-w-2xl mb-12 opacity-90">
-            Choose the perfect way to receive divine blessings —
+            Choose the perfect way to receive divine blessings -
             <br className="hidden md:block" />
             whether you prefer a personal ritual at home or joining devotees online.
           </p>

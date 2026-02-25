@@ -24,7 +24,6 @@ export default function Pind_Dan() {
           }
         });
         const data = await response.json();
-        console.log(data.data)
         setServices(data.data);
       } catch (error) {
         console.log("Error", error);
@@ -171,7 +170,7 @@ export default function Pind_Dan() {
                         <Ticket size={14} className="text-orange-600" />
                         <div className="flex items-baseline gap-0.5">
                           <span className="text-[18px] font-serif font-bold text-orange-600">₹{service.standard_price}</span>
-                          <span className="text-[16px] font-semibold text-gray-500">/ticket</span>
+                          <span className="text-[16px] font-semibold text-gray-500">/-</span>
                         </div>
                       </div>
                     </div>

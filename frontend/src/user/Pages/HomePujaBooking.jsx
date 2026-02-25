@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 
 import {
   ChevronRight, ChevronLeft, Star, HelpCircle, Info, Box,
-  Heart, Shield, Zap, Users, Download , CheckCircle, MessageSquare, MapPin, Sparkles
+  Heart, Shield, Zap, Users, Download, CheckCircle, MessageSquare, MapPin, Sparkles
 } from "lucide-react";
 
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -21,6 +21,7 @@ const HomePujaBooking = () => {
 
   const [activeTab, setActiveTab] = useState("about");
   const [service, setService] = useState(null);
+  const [aboutExpanded, setAboutExpanded] = useState(false); // NEW
 
   const sections = {
     about: useRef(null),
@@ -74,7 +75,7 @@ const HomePujaBooking = () => {
   const totalAmount = samagriEnabled ? basePrice + 600 : basePrice;
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800">
+    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800 pb-28 md:pb-6">
       <div className="max-w-6xl mx-auto">
 
         <button
@@ -110,7 +111,7 @@ const HomePujaBooking = () => {
               </div>
             </div>
 
-            {/* ✅ FIXED STICKY TAB HEADER */}
+            {/* STICKY TAB HEADER */}
             <nav className="sticky top-[76px] z-40 bg-white border border-orange-200 rounded-xl shadow-md mb-4">
               <div className="flex overflow-x-auto no-scrollbar">
                 {["about", "benefits", "faqs"].map((tab) => (
@@ -140,14 +141,11 @@ const HomePujaBooking = () => {
                   </div>
                   <div className="space-y-1">
                     <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">All-in-One Samagri Kit</h3>
-
                     {samagriEnabled ? (
-                      /* ON State Text */
                       <p className="text-gray-500 text-[13px]">
                         <span className="text-orange-600 font-bold">Relax.</span> We bring Flowers, Ghee & Vessels.
                       </p>
                     ) : (
-                      /* OFF State Content */
                       <div className="space-y-3">
                         <p className="text-gray-500 text-[13px]">
                           You'll need to buy <span className="text-red-500 font-bold">30+ items.</span>
@@ -176,45 +174,64 @@ const HomePujaBooking = () => {
 
             {/* CONTENT CONTAINER */}
             <div className="bg-white rounded-2xl border border-orange-200 overflow-hidden shadow-sm">
-              <div className="p-7 space-y-4">
+              <div className="p-5 space-y-4">
 
                 {/* SECTION: About */}
                 <section ref={sections.about} className="scroll-mt-32 space-y-5">
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Info size={20} /> About The Ritual
                   </div>
-                  <p className="text-[15px] text-gray-600 leading-relaxed text-justify">
-                    {service?.description}
-                  </p>
+
+                  {/* Description with Read More on mobile */}
+                  <div>
+                    <p className={`text-[15px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}>
+                      {service?.description}
+                    </p>
+                    {/* Only visible on mobile */}
+                    <button
+                      onClick={() => setAboutExpanded(!aboutExpanded)}
+                      className="mt-2 text-orange-600 font-bold text-[13px] uppercase tracking-wider flex items-center gap-1 md:hidden"
+                    >
+                      {aboutExpanded ? "Read Less" : "Read More"}
+                      <ChevronRight
+                        size={14}
+                        className={`transition-transform ${aboutExpanded ? "rotate-90" : ""}`}
+                      />
+                    </button>
+                  </div>
                 </section>
 
                 <div className="border-t border-orange-50" />
 
-                {/* SECTION: Benefits (Image-style Layout) */}
+                {/* SECTION: Benefits */}
                 <section ref={sections.benefits} className="scroll-mt-32 space-y-6">
                   <h3 className="text-2xl font-serif font-bold text-gray-800">Benefits of {service?.puja_name}</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* grid-cols-2 lagane se mobile par 2 boxes side by side aayenge */}
+                  <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
                     <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                    <BenefitSmall icon={<Shield />} title="Protection & Blessings" desc="Divine protection for family" />
-                    <BenefitSmall icon={<Zap />} title="Prosperity & Success" desc="Remove obstacles from your path" />
-                    <BenefitSmall icon={<Users />} title="Family Harmony" desc="Strengthen family bonds" />
-                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify home with mantras" />
-                    <BenefitSmall icon={<MapPin />} title="Vastu Benefits" desc="Harmonize living space" />
+                    <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection" />
+                    <BenefitSmall icon={<Zap />} title="Prosperity" desc="Remove obstacles" />
+                    <BenefitSmall icon={<Users />} title="Family" desc="Strengthen bonds" />
+                    <BenefitSmall icon={<Sparkles />} title="Energy" desc="Purify home" />
+                    <BenefitSmall icon={<MapPin />} title="Vastu" desc="Harmonize space" />
                   </div>
                 </section>
 
                 <div className="border-t border-orange-50" />
 
               </div>
-
             </div>
 
-            {/* WhatsApp Highlighting (Image Style) */}
+            {/* WhatsApp Highlighting */}
             <div className="bg-white rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
               <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
               <div>
                 <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
-                <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">Your assigned Pandit's contact and details will be shared on <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span> on the day of your booking.</p>
+                <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">
+                  Your assigned Pandit's contact and details will be shared on{" "}
+                  <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span>{" "}
+                  on the day of your booking.
+                </p>
               </div>
             </div>
 
@@ -226,20 +243,16 @@ const HomePujaBooking = () => {
               <div className="space-y-1">
                 <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
                 <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
-                <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits who are well-versed in Shastras and certified for performing complex rituals will conduct your puja." />
-                <FAQItem q="What will be done in this Puja?" a="The puja includes the main ritual (Katha/Havan), Ganesh Pujan, Sankalp, and Aarti. All steps are followed as per Vedic traditions." />
-                <FAQItem q="How will I know the Puja has been done in my name?" a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja, dedicated specifically to your family." />
-                <FAQItem q="What will I get after the Puja is done?" a="After completion, you will receive the divine blessings, sacred Prasad (if samagri is selected), and a peaceful spiritual environment in your home." />
-                <FAQItem q="Do I need to arrange any utensils?" a="Just basic household utensils (Kalash, Plates) are needed. All ritual items are provided if Samagri kit is selected." />
+                <FAQItem q="What will be done in this Puja?" a="The puja includes the main ritual (Katha/Havan), Ganesh Pujan, Sankalp, and Aarti." />
+                <FAQItem q="How will I know the Puja has been done in my name?" a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja." />
               </div>
             </section>
 
           </div>
 
-          {/* SIDEBAR SUMMARY */}
-          <aside className="lg:col-span-4 lg:sticky lg:top-[100px] self-start">
+          {/* SIDEBAR — desktop only, unchanged */}
+          <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-[100px] self-start">
             <div className="bg-white rounded-2xl border border-orange-200 p-8 shadow-sm space-y-8">
-              {/* Header with Progress Line */}
               <div>
                 <h2 className="text-[15px] font-bold uppercase tracking-[0.2em] text-gray-700 mb-2">
                   Booking Summary
@@ -251,21 +264,18 @@ const HomePujaBooking = () => {
               </div>
 
               <div className="space-y-3">
-                {/* Base Price Row */}
                 <div className="flex justify-between items-center text-[15px] font-bold">
-                  <span className="text-gray-500  tracking-wider">Base Price</span>
+                  <span className="text-gray-500 tracking-wider">Base Price</span>
                   <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
                 </div>
 
-                {/* Samagri Kit Row - Tabhi dikhega jab enabled ho */}
                 {samagriEnabled && (
                   <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
-                    <span className="text-gray-500  tracking-wider">Samagri Kit</span>
-                    <span className=" tracking-tight">+₹600</span>
+                    <span className="text-gray-500 tracking-wider">Samagri Kit</span>
+                    <span className="tracking-tight">+₹600</span>
                   </div>
                 )}
 
-                {/* Total Amount Section */}
                 <div className="pt-6 mt-2 border-t border-dashed border-orange-200">
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
@@ -276,8 +286,6 @@ const HomePujaBooking = () => {
                         <Shield size={10} className="stroke-[3]" /> Inclusive of all taxes
                       </span>
                     </div>
-
-                    {/* Price Alignment: Right Side */}
                     <div className="text-right">
                       <span className="text-2xl font-bold text-orange-600 tracking-tighter">
                         ₹{totalAmount}
@@ -287,7 +295,6 @@ const HomePujaBooking = () => {
                 </div>
               </div>
 
-              {/* CTA Button & Security Badge */}
               <div className="space-y-4">
                 <button
                   onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
@@ -295,65 +302,68 @@ const HomePujaBooking = () => {
                 >
                   Proceed to Book <ChevronRight size={18} strokeWidth={3} />
                 </button>
-
-                <div className="flex items-center justify-center gap-2 text-[9px] font-bold text-gray-400 uppercase tracking-wides py-3 rounded-lg">
-                  Free cancellation up to 24 hours before.
-                </div>
               </div>
             </div>
-
-            {/* Helpful Note Below Sidebar */}
-            <p className="mt-4 px-4 text-[11px] text-gray-400 leading-relaxed text-center italic">
-              *Booking confirms your slot with our certified Vedic Pandits. You can reschedule up to 24 hours before the ritual.
-            </p>
           </aside>
         </div>
       </div>
+
+      {/* MOBILE FIXED BOTTOM CTA BAR — unchanged */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-orange-100 p-4 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-4">
+          <div className="flex flex-col">
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black text-orange-600">₹{totalAmount}</span>
+            </div>
+            <span className="text-[10px] text-green-600 font-bold flex items-center gap-1">
+              <Shield size={10} /> Secure Booking
+            </span>
+          </div>
+          <button
+            onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+            className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-xl text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-100 active:scale-95 transition-transform"
+          >
+            Proceed <ChevronRight size={18} />
+          </button>
+        </div>
+      </div>
+
     </div>
   );
 };
 
-// --- HELPER: BENEFIT CARD ---
+// --- HELPER COMPONENTS ---
 const BenefitSmall = ({ icon, title, desc }) => (
-  <div className="flex items-center gap-4 bg-[#FFFDF8] p-2 rounded-xl border border-orange-50 group border-orange-200 transition-all shadow-sm">
-    <div className="p-3 bg-white text-orange-500 rounded-xl shadow-sm transition-all">
+  <div className="flex items-center gap-2 md:gap-4 bg-[#FFFDF8] p-3 md:p-4 rounded-xl border border-orange-200 group transition-all shadow-sm">
+    {/* Icon: Mobile (hidden), Desktop (md:flex) */}
+    <div className="hidden md:flex p-3 bg-white text-orange-500 rounded-xl shadow-sm transition-all shrink-0">
       {React.cloneElement(icon, { size: 20 })}
     </div>
-    <div>
-      <h4 className="text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
-      <p className="text-[13px] text-gray-500 mt-2 leading-tight font-medium">{desc}</p>
+
+    <div className="flex flex-col min-w-0"> {/* min-w-0 prevents text overflow */}
+      <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-tight truncate md:whitespace-normal">
+        {title}
+      </h4>
+      <p className="text-[11px] md:text-[13px] text-gray-500 mt-1 md:mt-2 leading-tight font-medium line-clamp-1 md:line-clamp-none">
+        {desc}
+      </p>
     </div>
   </div>
 );
 
 const FAQItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
-
   return (
-    <div 
-      className="py-3 cursor-pointer border-b border-orange-50 last:border-none" 
-      onClick={() => setOpen(!open)}
-    >
+    <div className="py-3 cursor-pointer border-b border-orange-50 last:border-none" onClick={() => setOpen(!open)}>
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
-          {q}
-        </span>
-        <ChevronRight
-          size={18}
-          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
-        />
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
+        <ChevronRight size={18} className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`} />
       </div>
-      
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
-          {a}
-        </p>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
       </div>
     </div>
   );
 };
+
 export default HomePujaBooking;

@@ -56,7 +56,7 @@ export default function TrendingPuja() {
               Trending Pujas
             </h2>
             <p className="text-gray-500 text-xs md:text-base opacity-90">
-              Most booked this month
+              Most booked ceremonies this month.
             </p>
           </div>
 

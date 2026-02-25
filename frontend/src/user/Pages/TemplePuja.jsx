@@ -75,7 +75,7 @@ const slides = [
             <div className="h-[1px] w-12 bg-orange-300"></div>
           </div>
 
-          <h1 className="text-5xl md:text-6xl font-serif leading-[1.1] mb-4 tracking-tight text-[#1A1108]">
+          <h1 className="text-5xl md:text-6xl font-serif  mb-4 tracking-tight text-[#1A1108]">
             Divine <span className="text-orange-600 italic">Temple Puja</span>
           </h1>
 

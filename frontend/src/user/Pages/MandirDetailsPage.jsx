@@ -15,10 +15,10 @@ const MandirDetailsPage = () => {
 
     const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
-
     useEffect(() => {
         const fetchDetails = async () => {
             try {
+                // Sirf Mandir ka data fetch hoga
                 const response = await axios.get(`${API_BASE_URL}/mandir/${id}`);
                 setMandir(response.data);
             } catch (error) {
@@ -29,7 +29,7 @@ const MandirDetailsPage = () => {
         };
         fetchDetails();
         window.scrollTo({ top: 0, behavior: "smooth" });
-    }, [id]);
+    }, [id, API_BASE_URL]);
 
     const getTimingIcon = (title) => {
         const t = title.toLowerCase();
@@ -51,10 +51,9 @@ const MandirDetailsPage = () => {
 
     return (
         <div className="bg-orange-100 min-h-screen font-sans text-slate-900 pb-20">
-
             <main className="max-w-7xl mx-auto px-6 pt-6">
 
-                {/* SIMPLE BACK BUTTON */}
+                {/* BACK BUTTON */}
                 <button
                     onClick={() => navigate(-1)}
                     className="flex items-center gap-2 text-gray-600 hover:text-orange-600 font-bold mb-6 transition-colors"
@@ -78,10 +77,8 @@ const MandirDetailsPage = () => {
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-
                     {/* LEFT CONTENT */}
                     <div className="lg:col-span-2 space-y-12">
-
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex gap-4 items-center">
                                 <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><Landmark size={22} /></div>
@@ -121,29 +118,19 @@ const MandirDetailsPage = () => {
                             </h2>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 {mandir.timings?.split(";").map((item, index) => {
-                                    const [title, time] = item.split(":");
-                                    const rawTime = time?.trim() || "";
-
-                                    let formattedTime = rawTime;
-                                    if (!rawTime.toLowerCase().includes('am') && !rawTime.toLowerCase().includes('pm')) {
-                                        const hour = parseInt(rawTime);
-                                        if (title.toLowerCase().includes('opening') || title.toLowerCase().includes('morning') || (hour < 12 && hour > 3)) {
-                                            formattedTime = `${rawTime}:00 AM`;
-                                        } else {
-                                            formattedTime = `${rawTime}:00 PM`;
-                                        }
-                                    }
-
+                                    const parts = item.split(":");
+                                    const title = parts[0]?.trim() || "";
+                                    const time = parts[1]?.trim() || "";
                                     return (
                                         <div key={index} className="flex items-center justify-between bg-white border border-gray-100 p-5 rounded-2xl shadow-sm hover:border-orange-200 transition-all group">
                                             <div className="flex items-center gap-4">
                                                 <div className="p-3 bg-orange-50 rounded-xl group-hover:bg-orange-100 transition-colors">
-                                                    {getTimingIcon(title || "")}
+                                                    {getTimingIcon(title)}
                                                 </div>
-                                                <span className="font-bold text-gray-700 text-lg leading-none">{title?.trim()}</span>
+                                                <span className="font-bold text-gray-700 text-lg leading-none">{title}</span>
                                             </div>
-                                            <div className="bg-orange-600 text-white px-5 py-2 rounded-full font-black text-sm shadow-md shadow-orange-100">
-                                                {formattedTime}
+                                            <div className="bg-orange-600 text-white px-5 py-2 rounded-full font-black text-sm shadow-md">
+                                                {time}
                                             </div>
                                         </div>
                                     );

@@ -25,6 +25,8 @@ import {
   ChevronRight,
   Zap,
   Star,
+  User,
+  House,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -39,6 +41,7 @@ const TemplePujaBooking = () => {
   const [isBooking, setIsBooking] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState("Single");
   const [activeTab, setActiveTab] = useState("about");
+  const [aboutExpanded, setAboutExpanded] = useState(false);
   const [donations, setDonations] = useState({
     temple: false,
     vastra: false,
@@ -64,7 +67,7 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
-        console.log("Fetched Service Details:", data.data[0]); // Debugging ke liye
+        console.log("Fetched Service Details:", data.data[0]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -93,9 +96,9 @@ const TemplePujaBooking = () => {
       date: new Date().toISOString().split("T")[0],
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+            hour: "2-digit",
+            minute: "2-digit",
+          })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "default city",
@@ -106,7 +109,6 @@ const TemplePujaBooking = () => {
       ticket_type: selectedTicket,
       donations: selectedDonations,
     };
-    // console.log("Booking Data to be sent:", bookingData); // Debugging ke liye
 
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
@@ -124,10 +126,7 @@ const TemplePujaBooking = () => {
       }
 
       const result = await response.json();
-
-      if (result.success) {
-        navigate("/my-booking");
-      }
+      if (result.success) navigate("/my-booking");
     } catch (error) {
       console.error("Booking Error:", error);
       alert("Booking failed: " + error.message);
@@ -162,73 +161,30 @@ const TemplePujaBooking = () => {
   };
 
   const contributionList = [
-    {
-      id: "vastra",
-      title: "Vastra Daan",
-      price: 251,
-      icon: <Shirt size={18} />,
-      sub: "Holy cloth offering",
-    },
-    {
-      id: "annadan",
-      title: "Annadan",
-      price: 501,
-      icon: <Coffee size={18} />,
-      sub: "Feed the community",
-    },
-    {
-      id: "deepdan",
-      title: "Deepdan",
-      price: 101,
-      icon: <Flame size={18} />,
-      sub: "Light the path",
-    },
-    {
-      id: "brahmin",
-      title: "Brahmin Bhoj",
-      price: 1100,
-      icon: <UtensilsCrossed size={18} />,
-      sub: "Blessings of Priests",
-    },
-    {
-      id: "gau",
-      title: "Gau Seva",
-      price: 100,
-      icon: <span className="text-xl">🐄</span>,
-      sub: "Feed the Gau Mata",
-    },
+    { id: "vastra",  title: "Vastra Daan",   price: 251,  icon: <Shirt size={18} />,         sub: "Holy cloth offering"   },
+    { id: "annadan", title: "Annadan",        price: 501,  icon: <Coffee size={18} />,         sub: "Feed the community"    },
+    { id: "deepdan", title: "Deepdan",        price: 101,  icon: <Flame size={18} />,          sub: "Light the path"        },
+    { id: "brahmin", title: "Brahmin Bhoj",   price: 1100, icon: <UtensilsCrossed size={18} />,sub: "Blessings of Priests"  },
+    { id: "gau",     title: "Gau Seva",       price: 100,  icon: <span className="text-xl">🐄</span>, sub: "Feed the Gau Mata" },
   ];
 
   const tickets = [
-    {
-      label: "Single",
-      person: "1 person",
-      price: Number(service?.single_price || 251),
-      icon: <Users size={18} />,
-    },
-    {
-      label: "Couple",
-      person: "2 person",
-      price: Number(service?.couple_price || 452),
-      icon: <Heart size={18} />,
-    },
-    {
-      label: "Family",
-      person: "Up to 5",
-      price: Number(service?.family_price || 628),
-      icon: <Shield size={18} />,
-    },
+    { label: "Single", person: "1 person",  price: Number(service?.single_price  || 251), icon: <User size={18} />  },
+    { label: "Couple", person: "2 persons", price: Number(service?.couple_price  || 452), icon: <Heart size={18} />  },
+    { label: "Family", person: "Up to 5",   price: Number(service?.family_price  || 628), icon: <House size={18} /> },
   ];
 
   const calculateTotal = () => {
     const base = tickets.find((t) => t.label === selectedTicket)?.price || 0;
     const extra = contributionList.reduce(
-      (acc, item) => (donations[item.id] ? acc + item.price : acc),
-      0,
+      (acc, item) => (donations[item.id] ? acc + item.price : acc), 0
     );
-    // Fixed: Using the correct state key 'temple'
     return base + extra + (donations.temple ? 1 : 0);
   };
+
+  const selectedContributionsTotal = contributionList.reduce(
+    (acc, item) => (donations[item.id] ? acc + item.price : acc), 0
+  );
 
   if (loading)
     return (
@@ -243,7 +199,8 @@ const TemplePujaBooking = () => {
     );
 
   return (
-    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 text-gray-800">
+    /* pb-32 on mobile so sticky CTA doesn't cover content */
+    <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 text-gray-800 pb-32 md:pb-6">
       <div className="max-w-6xl mx-auto">
         <button
           onClick={() => navigate(-1)}
@@ -254,6 +211,7 @@ const TemplePujaBooking = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
+
             {/* 1. HERO SECTION */}
             <div className="bg-white rounded-2xl overflow-hidden border border-orange-200 shadow-sm">
               <div className="relative h-64 md:h-80">
@@ -281,7 +239,9 @@ const TemplePujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"}`}
+                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                      activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"
+                    }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -292,135 +252,77 @@ const TemplePujaBooking = () => {
               </div>
             </nav>
 
-            {/* 3. ABOUT & BENEFITS BLOCK (Horizontal Section 1) */}
+            {/* 3. ABOUT & BENEFITS BLOCK */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
-              <div className="p-7">
-                <section
-                  ref={sections.about}
-                  className="scroll-mt-44 space-y-4"
-                >
+              <div className="p-5 md:p-7">
+                <section ref={sections.about} className="scroll-mt-44 space-y-4">
                   <div className="flex flex-col gap-4 mb-6">
                     <span className="flex items-center gap-2 text-[14px] font-medium text-gray-500">
-                      <MapPin size={16} className="text-orange-500" />{" "}
-                      {service?.address}
+                      <MapPin size={16} className="text-orange-500" /> {service?.address}
                     </span>
                     <span className="flex items-center gap-2 text-[13px] font-medium text-gray-500">
                       <Calendar size={16} className="text-orange-500" />{" "}
                       {service?.dateOfStart &&
                         new Date(service.dateOfStart).toLocaleString("en-GB", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
+                          day: "2-digit", month: "short", year: "numeric",
+                          hour: "2-digit", minute: "2-digit",
                         })}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Info size={20} /> About The Ritual
                   </div>
-                  <p className="text-[16px] text-gray-600 leading-relaxed text-justify">
-                    {service?.description}
-                  </p>
+                  <div>
+                    <p className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}>
+                      {service?.description}
+                    </p>
+                    <button
+                      onClick={() => setAboutExpanded(!aboutExpanded)}
+                      className="mt-2 text-orange-600 font-bold text-[13px] uppercase tracking-wider flex items-center gap-1 md:hidden"
+                    >
+                      {aboutExpanded ? "Read Less" : "Read More"}
+                      <ChevronRight size={14} className={`transition-transform ${aboutExpanded ? "rotate-90" : ""}`} />
+                    </button>
+                  </div>
                 </section>
               </div>
 
               <div className="border-t border-orange-100" />
 
-              <div className="p-7 bg-[#FFFDF8]">
-                <section
-                  ref={sections.benefits}
-                  className="scroll-mt-44 space-y-6"
-                >
-                  <h3 className="text-2xl font-serif font-bold text-gray-800">
+              {/* BENEFITS — icons hidden on mobile */}
+              <div className="p-5 md:p-7 bg-[#FFFDF8]">
+                <section ref={sections.benefits} className="scroll-mt-44 space-y-4">
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-gray-800">
                     Benefits of {service?.puja_name}
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <BenefitSmall
-                      icon={<Heart />}
-                      title="Spiritual Peace"
-                      desc="Inner calm through sacred rituals"
-                    />
-                    <BenefitSmall
-                      icon={<Shield />}
-                      title="Protection & Blessings"
-                      desc="Divine protection for family"
-                    />
-                    <BenefitSmall
-                      icon={<Zap />}
-                      title="Prosperity & Success"
-                      desc="Remove obstacles from your path"
-                    />
-                    <BenefitSmall
-                      icon={<Users />}
-                      title="Family Harmony"
-                      desc="Strengthen family bonds"
-                    />
-                    <BenefitSmall
-                      icon={<Sparkles />}
-                      title="Positive Energy"
-                      desc="Purify soul with mantras"
-                    />
-                    <BenefitSmall
-                      icon={<Star />}
-                      title="Karma Purification"
-                      desc="Balance your spiritual energies"
-                    />
+                  <div className="grid grid-cols-2 gap-3">
+                    <BenefitSmall icon={<Heart />}    title="Spiritual Peace"   desc="Inner calm through sacred rituals"  />
+                    <BenefitSmall icon={<Shield />}   title="Protection"        desc="Divine protection for family"        />
+                    <BenefitSmall icon={<Zap />}      title="Prosperity"        desc="Remove obstacles from path"          />
+                    <BenefitSmall icon={<Users />}    title="Harmony"           desc="Strengthen family bonds"             />
+                    <BenefitSmall icon={<Sparkles />} title="Positive Energy"   desc="Purify soul with mantras"            />
+                    <BenefitSmall icon={<Star />}     title="Karma"             desc="Balance spiritual energies"          />
                   </div>
                 </section>
               </div>
             </div>
 
+            {/* 4. SACRED CONTRIBUTIONS */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
-              <div className="p-7 bg-white">
-                <section
-                  ref={sections.contributions}
-                  className="scroll-mt-44 space-y-6"
-                >
+              <div className="p-5 md:p-7">
+                <section ref={sections.contributions} className="scroll-mt-44 space-y-4">
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Sparkles size={20} /> Sacred Contributions
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Mobile: 1-col no icons | Desktop: 2-col with icons */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                     {contributionList.map((item) => (
-                      <button
+                      <ContributionCard
                         key={item.id}
-                        onClick={() =>
-                          setDonations((p) => ({
-                            ...p,
-                            [item.id]: !p[item.id],
-                          }))
-                        }
-                        className={`flex items-center justify-between p-5 rounded-xl border transition-all shadow-sm ${donations[item.id]
-                          ? "border-orange-400 bg-orange-50"
-                          : "border-orange-200 bg-white hover:border-orange-300"
-                          }`}
-                      >
-                        {/* LEFT SIDE */}
-                        <div className="flex items-center gap-4 text-left">
-                          <div
-                            className={`p-3 rounded-lg transition-all ${donations[item.id]
-                              ? "bg-orange-500 text-white"
-                              : "bg-orange-100 text-orange-500"
-                              }`}
-                          >
-                            {item.icon}
-                          </div>
-
-                          <div>
-                            <h4 className="text-[15px] font-bold text-gray-800">
-                              {item.title}
-                            </h4>
-                            <p className="text-[12px] text-gray-500">
-                              {item.sub}
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* RIGHT SIDE PRICE */}
-                        <span className="text-[16px] font-bold text-orange-600 whitespace-nowrap">
-                          ₹{item.price}
-                        </span>
-                      </button>
+                        item={item}
+                        selected={donations[item.id]}
+                        onToggle={() => setDonations((p) => ({ ...p, [item.id]: !p[item.id] }))}
+                      />
                     ))}
                   </div>
                 </section>
@@ -428,58 +330,60 @@ const TemplePujaBooking = () => {
 
               <div className="border-t border-orange-100" />
 
-              {/* WHATSAPP NOTE (Included in this section) */}
-              <div className="mx-7 my-5 bg-[#FFFCEB] rounded-xl p-5 border border-yellow-200 flex items-start gap-4">
-                <div className="p-2.5 bg-yellow-400 text-white rounded-lg shadow-sm">
-                  <MessageSquare size={22} />
+              {/* WHATSAPP NOTE */}
+              <div className="mx-5 md:mx-7 my-5 bg-[#FFFCEB] rounded-xl p-4 md:p-5 border border-yellow-200 flex items-start gap-4">
+                <div className="p-2.5 bg-yellow-400 text-white rounded-lg shadow-sm shrink-0">
+                  <MessageSquare size={20} />
                 </div>
                 <div>
-                  <h4 className="text-[16px] font-bold text-gray-800 leading-none">
-                    Temple Ritual Updates
-                  </h4>
-                  <p className="text-[14px] text-gray-600 mt-2">
+                  <h4 className="text-[15px] font-bold text-gray-800 leading-none">Temple Ritual Updates</h4>
+                  <p className="text-[13px] text-gray-600 mt-2">
                     The photos and videos of your puja will be shared via{" "}
-                    <span className="font-bold text-gray-900">WhatsApp</span>{" "}
-                    after completion.
+                    <span className="font-bold text-gray-900">WhatsApp</span> after completion.
                   </p>
                 </div>
               </div>
             </div>
 
-            {/* 5. FAQ SECTION (Separate Bottom Block) */}
-            <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-7 mb-10">
+            {/* 5. BOOKING SUMMARY — mobile only, above FAQ */}
+            <div id="mobile-summary" className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+              <MobileSummarySection
+                service={service}
+                tickets={tickets}
+                selectedTicket={selectedTicket}
+                setSelectedTicket={setSelectedTicket}
+                donations={donations}
+                setDonations={setDonations}
+                contributionList={contributionList}
+                calculateTotal={calculateTotal}
+                selectedContributionsTotal={selectedContributionsTotal}
+                scrollToSection={scrollToSection}
+              />
+            </div>
+
+            {/* 6. FAQ */}
+            <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-7 mb-4">
               <section ref={sections.faqs} className="scroll-mt-44">
                 <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-6">
                   <HelpCircle size={20} /> Frequently Asked Questions
                 </div>
                 <div className="space-y-4">
-                  <FAQItem
-                    q="I don't know my Gotra, what should I do?"
-                    a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases."
-                  />
-                  <FAQItem
-                    q="Who will perform the Puja?"
-                    a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name."
-                  />
-                  <FAQItem
-                    q="How will I know the Puja has been done?"
-                    a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly."
-                  />
-                  <FAQItem
-                    q="What is the significance of Dakshina?"
-                    a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual."
-                  />
+                  <FAQItem q="I don't know my Gotra, what should I do?"  a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
+                  <FAQItem q="Who will perform the Puja?"                a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name." />
+                  <FAQItem q="How will I know the Puja has been done?"   a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly." />
+                  <FAQItem q="What is the significance of Dakshina?"     a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual." />
                 </div>
               </section>
             </div>
           </div>
 
-          {/* SIDEBAR SUMMARY */}
-          <aside className="lg:col-span-4 lg:sticky lg:top-[100px] self-start z-30">
+          {/* ── DESKTOP SIDEBAR ── */}
+          <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-[100px] self-start z-30">
             <div className="bg-white rounded-3xl border border-orange-200 p-6 shadow-xl shadow-orange-50/50 space-y-6">
-              {/* 1. Ticket Type Section */}
+
+              {/* Ticket Selector */}
               <div>
-                <h3 className="text-[16px] font-bold text-gray-800 mb-4 tracking-tight">
+                <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-4">
                   Select Ticket Type
                 </h3>
                 <div className="grid grid-cols-3 gap-3">
@@ -487,126 +391,80 @@ const TemplePujaBooking = () => {
                     <button
                       key={t.label}
                       onClick={() => setSelectedTicket(t.label)}
-                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${selectedTicket === t.label
-                        ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
-                        : "border-gray-100 bg-white hover:border-orange-200"
-                        }`}
+                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${
+                        selectedTicket === t.label
+                          ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
+                          : "border-gray-100 bg-white hover:border-orange-200"
+                      }`}
                     >
-                      <div
-                        className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label
-                          ? "bg-orange-500 text-white shadow-md"
-                          : "bg-gray-50 text-gray-400"
-                          }`}
-                      >
+                      <div className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white shadow-md" : "bg-gray-50 text-gray-400"}`}>
                         {t.icon}
                       </div>
-                      <span className="text-[11px] font-bold text-gray-800">
-                        {t.label}
-                      </span>
-                      <span className="text-[9px] text-gray-500 font-medium">
-                        {t.person}
-                      </span>
-                      <span className="text-[12px] font-black text-orange-600">
-                        ₹{t.price}
-                      </span>
+                      <span className="text-[11px] font-bold text-gray-800">{t.label}</span>
+                      <span className="text-[9px] text-gray-500 font-medium">{t.person}</span>
+                      <span className="text-[12px] font-black text-orange-600">₹{t.price}</span>
                     </button>
                   ))}
                 </div>
               </div>
 
-              {/* 2. Calculation & Donation Section */}
-              <div className="pt-2 space-y-4">
-                {/* Base Ticket Price */}
+              {/* Pricing breakdown */}
+              <div className="space-y-4 pt-2">
                 <div className="flex justify-between items-center text-[14px] px-1">
-                  <span className="text-gray-500 font-medium">
-                    {selectedTicket} Ticket
-                  </span>
-                  <span className="font-bold text-gray-800">
-                    ₹{tickets.find((t) => t.label === selectedTicket)?.price}
-                  </span>
+                  <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
+                  <span className="font-bold text-gray-800">₹{tickets.find((t) => t.label === selectedTicket)?.price}</span>
                 </div>
 
-                {/* clickable Add Contributions Button */}
                 <button
                   onClick={() => scrollToSection("contributions")}
                   className="w-full flex items-center justify-between p-3 rounded-2xl border border-orange-200 bg-orange-50/50 hover:bg-orange-100 hover:border-orange-300 transition-all group active:scale-[0.98]"
                 >
                   <div className="flex items-center gap-2 text-orange-600 text-[14px] font-bold">
                     <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
-                      <Heart
-                        size={16}
-                        fill="currentColor"
-                        className="text-orange-500"
-                      />
+                      <Heart size={16} fill="currentColor" className="text-orange-500" />
                     </div>
                     Add Contributions
                   </div>
-
                   <div className="flex items-center gap-1">
-                    {Object.values(donations).some(
-                      (val, idx) =>
-                        val && Object.keys(donations)[idx] !== "temple",
-                    ) ? (
-                      <span className="text-[14px] font-bold text-orange-600">
-                        +₹
-                        {contributionList.reduce(
-                          (acc, item) =>
-                            donations[item.id] ? acc + item.price : acc,
-                          0,
-                        )}
-                      </span>
+                    {selectedContributionsTotal > 0 ? (
+                      <span className="text-[14px] font-bold text-orange-600">+₹{selectedContributionsTotal}</span>
                     ) : (
-                      <ChevronRight
-                        size={16}
-                        className="text-orange-400 group-hover:translate-x-1 transition-transform"
-                      />
+                      <ChevronRight size={16} className="text-orange-400 group-hover:translate-x-1 transition-transform" />
                     )}
                   </div>
                 </button>
 
-                {/* Temple Donation Checkbox */}
                 <div className="flex items-center justify-between py-3 px-1 border-t border-gray-50">
                   <label className="flex items-center gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
                       checked={donations.temple}
-                      onChange={(e) =>
-                        setDonations((prev) => ({
-                          ...prev,
-                          temple: e.target.checked,
-                        }))
-                      }
+                      onChange={(e) => setDonations((prev) => ({ ...prev, temple: e.target.checked }))}
                       className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
                     />
                     <span className="text-[14px] text-gray-600 font-medium group-hover:text-orange-600 transition-colors">
                       Temple Donation
                     </span>
                   </label>
-                  <span className="text-[14px] font-bold text-orange-500">
-                    +₹1
-                  </span>
+                  <span className="text-[14px] font-bold text-orange-500">+₹1</span>
                 </div>
-
-                {/* ... rest of your code (Total and Pay button) */}
               </div>
 
-              {/* 4. Pay Button & Trust */}
+              {/* Trust + Pay */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-yellow-50/60 px-4 py-3 rounded-xl border border-yellow-100">
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700 uppercase">
-                    <ShieldCheck size={14} className="text-yellow-600" /> 100%
-                    Moneyback
+                    <ShieldCheck size={14} className="text-yellow-600" /> 100% Moneyback
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700 uppercase">
-                    <Lock size={12} className="text-yellow-600" /> Secure
-                    Payment
+                    <Lock size={12} className="text-yellow-600" /> Secure Payment
                   </div>
                 </div>
 
                 <button
                   onClick={() => handleTemplePayment()}
                   disabled={isBooking}
-                  className="group relative w-full bg-gradient-to-r from-orange-400 to-orange-500 text-white font-black py-3 rounded-2xl shadow-xl shadow-orange-200/50 transition-all active:scale-[0.98] overflow-hidden"
+                  className="group relative w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-black py-3 rounded-2xl shadow-xl shadow-orange-200/50 transition-all active:scale-[0.98] overflow-hidden"
                 >
                   <span className="relative flex items-center justify-center gap-3 text-[18px] uppercase tracking-wider">
                     {isBooking ? (
@@ -621,61 +479,241 @@ const TemplePujaBooking = () => {
                 </button>
 
                 <div className="flex flex-col items-center gap-1 opacity-50">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
-                    PCI DSS Compliant
-                  </span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">PCI DSS Compliant</span>
                 </div>
               </div>
             </div>
           </aside>
         </div>
       </div>
+
+      {/* ── MOBILE STICKY BOTTOM BAR ── */}
+      <div
+        className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-orange-200 shadow-2xl shadow-orange-100 px-4 py-3 cursor-pointer active:bg-orange-50 transition-colors"
+        onClick={(e) => {
+          if (e.target.closest("#mobile-cta-btn")) return;
+          const el = document.getElementById("mobile-summary");
+          if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+        }}
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+              Total Amount <ChevronRight size={11} className="text-orange-400" />
+            </p>
+            <p className="text-xl font-black text-orange-600 leading-tight">
+              ₹{calculateTotal().toLocaleString("en-IN")}
+            </p>
+            <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
+              <ShieldCheck size={10} /> Incl. all taxes
+            </p>
+          </div>
+          <button
+            id="mobile-cta-btn"
+            onClick={() => handleTemplePayment()}
+            disabled={isBooking}
+            className="flex-1 max-w-[200px] bg-gradient-to-r from-orange-500 to-orange-700 text-white font-black py-3.5 rounded-2xl shadow-lg shadow-orange-200 transition-all active:scale-[0.97] flex items-center justify-center gap-2 text-[14px] uppercase tracking-[0.08em]"
+          >
+            {isBooking ? (
+              <Loader2 className="animate-spin" size={18} />
+            ) : (
+              <>
+                <span>Proceed to Pay</span>
+                <ChevronRight size={16} strokeWidth={3} />
+              </>
+            )}
+          </button>
+        </div>
+        <p className="text-center text-[9px] font-bold text-slate-400 uppercase tracking-widest mt-1">
+          Free cancellation up to 24 hours before
+        </p>
+      </div>
     </div>
   );
 };
 
+/* ─────────────────────────────────────────────
+   MOBILE INLINE SUMMARY — with ticket selector
+───────────────────────────────────────────── */
+const MobileSummarySection = ({
+  service,
+  tickets,
+  selectedTicket,
+  setSelectedTicket,
+  donations,
+  setDonations,
+  contributionList,
+  calculateTotal,
+  selectedContributionsTotal,
+  scrollToSection,
+}) => (
+  <div className="space-y-5">
+    {/* Header */}
+    <div>
+      <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-2">
+        Booking Summary
+      </h3>
+      <div className="flex gap-1">
+        <div className="h-1 w-12 bg-orange-500 rounded-full" />
+        <div className="h-1 w-4 bg-orange-100 rounded-full" />
+      </div>
+    </div>
+
+    {/* Ticket Selector — horizontal scroll on mobile */}
+    <div>
+      <p className="text-[12px] font-bold text-slate-400 uppercase tracking-wider mb-3">
+        Select Ticket
+      </p>
+      <div className="grid grid-cols-3 gap-2">
+        {tickets.map((t) => (
+          <button
+            key={t.label}
+            onClick={() => setSelectedTicket(t.label)}
+            className={`flex flex-col items-center py-2 px-2 rounded-2xl border-2 transition-all ${
+              selectedTicket === t.label
+                ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
+                : "border-gray-100 bg-white hover:border-orange-200"
+            }`}
+          >
+            <div className={`mb-1.5 p-2 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-400"}`}>
+              {t.icon}
+            </div>
+            <span className="text-[11px] font-bold text-gray-800">{t.label}</span>
+            <span className="text-[9px] text-gray-500">{t.person}</span>
+            <span className="text-[12px] font-black text-orange-600">₹{t.price}</span>
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {/* Price breakdown */}
+    <div className="space-y-3 pt-1">
+      <div className="flex justify-between items-center px-1">
+        <span className="text-[13px] font-bold text-slate-500 tracking-wider">
+          {selectedTicket} Ticket
+        </span>
+        <span className="text-[14px] font-bold text-slate-800">
+          ₹{tickets.find((t) => t.label === selectedTicket)?.price}
+        </span>
+      </div>
+
+      <button
+        onClick={() => scrollToSection("contributions")}
+        className="w-full flex items-center justify-between p-2 rounded-2xl border border-orange-200 bg-orange-50/50 hover:bg-orange-100 transition-all active:scale-[0.98]"
+      >
+        <div className="flex items-center gap-2 text-orange-600 text-[13px] font-bold">
+          <div className="p-1.5 bg-white rounded-lg shadow-sm">
+            <Heart size={14} fill="currentColor" className="text-orange-500" />
+          </div>
+          Add Contributions
+        </div>
+        <div className="flex items-center gap-1">
+          {selectedContributionsTotal > 0 ? (
+            <span className="text-[13px] font-bold text-orange-600">
+              +₹{selectedContributionsTotal.toLocaleString("en-IN")}
+            </span>
+          ) : (
+            <ChevronRight size={14} className="text-orange-400" />
+          )}
+        </div>
+      </button>
+
+      <div className="flex items-center justify-between py-1 px-1 border-t border-gray-100 pt-3">
+        <label className="flex items-center gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={donations.temple}
+            onChange={(e) => setDonations((prev) => ({ ...prev, temple: e.target.checked }))}
+            className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
+          />
+          <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">
+            Temple Donation
+          </span>
+        </label>
+        <span className="text-[13px] font-black text-orange-500">+₹1</span>
+      </div>
+
+      <div className="border-t border-dashed border-gray-300 w-full" />
+
+      <div className="flex justify-between items-center pt-1 px-1">
+        <div>
+          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+          <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
+            <ShieldCheck size={11} />
+            <span className="text-[10px] font-bold">Inclusive of all taxes</span>
+          </div>
+        </div>
+        <span className="text-xl font-black text-orange-600">
+          ₹{calculateTotal().toLocaleString("en-IN")}
+        </span>
+      </div>
+    </div>
+
+    
+  </div>
+);
+
+/* ─────────────────────────────────────────────
+   CONTRIBUTION CARD
+   Desktop: [icon] [title + subtitle] [price]
+   Mobile:  [title + subtitle] [price] — no icon
+───────────────────────────────────────────── */
+const ContributionCard = ({ item, selected, onToggle }) => (
+  <button
+    onClick={onToggle}
+    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${
+      selected ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"
+    }`}
+  >
+    <div className="flex items-center gap-3 text-left">
+      <div className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}>
+        {item.icon}
+      </div>
+      <div>
+        <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 leading-tight">{item.title}</h4>
+        <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">{item.sub}</p>
+        {selected && (
+          <div className="mt-1 flex items-center gap-1 text-orange-600 text-[10px] font-bold">
+            <CheckCircle size={11} fill="currentColor" /> Added
+          </div>
+        )}
+      </div>
+    </div>
+    <span className="text-[13px] md:text-[16px] font-black text-orange-600 whitespace-nowrap shrink-0">
+      ₹{item.price}
+    </span>
+  </button>
+);
+
+/* ─────────────────────────────────────────────
+   BENEFIT SMALL
+   Desktop: icon + text | Mobile: text only
+───────────────────────────────────────────── */
 const BenefitSmall = ({ icon, title, desc }) => (
-  <div className="flex items-center gap-4 bg-white p-5 rounded-xl border border-orange-200 group transition-all shadow-sm hover:border-orange-400">
-    <div className="p-3 bg-orange-50 transition-all rounded-xl text-orange-500 shadow-sm">
-      {React.cloneElement(icon, { size: 20 })}
+  <div className="flex items-center gap-3 bg-white p-3 md:p-5 rounded-xl border border-orange-200 transition-all shadow-sm hover:border-orange-400">
+    <div className="hidden md:flex p-2.5 bg-orange-50 text-orange-500 rounded-xl shadow-sm shrink-0">
+      {React.cloneElement(icon, { size: 18 })}
     </div>
     <div>
-      <h4 className="text-[15px] font-bold text-gray-800 tracking-tight leading-none">
-        {title}
-      </h4>
-      <p className="text-[13px] text-gray-500 mt-2 leading-tight font-medium">
-        {desc}
-      </p>
+      <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
+      <p className="text-[11px] md:text-[13px] text-gray-500 mt-1 leading-tight font-medium">{desc}</p>
     </div>
   </div>
 );
 
+/* ─────────────────────────────────────────────
+   FAQ ITEM
+───────────────────────────────────────────── */
 const FAQItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
-
   return (
-    <div 
-      className="py-2 cursor-pointer border-b border-orange-50 last:border-none" 
-      onClick={() => setOpen(!open)}
-    >
+    <div className="py-2 cursor-pointer border-b border-orange-50 last:border-none" onClick={() => setOpen(!open)}>
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
-          {q}
-        </span>
-        <ChevronRight
-          size={18}
-          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
-        />
+        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
+        <ChevronRight size={18} className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`} />
       </div>
-      
-      <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${
-          open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'
-        }`}
-      >
-        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
-          {a}
-        </p>
+      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"}`}>
+        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
       </div>
     </div>
   );

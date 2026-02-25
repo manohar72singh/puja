@@ -1,4 +1,5 @@
 import db from "../config/db.js";
+import pool from "../config/db.js";
 
 export const getServicesByType = async (req, res) => {
   try {
@@ -451,7 +452,6 @@ export const cancelBooking = async (req, res) => {
         // User ID ko verify karein (Agar aap req.user use kar rahe hain toh)
         const userId = req.user ? req.user.id : null; 
 
-        console.log("Cancelling Booking ID:", id); // Check karein console mein ID aa rahi hai?
 
         // Database query - dhyaan dein ki aapka table name 'puja_request' hi ho
         const [result] = await db.query(
@@ -466,7 +466,59 @@ export const cancelBooking = async (req, res) => {
         return res.status(200).json({ success: true, message: "Deleted successfully" });
 
     } catch (error) {
-        console.error("Backend Error:", error); // Terminal mein error dekhein
         return res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+
+export const postSupportQuery = async (req, res) => {
+    try {
+        const userId = req.user.id; 
+        const { category, subject, message } = req.body;
+        
+
+        const sql = "INSERT INTO support_queries (user_id, category, subject, message) VALUES (?, ?, ?, ?)";
+        
+        // mysql2/promise mein hum aise await use karte hain:
+        const [result] = await pool.execute(sql, [userId, category, subject, message]);
+
+
+        // Ab ye response frontend ko 100% milega
+        return res.status(200).json({ 
+            success: true, 
+            message: "Query Submitted Successfully",
+            id: result.insertId 
+        });
+
+    } catch (error) {
+        return res.status(500).json({ 
+            success: false, 
+            message: "Database Error",
+            error: error.message 
+        });
+    }
+};
+
+export const getUserSupportQueries = async (req, res) => {
+    try {
+        console.log("--- Fetching from DB ---");
+        const userId = req.user.id;
+
+        const sql = "SELECT * FROM support_queries WHERE user_id = ? ORDER BY created_at DESC";
+        
+        // Kyunki aapne 'mysql2/promise' use kiya hai, toh yahan await lagega
+        // results ek array return karta hai jisme pehla element data hota hai
+        const [results] = await pool.query(sql, [userId]);
+
+        console.log("DB Success! Rows found:", results.length);
+        
+        return res.status(200).json(results);
+
+    } catch (error) {
+        console.error("DB Query Error:", error);
+        return res.status(500).json({ 
+            message: "Error fetching data", 
+            error: error.message 
+        });
     }
 };

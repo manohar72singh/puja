@@ -49,7 +49,7 @@ export default function HomePuja() {
     // FULL PAGE BACKGROUND COLOR SET HERE
     <div className="min-h-screen bg-[#FFF4E1]">
 
-      <section className="relative max-w-7xl mx-auto p-6">
+      <section className="relative max-w-7xl mx-auto px-6 pt-6 pb-5">
         {/* Decorative Background Elements */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full -z-10 opacity-30">
           <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-300 rounded-full blur-[120px]"></div>
@@ -64,7 +64,7 @@ export default function HomePuja() {
             </span>
             <div className="h-[1px] w-12 bg-orange-300"></div>
           </div>
-          <h2 className="text-4xl md:text-6xl font-serif text-[#2f1e12] mb-4">
+          <h2 className="text-5xl md:text-6xl font-serif text-[#2f1e12] tracking-tight mb-4">
             Divine <span className="text-orange-600 italic">Home Pujas</span>
           </h2>
           <p className=" text-gray-600 text-base max-w-2xl mx-auto leading-relaxed">

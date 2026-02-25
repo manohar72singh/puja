@@ -18,7 +18,6 @@ const FullTemplePage = () => {
       try {
         const response = await axios.get(`${API_BASE_URL}/mandir/all`);
         setTemples(response.data);
-        console.log(response.data)
         setLoading(false);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -43,10 +42,10 @@ const FullTemplePage = () => {
   }, [temples, searchTerm, activeCity]); // Sirf tabhi chalega jab data ya filter badlega
 
   return (
-    <div className="bg-orange-100 min-h-screen font-sans">
+    <div className="bg-[#FFF4E1] min-h-screen font-sans">
       
       {/* 1. HERO SECTION */}
-      <section className="bg-[#FFF5E9] pt-16 pb-24 px-6 relative overflow-hidden">
+      <section className="bg-[#FFF4E1] pt-16 pb-24 px-6 relative overflow-hidden">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-10 items-center relative z-10">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 px-4 py-1.5 rounded-full text-sm font-bold">
@@ -123,7 +122,7 @@ const FullTemplePage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {filteredTemples.map((temple) => (
-                <Link to={`/${temple.id}`} key={temple.id} className="group">
+                <Link to={`/temples/${temple.id}`} key={temple.id} className="group">
                   <div className="bg-white rounded-[1.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 h-full flex flex-col">
                     
                     {/* Image Optimized with Loading Lazy */}
