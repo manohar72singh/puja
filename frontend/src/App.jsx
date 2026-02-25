@@ -64,6 +64,8 @@ function App() {
     "/partner/dashboard",
     "/customerCare/signIn",
     "/customerCare/dashboard",
+    "/admin/login",
+    "/admin/dashboard"
   ].includes(location.pathname);
 
   return (

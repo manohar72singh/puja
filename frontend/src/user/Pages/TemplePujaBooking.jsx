@@ -68,6 +68,7 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
+        console.log(data.data[0])
       } catch (err) {
         console.error(err);
       } finally {
@@ -93,7 +94,10 @@ const TemplePujaBooking = () => {
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,
-      date: new Date().toISOString().split("T")[0],
+      date: service?.dateOfStart
+        ? new Date(service.dateOfStart).toLocaleDateString("en-CA")
+        : new Date().toISOString().split("T")[0],
+
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
           hour: "2-digit",

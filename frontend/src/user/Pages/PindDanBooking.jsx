@@ -90,11 +90,15 @@ const PindDanBooking = () => {
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,
-      date: new Date().toISOString().split("T")[0],
+      date: service?.dateOfStart
+        ? new Date(service.dateOfStart).toISOString().split("T")[0]
+        : new Date().toISOString().split("T")[0],
+
       time: service?.dateOfStart
-        ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
+        ? new Date(service.dateOfStart).toLocaleTimeString("en-US", {
           hour: "2-digit",
           minute: "2-digit",
+          hour12: true,
         })
         : "10:00 AM",
       address: service?.address || "N/A",
@@ -125,7 +129,6 @@ const PindDanBooking = () => {
       const result = await response.json();
 
       if (result.success) {
-        alert(`🙏 Temple Booking Confirmed! Booking ID: ${currentBookingId}`);
         navigate("/my-booking");
       }
     } catch (error) {

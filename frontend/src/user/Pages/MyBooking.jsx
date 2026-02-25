@@ -9,6 +9,19 @@ const MyBookings = () => {
   const [errorMsg, setErrorMsg] = useState("");
   const [showConfirm, setShowConfirm] = useState({ show: false, id: null, data: null });
 
+  const get24HourTime = (timeStr) => {
+    if (!timeStr || !timeStr.includes(" ")) return timeStr || "00:00";
+    try {
+      const [time, modifier] = timeStr.split(" ");
+      let [hours, minutes] = time.split(":");
+      if (hours === "12") hours = "00";
+      if (modifier === "PM") hours = (parseInt(hours, 10) + 12).toString();
+      return `${hours.padStart(2, '0')}:${minutes}`;
+    } catch (e) {
+      return "00:00";
+    }
+  };
+
   useEffect(() => {
     const fetchMyBookings = async () => {
       const token = localStorage.getItem("token");
@@ -64,11 +77,15 @@ const MyBookings = () => {
 
       {/* CONFIRMATION MODAL */}
       {showConfirm.show && (() => {
-        const preferred_date = showConfirm.data?.preferred_date;
-        const preferred_time = showConfirm.data?.preferred_time;
+        const b = showConfirm.data;
+        const preferred_date = b?.preferred_date;
+        const preferred_time = b?.preferred_time;
         const bookingDate = preferred_date.split("T")[0];
-        const mergedDateTime = new Date(`${bookingDate}T${preferred_time}:00`);
-        const isExpired = mergedDateTime < new Date();
+        const time24 = get24HourTime(preferred_time);
+        const mergedDateTime = new Date(`${bookingDate}T${time24}:00`);
+        
+        const pujaWithExpiry = ["temple_puja", "pind_dan"];
+        const isExpired = pujaWithExpiry.includes(b?.puja_type) && mergedDateTime < new Date();
 
         return (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[110] flex items-center justify-center p-4">
@@ -77,7 +94,7 @@ const MyBookings = () => {
                 <h3 className="text-2xl font-bold text-[#3b2a1a] font-serif mb-2">Cancel Booking?</h3>
                 <p className="text-gray-600 mb-4 text-sm leading-relaxed">
                   Are you sure you want to cancel this booking for{" "}
-                  <span className="font-bold text-[#3b2a1a] italic">{showConfirm.data?.puja_name}</span>?
+                  <span className="font-bold text-[#3b2a1a] italic">{b?.puja_name}</span>?
                 </p>
 
                 {isExpired && (
@@ -91,7 +108,7 @@ const MyBookings = () => {
                 <div className="w-full border-t border-gray-200 pt-4 mb-6">
                   <p className="text-[#8b5e34] font-bold text-xs uppercase mb-3 tracking-widest">Refund Policy:</p>
                   <ul className="text-[#8b5e34]/80 text-[13px] space-y-2 list-none font-medium">
-                    {["More than 48 hours before: 100% refund", "24-48 hours before: 50% refund", "Less than 24 hours: No refund"].map((p) => (
+                    {["More than 48 hours: 100% refund", "24-48 hours: 50% refund", "Less than 24 hours: No refund"].map((p) => (
                       <li key={p} className="flex items-center gap-2">
                         <span className="w-1.5 h-1.5 bg-[#8b5e34]/40 rounded-full" /> {p}
                       </li>
@@ -109,11 +126,10 @@ const MyBookings = () => {
                   <button
                     disabled={isExpired}
                     onClick={() => handleCancelBooking(showConfirm.id)}
-                    className={`flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${
-                      isExpired
-                        ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
-                        : "bg-red-500 text-white hover:bg-red-600 shadow-red-100"
-                    }`}
+                    className={`flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all shadow-sm active:scale-95 ${isExpired
+                      ? "bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200"
+                      : "bg-red-500 text-white hover:bg-red-600 shadow-red-100"
+                      }`}
                   >
                     {isExpired ? "Cannot Cancel" : "Yes, Cancel"}
                   </button>
@@ -149,20 +165,25 @@ const MyBookings = () => {
         ) : (
           <div className="space-y-4">
             {bookings.map((b) => {
-              const isTemplePuja = b.puja_type === "temple_puja";
+              const isTemplePuja = ["temple_puja", "pind_dan"].includes(b.puja_type);
+              const bookingDate = b.preferred_date.split("T")[0];
+              const time24 = get24HourTime(b.preferred_time);
+              const mergedDateTime = new Date(`${bookingDate}T${time24}:00`);
+
+              const isEventExpired = mergedDateTime < new Date();
+              const canCancel = b.status === "pending" && !isEventExpired;
 
               return (
                 <div
                   key={b.id}
                   className="relative overflow-hidden bg-white rounded-3xl p-4 sm:p-5 shadow-sm border border-orange-300 transition-all hover:shadow-md flex flex-col md:flex-row md:items-stretch gap-4 sm:gap-6"
                 >
-                  {/* Category Ribbon */}
-                  <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest text-white ${isTemplePuja ? "bg-orange-500" : "bg-blue-500"}`}>
+                  <div className={`absolute top-0 right-0 px-3 py-1 rounded-bl-2xl text-[10px] font-black uppercase tracking-widest text-white z-10 ${isTemplePuja ? "bg-orange-500" : "bg-blue-500"}`}>
                     {isTemplePuja ? "Temple Ceremony" : "Home Ritual"}
                   </div>
 
-                  {/* Image — self-stretch so it grows with content */}
-                  <div className="w-full md:w-36 shrink-0 self-stretch min-h-[120px]">
+                  {/* IMAGE SIZE: Temple Puja (h-40), Home Ritual (h-32 -> 20% smaller) */}
+                  <div className={`w-full h-48 md:w-40 shrink-0 overflow-hidden rounded-2xl ${isTemplePuja ? 'md:h-40' : 'md:h-32'}`}>
                     <img
                       src={`${API_BASE_URL}/uploads/${b.image_url}`}
                       className="w-full h-full object-cover rounded-2xl shadow-sm"
@@ -170,7 +191,6 @@ const MyBookings = () => {
                     />
                   </div>
 
-                  {/* Content */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-lg sm:text-xl font-bold text-gray-800 flex items-center gap-2 pr-24">
                       {b.puja_name}
@@ -188,7 +208,7 @@ const MyBookings = () => {
                       <div className="flex items-start gap-2 col-span-2">
                         <MapPin size={13} className="text-orange-500 shrink-0 mt-0.5" />
                         <span className="italic text-gray-500 leading-tight text-[12px] sm:text-sm">
-                          {isTemplePuja ? `Temple: ${b.final_address}` : `Home: ${b.final_address}`}
+                          {b.final_address}
                         </span>
                       </div>
                     </div>
@@ -203,24 +223,22 @@ const MyBookings = () => {
                       </div>
                     )}
 
-                    {/* ── MOBILE: ID + Status + Cancel ── */}
                     <div className="mt-4 flex items-center justify-between gap-2 md:hidden">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter shrink-0">
                         ID: <span className="text-orange-600">{b.bookingId}</span>
                       </p>
 
                       <div className="flex items-center gap-2 shrink-0">
-                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                          b.status === "pending"
-                            ? "bg-orange-100 text-orange-600 border border-orange-200"
-                            : b.status === "declined"
+                        <div className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${b.status === "pending"
+                          ? "bg-orange-100 text-orange-600 border border-orange-200"
+                          : b.status === "declined"
                             ? "text-red-500 bg-red-100 border border-red-200"
                             : "bg-green-100 text-green-600 border border-green-200"
-                        }`}>
+                          }`}>
                           {b.status}
                         </div>
 
-                        {b.status === "pending" && (
+                        {canCancel && (
                           <button
                             onClick={() => setShowConfirm({ show: true, id: b.id, data: b })}
                             className="flex items-center gap-1 text-red-500 font-bold text-[10px] uppercase border border-red-200 px-2 py-1 rounded-lg hover:bg-red-50 active:scale-95 transition-all"
@@ -232,21 +250,19 @@ const MyBookings = () => {
                     </div>
                   </div>
 
-                  {/* ── DESKTOP RIGHT COLUMN ── */}
                   <div className="hidden md:flex flex-col justify-center items-end border-l border-gray-100 pl-6 min-w-[140px]">
                     <p className="my-4 text-[10px] font-bold text-gray-400 uppercase tracking-tighter">
                       ID: <span className="ml-1 text-orange-600">{b.bookingId}</span>
                     </p>
-                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                      b.status === "pending"
-                        ? "bg-orange-100 text-orange-600 border border-orange-200"
-                        : b.status === "declined"
+                    <div className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${b.status === "pending"
+                      ? "bg-orange-100 text-orange-600 border border-orange-200"
+                      : b.status === "declined"
                         ? "text-red-500 bg-red-100 border border-red-200"
                         : "bg-green-100 text-green-600 border border-green-200"
-                    }`}>
+                      }`}>
                       {b.status}
                     </div>
-                    {b.status === "pending" && (
+                    {canCancel && (
                       <button
                         onClick={() => setShowConfirm({ show: true, id: b.id, data: b })}
                         className="mt-3 flex items-center gap-1 text-red-500 font-bold text-[10px] uppercase border border-red-200 px-3 py-1.5 rounded-xl hover:bg-red-50 transition-colors"
