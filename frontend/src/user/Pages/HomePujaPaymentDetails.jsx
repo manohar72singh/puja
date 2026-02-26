@@ -33,6 +33,7 @@ const HomePujaPaymentDetails = () => {
 
   const isSamagriSelected = location.state?.isSamagriSelected || false;
   const [errorMsg, setErrorMsg] = useState("");
+  const [contributionOptions2, setContributionOptions2] = useState("");
 
   const generateBookingId = () =>
     `BK-${Math.random().toString(36).substring(2, 8)}`;
@@ -62,37 +63,47 @@ const HomePujaPaymentDetails = () => {
     temple: false,
   });
 
+  const getPrice = (title) => {
+    const daan = Array.from(contributionOptions2).filter(
+      (c) => c.name == title,
+    );
+
+    return Number(daan[0]?.price);
+  };
+
   const contributionOptions = [
     {
       id: "vastra",
       name: "Vastra Daan",
-      price: 251,
+      price: getPrice("Vastra Dan"),
       icon: <Shirt size={16} />,
       desc: "Donate clothes to the needy",
     },
     {
       id: "annadan",
       name: "Annadan",
-      price: 501,
+      price: getPrice("Anna Dan"),
       icon: <Coffee size={16} />,
       desc: "Provide meals to the hungry",
     },
     {
       id: "deepdan",
       name: "Deepdan",
-      price: 101,
+      price: getPrice("Deep Dan"),
       icon: <Flame size={16} />,
       desc: "Light lamps at sacred temples",
     },
     {
       id: "bhoj",
       name: "Brahmin Bhoj",
-      price: 1100,
+      price: getPrice("Brahmin Dan"),
       icon: <UtensilsCrossed size={16} />,
       desc: "Feed Brahmins after ceremony",
     },
   ];
-
+  const selectedDonations = Object.keys(donations)
+    .filter((key) => donations[key])
+    .join(", ");
   const handlePayment = async () => {
     if (!formData.date || !formData.devoteeName || !formData.city) {
       setErrorMsg("Please fill all mandatory fields (Date, Name, City)");
@@ -108,6 +119,8 @@ const HomePujaPaymentDetails = () => {
       state: formData.state,
       devoteeName: formData.devoteeName,
       bookingId,
+      donations: selectedDonations,
+      total_price: grandTotal,
     };
     try {
       const response = await fetch(
@@ -144,6 +157,12 @@ const HomePujaPaymentDetails = () => {
         const data = await response.json();
         setPuja(Array.isArray(data) ? data[0] : data);
 
+        const res = await fetch(`${API_BASE_URL}/contributions/${id}`);
+        const data2 = await res.json();
+        if (data2.success) {
+          setContributionOptions2(data2.data);
+        }
+
         const addressRes = await fetch(`${API_BASE_URL}/user/default-address`, {
           headers: { Authorization: `Bearer ${token}` },
         });
@@ -179,14 +198,20 @@ const HomePujaPaymentDetails = () => {
       (acc, opt) => (donations[opt.id] ? acc + opt.price : acc),
       0,
     );
-    if (donations.gau) sum += 100;
+    if (donations.gau) sum += getPrice("Gau Seva");
     return sum;
   };
 
   const basePrice = Number(puja?.standard_price || 0);
   const samagriPrice = isSamagriSelected ? 600 : 0;
   const dharmicTotal = getDharmicTotal();
-  const templeDonation = donations.temple ? 1 : 0;
+  const templeDonation = donations.temple
+    ? Number(
+        Array.from(contributionOptions2).filter(
+          (c) => c.name == "Temple Donation",
+        )[0].price,
+      )
+    : 0;
   const grandTotal = basePrice + samagriPrice + dharmicTotal + templeDonation;
 
   const inputBaseClass =
@@ -446,7 +471,7 @@ const HomePujaPaymentDetails = () => {
                     </p>
                   </div>
                   <span className="text-orange-600 font-black text-sm whitespace-nowrap">
-                    +₹100
+                    +₹{getPrice("Gau Seva")}
                   </span>
                 </div>
 
@@ -483,6 +508,7 @@ const HomePujaPaymentDetails = () => {
                   donations={donations}
                   toggleDonation={toggleDonation}
                   dharmicRef={dharmicRef}
+                  getPrice={getPrice}
                 />
               </div>
             </div>
@@ -559,7 +585,7 @@ const HomePujaPaymentDetails = () => {
                         </span>
                       </label>
                       <span className="text-[10px] font-black text-orange-500">
-                        +₹1
+                        +₹{getPrice("Temple Donation")}
                       </span>
                     </div>
 
@@ -644,6 +670,7 @@ const MobileSummaryInline = ({
   donations,
   toggleDonation,
   dharmicRef,
+  getPrice,
 }) => (
   <div className="space-y-4">
     <div>
@@ -714,7 +741,9 @@ const MobileSummaryInline = ({
             Temple Donation
           </span>
         </label>
-        <span className="text-[13px] font-black text-orange-500">+₹1</span>
+        <span className="text-[13px] font-black text-orange-500">
+          +₹{getPrice("Temple Donation")}
+        </span>
       </div>
 
       <div className="border-t border-dashed border-gray-300 w-full" />

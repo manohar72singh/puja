@@ -78,6 +78,7 @@ const TemplePujaBooking = () => {
     };
     fetchService();
   }, [id]);
+
   useEffect(() => {
     const fetchContributions = async () => {
       try {

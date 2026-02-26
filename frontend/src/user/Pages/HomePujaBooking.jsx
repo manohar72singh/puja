@@ -1,9 +1,22 @@
 import React, { useState, useRef, useEffect } from "react";
 
 import {
-  ChevronRight, ChevronLeft, Star, HelpCircle, Info, Box,
-  Heart, Shield, Zap, Users, Download, CheckCircle, MessageSquare, MapPin, Sparkles,
-  Gem
+  ChevronRight,
+  ChevronLeft,
+  Star,
+  HelpCircle,
+  Info,
+  Box,
+  Heart,
+  Shield,
+  Zap,
+  Users,
+  Download,
+  CheckCircle,
+  MessageSquare,
+  MapPin,
+  Sparkles,
+  Gem,
 } from "lucide-react";
 
 import { useNavigate, useParams, useLocation } from "react-router-dom";
@@ -11,35 +24,58 @@ import { useNavigate, useParams, useLocation } from "react-router-dom";
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
 const HomePujaBooking = () => {
-
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
 
   const [samagriEnabled, setSamagriEnabled] = useState(
-    location.state?.isSamagriSelected !== undefined ? location.state.isSamagriSelected : true
+    location.state?.isSamagriSelected !== undefined
+      ? location.state.isSamagriSelected
+      : true,
   );
 
   const [activeTab, setActiveTab] = useState("about");
   const [service, setService] = useState(null);
   const [aboutExpanded, setAboutExpanded] = useState(false); // NEW
-
+  const [contributionOptions, setContributionOptions] = useState("");
   const sections = {
     about: useRef(null),
     benefits: useRef(null),
-    faqs: useRef(null)
+    faqs: useRef(null),
   };
 
+  useEffect(() => {
+    const fetchContributions = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/contributions/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          setContributionOptions(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching contributions", err);
+      }
+    };
+    if (id) fetchContributions();
+  }, [id]);
+
+  const getPrice = (title) => {
+    const daan = Array.from(contributionOptions).filter((c) => c.name == title);
+
+    return Number(daan[0]?.price);
+  };
   useEffect(() => {
     const bookPuja = async (id) => {
       const token = localStorage.getItem("token");
       try {
         const response = await fetch(`${API_BASE_URL}/puja/bookPuja/${id}`, {
-          headers: { "Authorization": `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
         const data = await response.json();
         setService(Array.isArray(data) ? data[0] : data);
-      } catch (error) { console.log("Error:", error); }
+      } catch (error) {
+        console.log("Error:", error);
+      }
     };
     if (id) bookPuja(id);
   }, [id]);
@@ -73,12 +109,13 @@ const HomePujaBooking = () => {
   };
 
   const basePrice = Number(service?.standard_price || 0);
-  const totalAmount = samagriEnabled ? basePrice + 600 : basePrice;
+  const totalAmount = samagriEnabled
+    ? basePrice + getPrice("Samagri Kit")
+    : basePrice;
 
   return (
     <div className="min-h-screen bg-[#FFF4E1] p-4 md:p-6 font-sans text-gray-800 pb-28 md:pb-6">
       <div className="max-w-6xl mx-auto">
-
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-[13px] font-bold uppercase tracking-wider text-orange-700 mb-5 hover:opacity-70 transition-all"
@@ -87,9 +124,7 @@ const HomePujaBooking = () => {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-
           <div className="lg:col-span-8 space-y-5">
-
             {/* HERO SECTION */}
             <div className="bg-white rounded-2xl overflow-hidden border border-orange-200 shadow-sm">
               <div className="relative h-64 md:h-80">
@@ -119,10 +154,11 @@ const HomePujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
-                      ? "text-orange-600 bg-orange-50/50"
-                      : "text-gray-400"
-                      }`}
+                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                      activeTab === tab
+                        ? "text-orange-600 bg-orange-50/50"
+                        : "text-gray-400"
+                    }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -134,22 +170,34 @@ const HomePujaBooking = () => {
             </nav>
 
             {/* SAMAGRI TOGGLE SECTION */}
-            <div className={`bg-white rounded-xl p-5 border transition-all duration-300 shadow-sm ${samagriEnabled ? 'border-orange-400' : 'border-orange-200'}`}>
+            <div
+              className={`bg-white rounded-xl p-5 border transition-all duration-300 shadow-sm ${samagriEnabled ? "border-orange-400" : "border-orange-200"}`}
+            >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className={`p-3 rounded-lg transition-all ${samagriEnabled ? 'bg-orange-500 text-white' : 'bg-orange-50 text-orange-600'}`}>
+                  <div
+                    className={`p-3 rounded-lg transition-all ${samagriEnabled ? "bg-orange-500 text-white" : "bg-orange-50 text-orange-600"}`}
+                  >
                     <Box size={24} />
                   </div>
                   <div className="space-y-1">
-                    <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">All-in-One Samagri Kit</h3>
+                    <h3 className="font-bold text-[16px] text-gray-800 tracking-tight">
+                      All-in-One Samagri Kit
+                    </h3>
                     {samagriEnabled ? (
                       <p className="text-gray-500 text-[13px]">
-                        <span className="text-orange-600 font-bold">Relax.</span> We bring Flowers, Ghee & Vessels.
+                        <span className="text-orange-600 font-bold">
+                          Relax.
+                        </span>{" "}
+                        We bring Flowers, Ghee & Vessels.
                       </p>
                     ) : (
                       <div className="space-y-3">
                         <p className="text-gray-500 text-[13px]">
-                          You'll need to buy <span className="text-red-500 font-bold">30+ items.</span>
+                          You'll need to buy{" "}
+                          <span className="text-red-500 font-bold">
+                            30+ items.
+                          </span>
                         </p>
                         <button className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors">
                           <Download size={14} /> Download Checklist
@@ -164,10 +212,14 @@ const HomePujaBooking = () => {
                     onClick={() => setSamagriEnabled(!samagriEnabled)}
                     className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-200"}`}
                   >
-                    <div className={`bg-white w-5 h-5 rounded-full shadow transition-transform ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`} />
+                    <div
+                      className={`bg-white w-5 h-5 rounded-full shadow transition-transform ${samagriEnabled ? "translate-x-7" : "translate-x-0"}`}
+                    />
                   </button>
                   <span className="text-[11px] font-bold text-gray-400 mt-1">
-                    {samagriEnabled ? "+₹600" : "Not included"}
+                    {samagriEnabled
+                      ? `+₹${getPrice("Samagri Kit")}`
+                      : "Not included"}
                   </span>
                 </div>
               </div>
@@ -176,16 +228,20 @@ const HomePujaBooking = () => {
             {/* CONTENT CONTAINER */}
             <div className="bg-white rounded-2xl border border-orange-200 overflow-hidden shadow-sm">
               <div className="p-5 space-y-4">
-
                 {/* SECTION: About */}
-                <section ref={sections.about} className="scroll-mt-32 space-y-5">
+                <section
+                  ref={sections.about}
+                  className="scroll-mt-32 space-y-5"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Info size={20} /> About The Ritual
                   </div>
 
                   {/* Description with Read More on mobile */}
                   <div>
-                    <p className={`text-[15px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}>
+                    <p
+                      className={`text-[15px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}
+                    >
                       {service?.description}
                     </p>
                     {/* Only visible on mobile */}
@@ -205,52 +261,98 @@ const HomePujaBooking = () => {
                 <div className="border-t border-orange-50" />
 
                 {/* SECTION: Benefits */}
-                <section ref={sections.benefits} className="scroll-mt-32 space-y-6">
+                <section
+                  ref={sections.benefits}
+                  className="scroll-mt-32 space-y-6"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Gem size={20} /> Benefits of {service?.puja_name}
                   </div>
                   {/* grid-cols-2 lagane se mobile par 2 boxes side by side aayenge */}
                   <div className="grid grid-cols-2 md:grid-cols-2 gap-3 md:gap-4">
-                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                    <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection" />
-                    <BenefitSmall icon={<Zap />} title="Prosperity" desc="Remove obstacles" />
-                    <BenefitSmall icon={<Users />} title="Family" desc="Strengthen bonds" />
-                    <BenefitSmall icon={<Sparkles />} title="Energy" desc="Purify home" />
-                    <BenefitSmall icon={<MapPin />} title="Vastu" desc="Harmonize space" />
+                    <BenefitSmall
+                      icon={<Heart />}
+                      title="Spiritual Peace"
+                      desc="Inner calm through sacred rituals"
+                    />
+                    <BenefitSmall
+                      icon={<Shield />}
+                      title="Protection"
+                      desc="Divine protection"
+                    />
+                    <BenefitSmall
+                      icon={<Zap />}
+                      title="Prosperity"
+                      desc="Remove obstacles"
+                    />
+                    <BenefitSmall
+                      icon={<Users />}
+                      title="Family"
+                      desc="Strengthen bonds"
+                    />
+                    <BenefitSmall
+                      icon={<Sparkles />}
+                      title="Energy"
+                      desc="Purify home"
+                    />
+                    <BenefitSmall
+                      icon={<MapPin />}
+                      title="Vastu"
+                      desc="Harmonize space"
+                    />
                   </div>
                 </section>
 
                 <div className="border-t border-orange-50" />
-
               </div>
             </div>
 
             {/* WhatsApp Highlighting */}
             <div className="bg-white rounded-xl p-6 border border-yellow-200 flex items-start gap-4 shadow-sm">
-              <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm"><MessageSquare size={22} /></div>
+              <div className="p-3 bg-yellow-400 text-white rounded-lg shadow-sm">
+                <MessageSquare size={22} />
+              </div>
               <div>
-                <h4 className="text-[16px] font-bold text-gray-800">Pandit Details via WhatsApp</h4>
+                <h4 className="text-[16px] font-bold text-gray-800">
+                  Pandit Details via WhatsApp
+                </h4>
                 <p className="text-[13px] text-gray-600 mt-1 leading-relaxed">
                   Your assigned Pandit's contact and details will be shared on{" "}
-                  <span className="font-bold text-gray-900 underline decoration-yellow-400">WhatsApp</span>{" "}
+                  <span className="font-bold text-gray-900 underline decoration-yellow-400">
+                    WhatsApp
+                  </span>{" "}
                   on the day of your booking.
                 </p>
               </div>
             </div>
 
             {/* SECTION: FAQs */}
-            <section ref={sections.faqs} className="bg-white p-6 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32">
+            <section
+              ref={sections.faqs}
+              className="bg-white p-6 rounded-2xl border border-orange-200 shadow-sm scroll-mt-32"
+            >
               <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest mb-5">
                 <HelpCircle size={20} /> Frequently Asked Questions
               </div>
               <div className="space-y-1">
-                <FAQItem q="Who will perform the Puja?" a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home." />
-                <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
-                <FAQItem q="What will be done in this Puja?" a="The puja includes the main ritual (Katha/Havan), Ganesh Pujan, Sankalp, and Aarti." />
-                <FAQItem q="How will I know the Puja has been done in my name?" a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja." />
+                <FAQItem
+                  q="Who will perform the Puja?"
+                  a="Experienced Vedic Pandits well-versed in Shastras will be assigned to your home."
+                />
+                <FAQItem
+                  q="I don't know my Gotra, what should I do?"
+                  a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases."
+                />
+                <FAQItem
+                  q="What will be done in this Puja?"
+                  a="The puja includes the main ritual (Katha/Havan), Ganesh Pujan, Sankalp, and Aarti."
+                />
+                <FAQItem
+                  q="How will I know the Puja has been done in my name?"
+                  a="The Pandit will take your name and Gotra during the 'Sankalp' at the beginning of the puja."
+                />
               </div>
             </section>
-
           </div>
 
           {/* SIDEBAR — desktop only, unchanged */}
@@ -268,14 +370,22 @@ const HomePujaBooking = () => {
 
               <div className="space-y-3">
                 <div className="flex justify-between items-center text-[15px] font-bold">
-                  <span className="text-gray-500 tracking-wider">Base Price</span>
-                  <span className="text-gray-800 tracking-tight">₹{basePrice}</span>
+                  <span className="text-gray-500 tracking-wider">
+                    Base Price
+                  </span>
+                  <span className="text-gray-800 tracking-tight">
+                    ₹{basePrice}
+                  </span>
                 </div>
 
                 {samagriEnabled && (
                   <div className="flex justify-between items-center text-[15px] font-bold border-t border-orange-50">
-                    <span className="text-gray-500 tracking-wider">Samagri Kit</span>
-                    <span className="tracking-tight">+₹600</span>
+                    <span className="text-gray-500 tracking-wider">
+                      Samagri Kit
+                    </span>
+                    <span className="tracking-tight">
+                      +₹{getPrice("Samagri Kit")}
+                    </span>
                   </div>
                 )}
 
@@ -286,7 +396,8 @@ const HomePujaBooking = () => {
                         Total Amount
                       </span>
                       <span className="text-[10px] text-green-600 font-bold flex items-center gap-1 mt-1.5">
-                        <Shield size={10} className="stroke-[3]" /> Inclusive of all taxes
+                        <Shield size={10} className="stroke-[3]" /> Inclusive of
+                        all taxes
                       </span>
                     </div>
                     <div className="text-right">
@@ -300,7 +411,11 @@ const HomePujaBooking = () => {
 
               <div className="space-y-4">
                 <button
-                  onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+                  onClick={() =>
+                    navigate(`/homePuja/payment-details/${id}`, {
+                      state: { isSamagriSelected: samagriEnabled },
+                    })
+                  }
                   className="w-full bg-gradient-to-r from-orange-500 via-orange-600 to-orange-700 text-white font-bold py-5 rounded-xl shadow-xl shadow-orange-100 hover:shadow-orange-200 hover:-translate-y-0.5 transition-all duration-300 uppercase tracking-[0.2em] text-[13px] active:scale-95 flex items-center justify-center gap-2"
                 >
                   Proceed to Book <ChevronRight size={18} strokeWidth={3} />
@@ -316,21 +431,26 @@ const HomePujaBooking = () => {
         <div className="max-w-md mx-auto flex items-center justify-between gap-4">
           <div className="flex flex-col">
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black text-orange-600">₹{totalAmount}</span>
+              <span className="text-2xl font-black text-orange-600">
+                ₹{totalAmount}
+              </span>
             </div>
             <span className="text-[10px] text-green-600 font-bold flex items-center gap-1">
               <Shield size={10} /> Secure Booking
             </span>
           </div>
           <button
-            onClick={() => navigate(`/homePuja/payment-details/${id}`, { state: { isSamagriSelected: samagriEnabled } })}
+            onClick={() =>
+              navigate(`/homePuja/payment-details/${id}`, {
+                state: { isSamagriSelected: samagriEnabled },
+              })
+            }
             className="w-40 bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold py-4 rounded-xl text-[14px] uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-orange-100 active:scale-95 transition-transform"
           >
             Proceed <ChevronRight size={18} />
           </button>
         </div>
       </div>
-
     </div>
   );
 };
@@ -343,7 +463,9 @@ const BenefitSmall = ({ icon, title, desc }) => (
       {React.cloneElement(icon, { size: 20 })}
     </div>
 
-    <div className="flex flex-col min-w-0"> {/* min-w-0 prevents text overflow */}
+    <div className="flex flex-col min-w-0">
+      {" "}
+      {/* min-w-0 prevents text overflow */}
       <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-tight truncate md:whitespace-normal">
         {title}
       </h4>
@@ -357,13 +479,25 @@ const BenefitSmall = ({ icon, title, desc }) => (
 const FAQItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="py-3 cursor-pointer border-b border-orange-50 last:border-none" onClick={() => setOpen(!open)}>
+    <div
+      className="py-3 cursor-pointer border-b border-orange-50 last:border-none"
+      onClick={() => setOpen(!open)}
+    >
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
-        <ChevronRight size={18} className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`} />
+        <span className="text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
       </div>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-96 mt-3 opacity-100' : 'max-h-0 opacity-0'}`}>
-        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        <p className="text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
       </div>
     </div>
   );

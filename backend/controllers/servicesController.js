@@ -97,8 +97,9 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
       ticket_type,
       donations,
       bookingId,
+      total_price,
     } = req.body;
-    // console.log("Received Booking Data:", req.body);
+    console.log("Received Booking Data:", req.body);
     const userId = req.user.id;
 
     const formattedDate = date
@@ -110,8 +111,8 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
 
     const query = `
       INSERT INTO puja_requests 
-      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name, total_price) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?,?)
     `;
 
     const [result] = await db.query(query, [
@@ -129,8 +130,10 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
       //   : `${location || "N/A"}, Pincode: ${pincode || "N/A"}`,
 
       isTempleBooking ? ticket_type : null,
-      isTempleBooking ? donations || "None" : null,
+      // isTempleBooking ? donations || "None" : null,
+      donations || "None",
       devoteeName || "User",
+      total_price,
     ]);
 
     res.status(201).json({
