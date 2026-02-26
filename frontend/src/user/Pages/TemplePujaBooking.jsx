@@ -27,7 +27,7 @@ import {
   Star,
   User,
   House,
-  Gem
+  Gem,
 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -43,6 +43,7 @@ const TemplePujaBooking = () => {
   const [selectedTicket, setSelectedTicket] = useState("Single");
   const [activeTab, setActiveTab] = useState("about");
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [contributionOptions, setContributionOptions] = useState("");
   const [donations, setDonations] = useState({
     temple: false,
     vastra: false,
@@ -68,7 +69,7 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
-        console.log(data.data[0])
+        console.log(data.data[0]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -77,6 +78,21 @@ const TemplePujaBooking = () => {
     };
     fetchService();
   }, [id]);
+  useEffect(() => {
+    const fetchContributions = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/contributions/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          setContributionOptions(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching contributions", err);
+      }
+    };
+    if (id) fetchContributions();
+  }, [id]);
+  // console.log("contributionOptions", contributionOptions);
 
   const handleTemplePayment = async () => {
     const token = localStorage.getItem("token");
@@ -100,9 +116,9 @@ const TemplePujaBooking = () => {
 
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-GB", {
-          hour: "2-digit",
-          minute: "2-digit",
-        })
+            hour: "2-digit",
+            minute: "2-digit",
+          })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "default city",
@@ -112,7 +128,9 @@ const TemplePujaBooking = () => {
         : "Guest User",
       ticket_type: selectedTicket,
       donations: selectedDonations,
+      total_price: calculateTotal(),
     };
+    console.log(bookingData);
 
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
@@ -164,30 +182,93 @@ const TemplePujaBooking = () => {
     }
   };
 
+  const getPrice = (title) => {
+    const daan = Array.from(contributionOptions).filter((c) => c.name == title);
+
+    return Number(daan[0]?.price);
+  };
+
   const contributionList = [
-    { id: "vastra", title: "Vastra Daan", price: 251, icon: <Shirt size={18} />, sub: "Holy cloth offering" },
-    { id: "annadan", title: "Annadan", price: 501, icon: <Coffee size={18} />, sub: "Feed the community" },
-    { id: "deepdan", title: "Deepdan", price: 101, icon: <Flame size={18} />, sub: "Light the path" },
-    { id: "brahmin", title: "Brahmin Bhoj", price: 1100, icon: <UtensilsCrossed size={18} />, sub: "Blessings of Priests" },
-    { id: "gau", title: "Gau Seva", price: 100, icon: <span className="text-xl">🐄</span>, sub: "Feed the Gau Mata" },
+    {
+      id: "vastra",
+      title: "Vastra Dan",
+      price: getPrice("Vastra Dan"),
+      icon: <Shirt size={18} />,
+      sub: "Holy cloth offering",
+    },
+    {
+      id: "annadan",
+      title: "Anna Dan",
+      price: getPrice("Anna Dan"),
+      icon: <Coffee size={18} />,
+      sub: "Feed the community",
+    },
+    {
+      id: "deepdan",
+      title: "Deep Dan",
+      price: getPrice("Deep Dan"),
+      icon: <Flame size={18} />,
+      sub: "Light the path",
+    },
+    {
+      id: "brahmin",
+      title: "Brahmin Dan",
+      price: getPrice("Brahmin Dan"),
+      icon: <UtensilsCrossed size={18} />,
+      sub: "Blessings of Priests",
+    },
+    {
+      id: "gau",
+      title: "Gau Seva",
+      price: getPrice("Gau Seva"),
+      icon: <span className="text-xl">🐄</span>,
+      sub: "Feed the Gau Mata",
+    },
   ];
 
   const tickets = [
-    { label: "Single", person: "1 person", price: Number(service?.single_price || 251), icon: <User size={18} /> },
-    { label: "Couple", person: "2 persons", price: Number(service?.couple_price || 452), icon: <Heart size={18} /> },
-    { label: "Family", person: "Up to 5", price: Number(service?.family_price || 628), icon: <House size={18} /> },
+    {
+      label: "Single",
+      person: "1 person",
+      price: Number(service?.single_price || 251),
+      icon: <User size={18} />,
+    },
+    {
+      label: "Couple",
+      person: "2 persons",
+      price: Number(service?.couple_price || 452),
+      icon: <Heart size={18} />,
+    },
+    {
+      label: "Family",
+      person: "Up to 5",
+      price: Number(service?.family_price || 628),
+      icon: <House size={18} />,
+    },
   ];
 
   const calculateTotal = () => {
     const base = tickets.find((t) => t.label === selectedTicket)?.price || 0;
     const extra = contributionList.reduce(
-      (acc, item) => (donations[item.id] ? acc + item.price : acc), 0
+      (acc, item) => (donations[item.id] ? acc + item.price : acc),
+      0,
     );
-    return base + extra + (donations.temple ? 1 : 0);
+    return (
+      base +
+      extra +
+      (donations.temple
+        ? Number(
+            Array.from(contributionOptions).filter(
+              (c) => c.name == "Temple Donation",
+            )[0].price,
+          )
+        : 0)
+    );
   };
 
   const selectedContributionsTotal = contributionList.reduce(
-    (acc, item) => (donations[item.id] ? acc + item.price : acc), 0
+    (acc, item) => (donations[item.id] ? acc + item.price : acc),
+    0,
   );
 
   if (loading)
@@ -215,7 +296,6 @@ const TemplePujaBooking = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
-
             {/* 1. HERO SECTION */}
             <div className="bg-white rounded-2xl overflow-hidden border border-orange-200 shadow-sm">
               <div className="relative h-64 md:h-80">
@@ -243,8 +323,11 @@ const TemplePujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab ? "text-orange-600 bg-orange-50/50" : "text-gray-400"
-                      }`}
+                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                      activeTab === tab
+                        ? "text-orange-600 bg-orange-50/50"
+                        : "text-gray-400"
+                    }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -258,17 +341,24 @@ const TemplePujaBooking = () => {
             {/* 3. ABOUT & BENEFITS BLOCK */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
               <div className="p-5 md:p-7">
-                <section ref={sections.about} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.about}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex flex-col gap-4 mb-6">
                     <span className="flex items-center gap-2 text-[14px] font-medium text-gray-500">
-                      <MapPin size={16} className="text-orange-500" /> {service?.address}
+                      <MapPin size={16} className="text-orange-500" />{" "}
+                      {service?.address}
                     </span>
                     <span className="flex items-center gap-2 text-[13px] font-medium text-gray-500">
                       <Calendar size={16} className="text-orange-500" />{" "}
                       {service?.dateOfStart &&
                         new Date(service.dateOfStart).toLocaleString("en-GB", {
-                          day: "2-digit", month: "short", year: "numeric",
-                          hour: "2-digit", minute: "2-digit",
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                     </span>
                   </div>
@@ -276,7 +366,9 @@ const TemplePujaBooking = () => {
                     <Info size={20} /> About The Ritual
                   </div>
                   <div>
-                    <p className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}>
+                    <p
+                      className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""}`}
+                    >
                       {service?.description}
                     </p>
                     <button
@@ -284,7 +376,10 @@ const TemplePujaBooking = () => {
                       className="mt-2 text-orange-600 font-bold text-[13px] uppercase tracking-wider flex items-center gap-1 md:hidden"
                     >
                       {aboutExpanded ? "Read Less" : "Read More"}
-                      <ChevronRight size={14} className={`transition-transform ${aboutExpanded ? "rotate-90" : ""}`} />
+                      <ChevronRight
+                        size={14}
+                        className={`transition-transform ${aboutExpanded ? "rotate-90" : ""}`}
+                      />
                     </button>
                   </div>
                 </section>
@@ -294,17 +389,44 @@ const TemplePujaBooking = () => {
 
               {/* BENEFITS — icons hidden on mobile */}
               <div className="p-5 md:p-7 bg-[#FFFDF8]">
-                <section ref={sections.benefits} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.benefits}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Gem size={20} /> Benefits of {service?.puja_name}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                    <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection for family" />
-                    <BenefitSmall icon={<Zap />} title="Prosperity" desc="Remove obstacles from path" />
-                    <BenefitSmall icon={<Users />} title="Harmony" desc="Strengthen family bonds" />
-                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify soul with mantras" />
-                    <BenefitSmall icon={<Star />} title="Karma" desc="Balance spiritual energies" />
+                    <BenefitSmall
+                      icon={<Heart />}
+                      title="Spiritual Peace"
+                      desc="Inner calm through sacred rituals"
+                    />
+                    <BenefitSmall
+                      icon={<Shield />}
+                      title="Protection"
+                      desc="Divine protection for family"
+                    />
+                    <BenefitSmall
+                      icon={<Zap />}
+                      title="Prosperity"
+                      desc="Remove obstacles from path"
+                    />
+                    <BenefitSmall
+                      icon={<Users />}
+                      title="Harmony"
+                      desc="Strengthen family bonds"
+                    />
+                    <BenefitSmall
+                      icon={<Sparkles />}
+                      title="Positive Energy"
+                      desc="Purify soul with mantras"
+                    />
+                    <BenefitSmall
+                      icon={<Star />}
+                      title="Karma"
+                      desc="Balance spiritual energies"
+                    />
                   </div>
                 </section>
               </div>
@@ -313,7 +435,10 @@ const TemplePujaBooking = () => {
             {/* 4. SACRED CONTRIBUTIONS */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
               <div className="p-5 md:p-7">
-                <section ref={sections.contributions} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.contributions}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Sparkles size={20} /> Sacred Contributions
                   </div>
@@ -324,7 +449,12 @@ const TemplePujaBooking = () => {
                         key={item.id}
                         item={item}
                         selected={donations[item.id]}
-                        onToggle={() => setDonations((p) => ({ ...p, [item.id]: !p[item.id] }))}
+                        onToggle={() =>
+                          setDonations((p) => ({
+                            ...p,
+                            [item.id]: !p[item.id],
+                          }))
+                        }
                       />
                     ))}
                   </div>
@@ -339,17 +469,23 @@ const TemplePujaBooking = () => {
                   <MessageSquare size={20} />
                 </div>
                 <div>
-                  <h4 className="text-[15px] font-bold text-gray-800 leading-none">Temple Ritual Updates</h4>
+                  <h4 className="text-[15px] font-bold text-gray-800 leading-none">
+                    Temple Ritual Updates
+                  </h4>
                   <p className="text-[13px] text-gray-600 mt-2">
                     The photos and videos of your puja will be shared via{" "}
-                    <span className="font-bold text-gray-900">WhatsApp</span> after completion.
+                    <span className="font-bold text-gray-900">WhatsApp</span>{" "}
+                    after completion.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* 5. BOOKING SUMMARY — mobile only, above FAQ */}
-            <div id="mobile-summary" className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+            <div
+              id="mobile-summary"
+              className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5"
+            >
               <MobileSummarySection
                 service={service}
                 tickets={tickets}
@@ -361,6 +497,7 @@ const TemplePujaBooking = () => {
                 calculateTotal={calculateTotal}
                 selectedContributionsTotal={selectedContributionsTotal}
                 scrollToSection={scrollToSection}
+                getPrice={getPrice}
               />
             </div>
 
@@ -371,10 +508,22 @@ const TemplePujaBooking = () => {
                   <HelpCircle size={20} /> Frequently Asked Questions
                 </div>
                 <div className="space-y-4">
-                  <FAQItem q="I don't know my Gotra, what should I do?" a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases." />
-                  <FAQItem q="Who will perform the Puja?" a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name." />
-                  <FAQItem q="How will I know the Puja has been done?" a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly." />
-                  <FAQItem q="What is the significance of Dakshina?" a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual." />
+                  <FAQItem
+                    q="I don't know my Gotra, what should I do?"
+                    a="Don't worry! If you don't know your Gotra, our Pandit will use 'Kashyap' Gotra during the Sankalp, as it is traditionally accepted in such cases."
+                  />
+                  <FAQItem
+                    q="Who will perform the Puja?"
+                    a="Experienced Temple Priests (Pujaris) who are well-versed in Vedic traditions will conduct the ritual in your name."
+                  />
+                  <FAQItem
+                    q="How will I know the Puja has been done?"
+                    a="You will receive a video recording of the Sankalp where the priest will mention your name and Gotra clearly."
+                  />
+                  <FAQItem
+                    q="What is the significance of Dakshina?"
+                    a="Dakshina is a symbolic offering to the temple and priests to complete the spiritual exchange of the ritual."
+                  />
                 </div>
               </section>
             </div>
@@ -383,7 +532,6 @@ const TemplePujaBooking = () => {
           {/* ── DESKTOP SIDEBAR ── */}
           <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-[100px] self-start z-30">
             <div className="bg-white rounded-3xl border border-orange-200 p-6 shadow-xl shadow-orange-50/50 space-y-6">
-
               {/* Ticket Selector */}
               <div>
                 <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-4">
@@ -394,17 +542,26 @@ const TemplePujaBooking = () => {
                     <button
                       key={t.label}
                       onClick={() => setSelectedTicket(t.label)}
-                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${selectedTicket === t.label
-                        ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
-                        : "border-gray-100 bg-white hover:border-orange-200"
-                        }`}
+                      className={`relative flex flex-col items-center py-4 px-2 rounded-2xl border-2 transition-all duration-300 ${
+                        selectedTicket === t.label
+                          ? "border-orange-500 bg-orange-50/30 ring-4 ring-orange-50"
+                          : "border-gray-100 bg-white hover:border-orange-200"
+                      }`}
                     >
-                      <div className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white shadow-md" : "bg-gray-50 text-gray-400"}`}>
+                      <div
+                        className={`mb-2 p-2.5 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white shadow-md" : "bg-gray-50 text-gray-400"}`}
+                      >
                         {t.icon}
                       </div>
-                      <span className="text-[11px] font-bold text-gray-800">{t.label}</span>
-                      <span className="text-[9px] text-gray-500 font-medium">{t.person}</span>
-                      <span className="text-[12px] font-black text-orange-600">₹{t.price}</span>
+                      <span className="text-[11px] font-bold text-gray-800">
+                        {t.label}
+                      </span>
+                      <span className="text-[9px] text-gray-500 font-medium">
+                        {t.person}
+                      </span>
+                      <span className="text-[12px] font-black text-orange-600">
+                        ₹{t.price}
+                      </span>
                     </button>
                   ))}
                 </div>
@@ -413,8 +570,12 @@ const TemplePujaBooking = () => {
               {/* Pricing breakdown */}
               <div className="space-y-4 pt-2">
                 <div className="flex justify-between items-center text-[14px] px-1">
-                  <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
-                  <span className="font-bold text-gray-800">₹{tickets.find((t) => t.label === selectedTicket)?.price}</span>
+                  <span className="text-gray-500 font-medium">
+                    {selectedTicket} Ticket
+                  </span>
+                  <span className="font-bold text-gray-800">
+                    ₹{tickets.find((t) => t.label === selectedTicket)?.price}
+                  </span>
                 </div>
 
                 <button
@@ -423,17 +584,28 @@ const TemplePujaBooking = () => {
                 >
                   <div className="flex items-center gap-2 text-orange-600 text-[14px] font-bold">
                     <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
-                      <Heart size={16} fill="currentColor" className="text-orange-500" />
+                      <Heart
+                        size={16}
+                        fill="currentColor"
+                        className="text-orange-500"
+                      />
                     </div>
                     <span className="font-bold text-[13px]">
-                      {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+                      {selectedContributionsTotal > 0
+                        ? "Edit Contributions"
+                        : "Add Contributions"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
                     {selectedContributionsTotal > 0 ? (
-                      <span className="text-[14px] font-bold text-orange-600">+₹{selectedContributionsTotal}</span>
+                      <span className="text-[14px] font-bold text-orange-600">
+                        +₹{selectedContributionsTotal}
+                      </span>
                     ) : (
-                      <ChevronRight size={16} className="text-orange-400 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight
+                        size={16}
+                        className="text-orange-400 group-hover:translate-x-1 transition-transform"
+                      />
                     )}
                   </div>
                 </button>
@@ -443,14 +615,21 @@ const TemplePujaBooking = () => {
                     <input
                       type="checkbox"
                       checked={donations.temple}
-                      onChange={(e) => setDonations((prev) => ({ ...prev, temple: e.target.checked }))}
+                      onChange={(e) =>
+                        setDonations((prev) => ({
+                          ...prev,
+                          temple: e.target.checked,
+                        }))
+                      }
                       className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
                     />
                     <span className="text-[14px] text-gray-600 font-medium group-hover:text-orange-600 transition-colors">
                       Temple Donation
                     </span>
                   </label>
-                  <span className="text-[14px] font-bold text-orange-500">+₹1</span>
+                  <span className="text-[14px] font-bold text-orange-500">
+                    +₹{JSON.stringify(getPrice("Temple Donation"))}
+                  </span>
                 </div>
               </div>
 
@@ -458,10 +637,12 @@ const TemplePujaBooking = () => {
               <div className="space-y-4">
                 <div className="flex items-center justify-between bg-yellow-50/60 px-4 py-3 rounded-xl border border-yellow-100">
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700 uppercase">
-                    <ShieldCheck size={14} className="text-yellow-600" /> 100% Moneyback
+                    <ShieldCheck size={14} className="text-yellow-600" /> 100%
+                    Moneyback
                   </div>
                   <div className="flex items-center gap-1.5 text-[10px] font-bold text-gray-700 uppercase">
-                    <Lock size={12} className="text-yellow-600" /> Secure Payment
+                    <Lock size={12} className="text-yellow-600" /> Secure
+                    Payment
                   </div>
                 </div>
 
@@ -483,7 +664,9 @@ const TemplePujaBooking = () => {
                 </button>
 
                 <div className="flex flex-col items-center gap-1 opacity-50">
-                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">PCI DSS Compliant</span>
+                  <span className="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                    PCI DSS Compliant
+                  </span>
                 </div>
               </div>
             </div>
@@ -497,19 +680,23 @@ const TemplePujaBooking = () => {
         onClick={(e) => {
           if (e.target.closest("#mobile-cta-btn")) return;
           const el = document.getElementById("mobile-summary");
-          if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+          if (el)
+            window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
         }}
       >
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              Total Amount <ChevronRight size={11} className="text-orange-400" />
+              Total Amount{" "}
+              <ChevronRight size={11} className="text-orange-400" />
             </p>
             <p className="text-xl font-black text-orange-600 leading-tight">
               ₹{calculateTotal().toLocaleString("en-IN")}
             </p>
             <div className="flex justify-between items-center text-[10px]">
-              <span className="text-gray-500 font-medium">{selectedTicket} Ticket</span>
+              <span className="text-gray-500 font-medium">
+                {selectedTicket} Ticket
+              </span>
             </div>
           </div>
           <button
@@ -547,6 +734,7 @@ const MobileSummarySection = ({
   calculateTotal,
   selectedContributionsTotal,
   scrollToSection,
+  getPrice,
 }) => (
   <div className="space-y-5">
     {/* Header */}
@@ -570,17 +758,24 @@ const MobileSummarySection = ({
           <button
             key={t.label}
             onClick={() => setSelectedTicket(t.label)}
-            className={`flex flex-col items-center py-2 px-2 rounded-2xl border-2 transition-all ${selectedTicket === t.label
-              ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
-              : "border-gray-100 bg-white hover:border-orange-200"
-              }`}
+            className={`flex flex-col items-center py-2 px-2 rounded-2xl border-2 transition-all ${
+              selectedTicket === t.label
+                ? "border-orange-500 bg-orange-50 ring-2 ring-orange-100"
+                : "border-gray-100 bg-white hover:border-orange-200"
+            }`}
           >
-            <div className={`mb-1.5 p-2 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-400"}`}>
+            <div
+              className={`mb-1.5 p-2 rounded-xl ${selectedTicket === t.label ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-400"}`}
+            >
               {t.icon}
             </div>
-            <span className="text-[11px] font-bold text-gray-800">{t.label}</span>
+            <span className="text-[11px] font-bold text-gray-800">
+              {t.label}
+            </span>
             <span className="text-[9px] text-gray-500">{t.person}</span>
-            <span className="text-[12px] font-black text-orange-600">₹{t.price}</span>
+            <span className="text-[12px] font-black text-orange-600">
+              ₹{t.price}
+            </span>
           </button>
         ))}
       </div>
@@ -606,7 +801,9 @@ const MobileSummarySection = ({
             <Heart size={14} fill="currentColor" className="text-orange-500" />
           </div>
           <span className="font-bold text-[13px]">
-            {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+            {selectedContributionsTotal > 0
+              ? "Edit Contributions"
+              : "Add Contributions"}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -625,24 +822,32 @@ const MobileSummarySection = ({
           <input
             type="checkbox"
             checked={donations.temple}
-            onChange={(e) => setDonations((prev) => ({ ...prev, temple: e.target.checked }))}
+            onChange={(e) =>
+              setDonations((prev) => ({ ...prev, temple: e.target.checked }))
+            }
             className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
           />
           <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">
             Temple Donation
           </span>
         </label>
-        <span className="text-[13px] font-black text-orange-500">+₹1</span>
+        <span className="text-[13px] font-black text-orange-500">
+          +₹{getPrice("Temple Donation")}
+        </span>
       </div>
 
       <div className="border-t border-dashed border-gray-300 w-full" />
 
       <div className="flex justify-between items-center pt-1 px-1">
         <div>
-          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+            Total Amount
+          </span>
           <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
             <ShieldCheck size={11} />
-            <span className="text-[10px] font-bold">Inclusive of all taxes</span>
+            <span className="text-[10px] font-bold">
+              Inclusive of all taxes
+            </span>
           </div>
         </div>
         <span className="text-xl font-black text-orange-600">
@@ -650,8 +855,6 @@ const MobileSummarySection = ({
         </span>
       </div>
     </div>
-
-
   </div>
 );
 
@@ -663,17 +866,25 @@ const MobileSummarySection = ({
 const ContributionCard = ({ item, selected, onToggle }) => (
   <button
     onClick={onToggle}
-    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${selected ? "border-orange-400 bg-orange-50" : "border-orange-200 bg-white hover:border-orange-300"
-      }`}
+    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${
+      selected
+        ? "border-orange-400 bg-orange-50"
+        : "border-orange-200 bg-white hover:border-orange-300"
+    }`}
   >
     <div className="flex items-center gap-3 text-left">
-      <div className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}>
+      <div
+        className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"}`}
+      >
         {item.icon}
       </div>
       <div>
-        <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 leading-tight">{item.title}</h4>
-        <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">{item.sub}</p>
-
+        <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 leading-tight">
+          {item.title}
+        </h4>
+        <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">
+          {item.sub}
+        </p>
       </div>
     </div>
     <span className="text-[13px] md:text-[16px] font-black text-orange-600 whitespace-nowrap shrink-0">
@@ -692,8 +903,12 @@ const BenefitSmall = ({ icon, title, desc }) => (
       {React.cloneElement(icon, { size: 18 })}
     </div>
     <div>
-      <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-none">{title}</h4>
-      <p className="text-[11px] md:text-[13px] text-gray-500 mt-1 leading-tight font-medium">{desc}</p>
+      <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 tracking-tight leading-none">
+        {title}
+      </h4>
+      <p className="text-[11px] md:text-[13px] text-gray-500 mt-1 leading-tight font-medium">
+        {desc}
+      </p>
     </div>
   </div>
 );
@@ -704,13 +919,25 @@ const BenefitSmall = ({ icon, title, desc }) => (
 const FAQItem = ({ q, a }) => {
   const [open, setOpen] = useState(false);
   return (
-    <div className="py-2 cursor-pointer border-b border-orange-50 last:border-none" onClick={() => setOpen(!open)}>
+    <div
+      className="py-2 cursor-pointer border-b border-orange-50 last:border-none"
+      onClick={() => setOpen(!open)}
+    >
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
-        <ChevronRight size={18} className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`} />
+        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
+        <ChevronRight
+          size={18}
+          className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
+        />
       </div>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"}`}>
-        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
+      <div
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"}`}
+      >
+        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
       </div>
     </div>
   );

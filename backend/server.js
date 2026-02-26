@@ -7,6 +7,7 @@ import partnerRouter from "./routes/partnerRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
+import contribution from "./routes/contributionRouter.js";
 import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -56,6 +57,9 @@ app.use("/admin", adminRouter);
 
 // customer care routes
 app.use("/customerCare", customerCare);
+
+// contibution
+app.use("/contributions", contribution);
 
 // 4. 🔥 DATABASE CONNECTION + SERVER START
 // Is IIFE (async function) se pehle semicolon lagana best practice hai

@@ -161,6 +161,7 @@ export const bookingDetails = async (req, res) => {
       ticket_type,
       donations,
       bookingId,
+      total_price,
     } = req.body;
     console.log("Received Booking Data:", req.body);
     const userId = req.user.id;
@@ -174,8 +175,8 @@ export const bookingDetails = async (req, res) => {
 
     const query = `
       INSERT INTO puja_requests 
-      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?)
+      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name,total_price) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?,?)
     `;
 
     const [result] = await db.query(query, [
@@ -195,6 +196,7 @@ export const bookingDetails = async (req, res) => {
       isTempleBooking ? ticket_type : null,
       isTempleBooking ? donations || "None" : null,
       devoteeName || "User",
+      total_price,
     ]);
 
     res.status(201).json({
@@ -447,78 +449,81 @@ export const PindDanSingle = async (req, res) => {
 
 // Booking cancel karne ka controller
 export const cancelBooking = async (req, res) => {
-    try {
-        const { id } = req.params;
-        // User ID ko verify karein (Agar aap req.user use kar rahe hain toh)
-        const userId = req.user ? req.user.id : null; 
+  try {
+    const { id } = req.params;
+    // User ID ko verify karein (Agar aap req.user use kar rahe hain toh)
+    const userId = req.user ? req.user.id : null;
 
+    // Database query - dhyaan dein ki aapka table name 'puja_request' hi ho
+    const [result] = await db.query("DELETE FROM puja_requests WHERE id = ?", [
+      id,
+    ]);
 
-        // Database query - dhyaan dein ki aapka table name 'puja_request' hi ho
-        const [result] = await db.query(
-            "DELETE FROM puja_requests WHERE id = ?", 
-            [id]
-        );
-
-        if (result.affectedRows === 0) {
-            return res.status(404).json({ success: false, message: "Booking nahi mili." });
-        }
-
-        return res.status(200).json({ success: true, message: "Deleted successfully" });
-
-    } catch (error) {
-        return res.status(500).json({ success: false, message: error.message });
+    if (result.affectedRows === 0) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking nahi mili." });
     }
+
+    return res
+      .status(200)
+      .json({ success: true, message: "Deleted successfully" });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
 };
 
-
 export const postSupportQuery = async (req, res) => {
-    try {
-        const userId = req.user.id; 
-        const { category, subject, message } = req.body;
-        
+  try {
+    const userId = req.user.id;
+    const { category, subject, message } = req.body;
 
-        const sql = "INSERT INTO support_queries (user_id, category, subject, message) VALUES (?, ?, ?, ?)";
-        
-        // mysql2/promise mein hum aise await use karte hain:
-        const [result] = await pool.execute(sql, [userId, category, subject, message]);
+    const sql =
+      "INSERT INTO support_queries (user_id, category, subject, message) VALUES (?, ?, ?, ?)";
 
+    // mysql2/promise mein hum aise await use karte hain:
+    const [result] = await pool.execute(sql, [
+      userId,
+      category,
+      subject,
+      message,
+    ]);
 
-        // Ab ye response frontend ko 100% milega
-        return res.status(200).json({ 
-            success: true, 
-            message: "Query Submitted Successfully",
-            id: result.insertId 
-        });
-
-    } catch (error) {
-        return res.status(500).json({ 
-            success: false, 
-            message: "Database Error",
-            error: error.message 
-        });
-    }
+    // Ab ye response frontend ko 100% milega
+    return res.status(200).json({
+      success: true,
+      message: "Query Submitted Successfully",
+      id: result.insertId,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Database Error",
+      error: error.message,
+    });
+  }
 };
 
 export const getUserSupportQueries = async (req, res) => {
-    try {
-        console.log("--- Fetching from DB ---");
-        const userId = req.user.id;
+  try {
+    console.log("--- Fetching from DB ---");
+    const userId = req.user.id;
 
-        const sql = "SELECT * FROM support_queries WHERE user_id = ? ORDER BY created_at DESC";
-        
-        // Kyunki aapne 'mysql2/promise' use kiya hai, toh yahan await lagega
-        // results ek array return karta hai jisme pehla element data hota hai
-        const [results] = await pool.query(sql, [userId]);
+    const sql =
+      "SELECT * FROM support_queries WHERE user_id = ? ORDER BY created_at DESC";
 
-        console.log("DB Success! Rows found:", results.length);
-        
-        return res.status(200).json(results);
+    // Kyunki aapne 'mysql2/promise' use kiya hai, toh yahan await lagega
+    // results ek array return karta hai jisme pehla element data hota hai
+    const [results] = await pool.query(sql, [userId]);
 
-    } catch (error) {
-        console.error("DB Query Error:", error);
-        return res.status(500).json({ 
-            message: "Error fetching data", 
-            error: error.message 
-        });
-    }
+    console.log("DB Success! Rows found:", results.length);
+
+    return res.status(200).json(results);
+  } catch (error) {
+    console.error("DB Query Error:", error);
+    return res.status(500).json({
+      message: "Error fetching data",
+      error: error.message,
+    });
+  }
 };

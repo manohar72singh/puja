@@ -34,25 +34,63 @@ const HomePujaPaymentDetails = () => {
   const isSamagriSelected = location.state?.isSamagriSelected || false;
   const [errorMsg, setErrorMsg] = useState("");
 
-  const generateBookingId = () => `BK-${Math.random().toString(36).substring(2, 8)}`;
+  const generateBookingId = () =>
+    `BK-${Math.random().toString(36).substring(2, 8)}`;
   const token = localStorage.getItem("token");
-  const userName = token ? JSON.parse(atob(token.split(".")[1])).name : "Guest User";
+  const userName = token
+    ? JSON.parse(atob(token.split(".")[1])).name
+    : "Guest User";
   const bookingId = generateBookingId();
 
   const [formData, setFormData] = useState({
-    date: "", time: "", location: "", state: "", city: "", pincode: "",
-    devoteeName: userName, gotra: "",
+    date: "",
+    time: "",
+    location: "",
+    state: "",
+    city: "",
+    pincode: "",
+    devoteeName: userName,
+    gotra: "",
   });
 
   const [donations, setDonations] = useState({
-    vastra: false, annadan: false, deepdan: false, bhoj: false, gau: false, temple: false,
+    vastra: false,
+    annadan: false,
+    deepdan: false,
+    bhoj: false,
+    gau: false,
+    temple: false,
   });
 
   const contributionOptions = [
-    { id: "vastra",  name: "Vastra Daan",   price: 251,  icon: <Shirt size={16} />,         desc: "Donate clothes to the needy"     },
-    { id: "annadan", name: "Annadan",        price: 501,  icon: <Coffee size={16} />,         desc: "Provide meals to the hungry"     },
-    { id: "deepdan", name: "Deepdan",        price: 101,  icon: <Flame size={16} />,          desc: "Light lamps at sacred temples"   },
-    { id: "bhoj",    name: "Brahmin Bhoj",   price: 1100, icon: <UtensilsCrossed size={16} />,desc: "Feed Brahmins after ceremony"    },
+    {
+      id: "vastra",
+      name: "Vastra Daan",
+      price: 251,
+      icon: <Shirt size={16} />,
+      desc: "Donate clothes to the needy",
+    },
+    {
+      id: "annadan",
+      name: "Annadan",
+      price: 501,
+      icon: <Coffee size={16} />,
+      desc: "Provide meals to the hungry",
+    },
+    {
+      id: "deepdan",
+      name: "Deepdan",
+      price: 101,
+      icon: <Flame size={16} />,
+      desc: "Light lamps at sacred temples",
+    },
+    {
+      id: "bhoj",
+      name: "Brahmin Bhoj",
+      price: 1100,
+      icon: <UtensilsCrossed size={16} />,
+      desc: "Feed Brahmins after ceremony",
+    },
   ];
 
   const handlePayment = async () => {
@@ -62,17 +100,27 @@ const HomePujaPaymentDetails = () => {
       return;
     }
     const payload = {
-      puja_id: id, date: formData.date, time: formData.time,
+      puja_id: id,
+      date: formData.date,
+      time: formData.time,
       location: `${formData.location} - ${formData.pincode}`,
-      city: formData.city, state: formData.state,
-      devoteeName: formData.devoteeName, bookingId,
+      city: formData.city,
+      state: formData.state,
+      devoteeName: formData.devoteeName,
+      bookingId,
     };
     try {
-      const response = await fetch(`${API_BASE_URL}/puja/home_KathaPujaBookingDetails`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        },
+      );
       const data = await response.json();
       if (data.success) navigate("/my-booking");
       else alert("Error: " + data.message);
@@ -88,7 +136,10 @@ const HomePujaPaymentDetails = () => {
       try {
         const response = await fetch(`${API_BASE_URL}/puja/bookPuja/${id}`, {
           method: "GET",
-          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
         });
         const data = await response.json();
         setPuja(Array.isArray(data) ? data[0] : data);
@@ -120,10 +171,14 @@ const HomePujaPaymentDetails = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const toggleDonation = (id) => setDonations((prev) => ({ ...prev, [id]: !prev[id] }));
+  const toggleDonation = (id) =>
+    setDonations((prev) => ({ ...prev, [id]: !prev[id] }));
 
   const getDharmicTotal = () => {
-    let sum = contributionOptions.reduce((acc, opt) => donations[opt.id] ? acc + opt.price : acc, 0);
+    let sum = contributionOptions.reduce(
+      (acc, opt) => (donations[opt.id] ? acc + opt.price : acc),
+      0,
+    );
     if (donations.gau) sum += 100;
     return sum;
   };
@@ -134,13 +189,17 @@ const HomePujaPaymentDetails = () => {
   const templeDonation = donations.temple ? 1 : 0;
   const grandTotal = basePrice + samagriPrice + dharmicTotal + templeDonation;
 
-  const inputBaseClass = "w-full bg-gray-50 border border-orange-200 rounded-xl px-3 py-3 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-orange-500 transition-all font-medium text-sm";
-  const labelClass = "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-700 mb-1.5 ml-1";
+  const inputBaseClass =
+    "w-full bg-gray-50 border border-orange-200 rounded-xl px-3 py-3 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-orange-500 transition-all font-medium text-sm";
+  const labelClass =
+    "flex items-center gap-2 text-[11px] font-bold uppercase tracking-widest text-gray-700 mb-1.5 ml-1";
 
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FFF4E1] flex items-center justify-center">
-        <p className="text-orange-600 font-bold animate-pulse">Loading Sacred Details...</p>
+        <p className="text-orange-600 font-bold animate-pulse">
+          Loading Sacred Details...
+        </p>
       </div>
     );
   }
@@ -160,7 +219,6 @@ const HomePujaPaymentDetails = () => {
       {/* pb-28 on mobile so sticky CTA doesn't overlap */}
       <div className="min-h-screen bg-[#FFF4E1] font-sans text-[#2D2D2D] antialiased pb-28 md:pb-12">
         <div className="max-w-6xl mx-auto px-4 py-6 md:py-12">
-
           {/* Back Button */}
           <button
             onClick={() => navigate(-1)}
@@ -171,7 +229,6 @@ const HomePujaPaymentDetails = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 md:gap-8 items-start">
             <div className="lg:col-span-8 space-y-4 md:space-y-6">
-
               {/* 1. E-SANKALP FORM */}
               <div className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-8">
                 <div className="flex items-center gap-3 mb-5 md:mb-8">
@@ -179,7 +236,9 @@ const HomePujaPaymentDetails = () => {
                     <Sparkles size={16} />
                   </div>
                   <div>
-                    <h3 className="text-lg md:text-xl font-bold text-gray-900">E-Sankalp</h3>
+                    <h3 className="text-lg md:text-xl font-bold text-gray-900">
+                      E-Sankalp
+                    </h3>
                     <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
                       Complete your sacred booking
                     </p>
@@ -190,22 +249,43 @@ const HomePujaPaymentDetails = () => {
                   {/* Date & Time */}
                   <div className="grid grid-cols-2 gap-3 md:gap-6">
                     <div className="space-y-1">
-                      <label className={labelClass}><Calendar size={12} /> Date</label>
-                      <input type="date" name="date" value={formData.date} onChange={handleInputChange} className={inputBaseClass} />
+                      <label className={labelClass}>
+                        <Calendar size={12} /> Date
+                      </label>
+                      <input
+                        type="date"
+                        name="date"
+                        value={formData.date}
+                        onChange={handleInputChange}
+                        className={inputBaseClass}
+                      />
                     </div>
                     <div className="space-y-1">
-                      <label className={labelClass}><Clock size={12} /> Time</label>
-                      <input type="time" name="time" value={formData.time} onChange={handleInputChange} className={inputBaseClass} />
+                      <label className={labelClass}>
+                        <Clock size={12} /> Time
+                      </label>
+                      <input
+                        type="time"
+                        name="time"
+                        value={formData.time}
+                        onChange={handleInputChange}
+                        className={inputBaseClass}
+                      />
                     </div>
                   </div>
 
                   {/* Address */}
                   <div className="space-y-1">
-                    <label className={labelClass}><MapPin size={12} /> Full Address</label>
+                    <label className={labelClass}>
+                      <MapPin size={12} /> Full Address
+                    </label>
                     <textarea
-                      name="location" value={formData.location} onChange={handleInputChange}
+                      name="location"
+                      value={formData.location}
+                      onChange={handleInputChange}
                       placeholder="Enter complete address with landmarks..."
-                      rows="2" className={inputBaseClass}
+                      rows="2"
+                      className={inputBaseClass}
                     />
                   </div>
 
@@ -213,23 +293,48 @@ const HomePujaPaymentDetails = () => {
                   <div className="grid grid-cols-3 gap-2 md:gap-6">
                     <div className="space-y-1">
                       <label className={labelClass}>State</label>
-                      <input type="text" name="state" value={formData.state} onChange={handleInputChange} placeholder="State" className={inputBaseClass} />
+                      <input
+                        type="text"
+                        name="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
+                        placeholder="State"
+                        className={inputBaseClass}
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className={labelClass}>City</label>
-                      <input type="text" name="city" value={formData.city} onChange={handleInputChange} placeholder="City" className={inputBaseClass} />
+                      <input
+                        type="text"
+                        name="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
+                        placeholder="City"
+                        className={inputBaseClass}
+                      />
                     </div>
                     <div className="space-y-1">
                       <label className={labelClass}>PIN</label>
-                      <input type="text" name="pincode" maxLength="6" value={formData.pincode} onChange={handleInputChange} placeholder="Pincode"
-                        className={inputBaseClass} onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()} />
+                      <input
+                        type="text"
+                        name="pincode"
+                        maxLength="6"
+                        value={formData.pincode}
+                        onChange={handleInputChange}
+                        placeholder="Pincode"
+                        className={inputBaseClass}
+                        onKeyPress={(e) =>
+                          !/[0-9]/.test(e.key) && e.preventDefault()
+                        }
+                      />
                     </div>
                   </div>
 
                   {/* Sankalp Details */}
                   <div className="pt-2">
                     <h3 className="text-sm font-bold mb-0.5 flex items-center gap-2">
-                      <User size={14} className="text-orange-500" /> Sankalp Details
+                      <User size={14} className="text-orange-500" /> Sankalp
+                      Details
                     </h3>
                     <p className="text-[11px] text-gray-500 mb-3 font-medium">
                       These details will be used during the sacred ritual pledge
@@ -237,14 +342,28 @@ const HomePujaPaymentDetails = () => {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-6">
                       <div className="space-y-1">
                         <label className={labelClass}>Devotee Name *</label>
-                        <input type="text" name="devoteeName" value={formData.devoteeName} onChange={handleInputChange}
-                          placeholder="Full name as per tradition" className={inputBaseClass} />
+                        <input
+                          type="text"
+                          name="devoteeName"
+                          value={formData.devoteeName}
+                          onChange={handleInputChange}
+                          placeholder="Full name as per tradition"
+                          className={inputBaseClass}
+                        />
                       </div>
                       <div className="space-y-1">
                         <label className={labelClass}>Gotra (Lineage)</label>
-                        <input type="text" name="gotra" value={formData.gotra} onChange={handleInputChange}
-                          placeholder="e.g., Kashyap, Bharadwaj" className={inputBaseClass} />
-                        <p className="text-[10px] text-gray-400 mt-1 ml-1 italic">Optional — ask family elders if unknown</p>
+                        <input
+                          type="text"
+                          name="gotra"
+                          value={formData.gotra}
+                          onChange={handleInputChange}
+                          placeholder="e.g., Kashyap, Bharadwaj"
+                          className={inputBaseClass}
+                        />
+                        <p className="text-[10px] text-gray-400 mt-1 ml-1 italic">
+                          Optional — ask family elders if unknown
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -256,8 +375,12 @@ const HomePujaPaymentDetails = () => {
                         <MessageCircle size={18} className="text-orange-500" />
                       </div>
                       <div>
-                        <h4 className="text-sm font-bold text-gray-800">Have custom requirements?</h4>
-                        <p className="text-xs text-gray-500 font-medium">Chat with us for special requests</p>
+                        <h4 className="text-sm font-bold text-gray-800">
+                          Have custom requirements?
+                        </h4>
+                        <p className="text-xs text-gray-500 font-medium">
+                          Chat with us for special requests
+                        </p>
                       </div>
                     </div>
                     <button className="w-full md:w-auto bg-white border border-green-400 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 hover:bg-green-50 active:scale-95 transition-all shadow-sm">
@@ -269,7 +392,10 @@ const HomePujaPaymentDetails = () => {
               </div>
 
               {/* 2. DHARMIC CONTRIBUTIONS */}
-              <div ref={dharmicRef} className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-8 space-y-4 md:space-y-6 scroll-mt-28">
+              <div
+                ref={dharmicRef}
+                className="bg-white rounded-2xl border border-orange-200 shadow-sm p-5 md:p-8 space-y-4 md:space-y-6 scroll-mt-28"
+              >
                 <div>
                   <h3 className="text-base md:text-lg font-bold flex items-center gap-2">
                     <div className="bg-orange-500 p-1.5 rounded-full text-white shadow-md">
@@ -298,18 +424,30 @@ const HomePujaPaymentDetails = () => {
                 <div
                   onClick={() => toggleDonation("gau")}
                   className={`p-4 flex items-center gap-4 transition-all cursor-pointer rounded-xl border-2 ${
-                    donations.gau ? "border-orange-500 bg-orange-50/30" : "border-orange-200 bg-white hover:border-orange-300"
+                    donations.gau
+                      ? "border-orange-500 bg-orange-50/30"
+                      : "border-orange-200 bg-white hover:border-orange-300"
                   }`}
                 >
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
-                    {donations.gau && <div className="w-2 h-2 bg-white rounded-full" />}
+                  <div
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
+                  >
+                    {donations.gau && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
                   </div>
                   <span className="text-xl shrink-0">🐄</span>
                   <div className="flex-1">
-                    <h4 className="font-bold text-sm text-gray-900 leading-tight">Complete your Sankalp with Gau Seva</h4>
-                    <p className="text-[11px] text-gray-500 font-medium">Feed a cow on your behalf</p>
+                    <h4 className="font-bold text-sm text-gray-900 leading-tight">
+                      Complete your Sankalp with Gau Seva
+                    </h4>
+                    <p className="text-[11px] text-gray-500 font-medium">
+                      Feed a cow on your behalf
+                    </p>
                   </div>
-                  <span className="text-orange-600 font-black text-sm whitespace-nowrap">+₹100</span>
+                  <span className="text-orange-600 font-black text-sm whitespace-nowrap">
+                    +₹100
+                  </span>
                 </div>
 
                 {/* Guarantees */}
@@ -331,7 +469,10 @@ const HomePujaPaymentDetails = () => {
               </div>
 
               {/* MOBILE INLINE SUMMARY — above nothing, just before sticky CTA */}
-              <div id="mobile-summary" className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+              <div
+                id="mobile-summary"
+                className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5"
+              >
                 <MobileSummaryInline
                   puja={puja}
                   isSamagriSelected={isSamagriSelected}
@@ -344,56 +485,91 @@ const HomePujaPaymentDetails = () => {
                   dharmicRef={dharmicRef}
                 />
               </div>
-
             </div>
 
             {/* DESKTOP SIDEBAR */}
             <aside className="hidden lg:block lg:col-span-4 lg:sticky lg:top-8 self-start">
               <div className="bg-white rounded-[1.5rem] border border-orange-200 shadow-lg p-8">
-                <h3 className="text-lg font-bold mb-4 text-gray-800">Booking Summary</h3>
+                <h3 className="text-lg font-bold mb-4 text-gray-800">
+                  Booking Summary
+                </h3>
                 <div className="space-y-4">
                   <div className="pb-4 border-b border-orange-200">
-                    <h4 className="text-sm font-black text-gray-900">{puja?.puja_name}</h4>
+                    <h4 className="text-sm font-black text-gray-900">
+                      {puja?.puja_name}
+                    </h4>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-xs font-bold text-gray-700">Samagri Kit</span>
-                      <span className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}>
+                      <span className="text-xs font-bold text-gray-700">
+                        Samagri Kit
+                      </span>
+                      <span
+                        className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}
+                      >
                         {isSamagriSelected ? "Included ✓" : "Not Selected"}
                       </span>
                     </div>
                   </div>
 
                   <div
-                    onClick={() => dharmicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                    onClick={() =>
+                      dharmicRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      })
+                    }
                     className="cursor-pointer group flex items-center justify-between p-3 rounded-xl border border-orange-200 bg-orange-50/50 hover:bg-orange-50 transition-all"
                   >
                     <div className="flex items-center gap-2 text-orange-500 font-black uppercase text-[11px] tracking-widest">
-                      <Heart size={14} fill="currentColor" className="group-hover:scale-110 transition-transform" />
+                      <Heart
+                        size={14}
+                        fill="currentColor"
+                        className="group-hover:scale-110 transition-transform"
+                      />
                       Dharmic Total
                     </div>
-                    <span className="text-orange-600 font-black text-sm">₹{dharmicTotal}</span>
+                    <span className="text-orange-600 font-black text-sm">
+                      ₹{dharmicTotal}
+                    </span>
                   </div>
 
                   <div className="space-y-3 pt-2">
                     <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
                       <span>Base Price</span>
-                      <span className="text-gray-900 font-black">₹{basePrice}</span>
+                      <span className="text-gray-900 font-black">
+                        ₹{basePrice}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-[11px] font-bold text-gray-700 uppercase">
                       <span>Samagri Kit</span>
-                      <span className="text-gray-900 font-black">+₹{samagriPrice}</span>
+                      <span className="text-gray-900 font-black">
+                        +₹{samagriPrice}
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between py-2 border-y border-orange-200">
                       <label className="flex items-center gap-2 cursor-pointer">
-                        <input type="checkbox" checked={donations.temple} onChange={() => toggleDonation("temple")} className="w-3.5 h-3.5 accent-orange-500" />
-                        <span className="text-[10px] font-bold text-gray-700 uppercase">Temple Donation</span>
+                        <input
+                          type="checkbox"
+                          checked={donations.temple}
+                          onChange={() => toggleDonation("temple")}
+                          className="w-3.5 h-3.5 accent-orange-500"
+                        />
+                        <span className="text-[10px] font-bold text-gray-700 uppercase">
+                          Temple Donation
+                        </span>
                       </label>
-                      <span className="text-[10px] font-black text-orange-500">+₹1</span>
+                      <span className="text-[10px] font-black text-orange-500">
+                        +₹1
+                      </span>
                     </div>
 
                     <div className="flex justify-between items-center pt-2">
-                      <span className="text-lg font-bold text-gray-900">Total</span>
-                      <span className="text-2xl font-black text-orange-600">₹{grandTotal}</span>
+                      <span className="text-lg font-bold text-gray-900">
+                        Total
+                      </span>
+                      <span className="text-2xl font-black text-orange-600">
+                        ₹{grandTotal}
+                      </span>
                     </div>
 
                     <button
@@ -422,15 +598,19 @@ const HomePujaPaymentDetails = () => {
         onClick={(e) => {
           if (e.target.closest("#mobile-pay-btn")) return;
           const el = document.getElementById("mobile-summary");
-          if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+          if (el)
+            window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
         }}
       >
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              Total Amount <ChevronRight size={11} className="text-orange-400" />
+              Total Amount{" "}
+              <ChevronRight size={11} className="text-orange-400" />
             </p>
-            <p className="text-xl font-black text-orange-600 leading-tight">₹{grandTotal.toLocaleString("en-IN")}</p>
+            <p className="text-xl font-black text-orange-600 leading-tight">
+              ₹{grandTotal.toLocaleString("en-IN")}
+            </p>
             <p className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
               <ShieldCheck size={10} /> Incl. all taxes
             </p>
@@ -455,12 +635,21 @@ const HomePujaPaymentDetails = () => {
    MOBILE INLINE SUMMARY
 ───────────────────────────────────────────── */
 const MobileSummaryInline = ({
-  puja, isSamagriSelected, basePrice, samagriPrice,
-  dharmicTotal, grandTotal, donations, toggleDonation, dharmicRef,
+  puja,
+  isSamagriSelected,
+  basePrice,
+  samagriPrice,
+  dharmicTotal,
+  grandTotal,
+  donations,
+  toggleDonation,
+  dharmicRef,
 }) => (
   <div className="space-y-4">
     <div>
-      <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-2">Booking Summary</h3>
+      <h3 className="text-[15px] font-bold text-slate-700 uppercase tracking-[0.15em] mb-2">
+        Booking Summary
+      </h3>
       <div className="flex gap-1">
         <div className="h-1 w-12 bg-orange-500 rounded-full" />
         <div className="h-1 w-4 bg-orange-100 rounded-full" />
@@ -471,7 +660,9 @@ const MobileSummaryInline = ({
       <h4 className="text-sm font-black text-gray-900">{puja?.puja_name}</h4>
       <div className="flex items-center justify-between mt-1.5">
         <span className="text-xs font-bold text-gray-500">Samagri Kit</span>
-        <span className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}>
+        <span
+          className={`text-xs font-bold ${isSamagriSelected ? "text-green-600" : "text-gray-400"}`}
+        >
           {isSamagriSelected ? "Included ✓" : "Not Selected"}
         </span>
       </div>
@@ -489,7 +680,12 @@ const MobileSummaryInline = ({
 
       {/* Dharmic contributions button */}
       <button
-        onClick={() => dharmicRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
+        onClick={() =>
+          dharmicRef.current?.scrollIntoView({
+            behavior: "smooth",
+            block: "start",
+          })
+        }
         className="w-full flex items-center justify-between p-3 rounded-xl border border-orange-200 bg-orange-50/50 hover:bg-orange-100 transition-all"
       >
         <div className="flex items-center gap-2 text-orange-600 text-[13px] font-bold">
@@ -497,7 +693,9 @@ const MobileSummaryInline = ({
           Dharmic Contributions
         </div>
         {dharmicTotal > 0 ? (
-          <span className="text-[13px] font-bold text-orange-600">+₹{dharmicTotal}</span>
+          <span className="text-[13px] font-bold text-orange-600">
+            +₹{dharmicTotal}
+          </span>
         ) : (
           <ChevronRight size={14} className="text-orange-400" />
         )}
@@ -506,8 +704,15 @@ const MobileSummaryInline = ({
       {/* Temple donation */}
       <div className="flex items-center justify-between py-1 px-1 border-t border-gray-100 pt-3">
         <label className="flex items-center gap-3 cursor-pointer">
-          <input type="checkbox" checked={donations.temple} onChange={() => toggleDonation("temple")} className="w-4 h-4 accent-orange-500 cursor-pointer" />
-          <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">Temple Donation</span>
+          <input
+            type="checkbox"
+            checked={donations.temple}
+            onChange={() => toggleDonation("temple")}
+            className="w-4 h-4 accent-orange-500 cursor-pointer"
+          />
+          <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">
+            Temple Donation
+          </span>
         </label>
         <span className="text-[13px] font-black text-orange-500">+₹1</span>
       </div>
@@ -516,13 +721,19 @@ const MobileSummaryInline = ({
 
       <div className="flex justify-between items-center pt-1">
         <div>
-          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+          <span className="text-[12px] font-bold text-slate-400 uppercase tracking-wider">
+            Total Amount
+          </span>
           <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
             <ShieldCheck size={11} />
-            <span className="text-[10px] font-bold">Inclusive of all taxes</span>
+            <span className="text-[10px] font-bold">
+              Inclusive of all taxes
+            </span>
           </div>
         </div>
-        <span className="text-xl font-black text-orange-600">₹{grandTotal.toLocaleString("en-IN")}</span>
+        <span className="text-xl font-black text-orange-600">
+          ₹{grandTotal.toLocaleString("en-IN")}
+        </span>
       </div>
     </div>
 
@@ -543,11 +754,15 @@ const ContributionCard = ({ option, selected, onToggle }) => (
   <div
     onClick={onToggle}
     className={`flex items-center gap-3 p-4 transition-all cursor-pointer rounded-xl border-2 ${
-      selected ? "border-orange-500 bg-orange-50/30" : "border-orange-200 hover:border-orange-300"
+      selected
+        ? "border-orange-500 bg-orange-50/30"
+        : "border-orange-200 hover:border-orange-300"
     }`}
   >
     {/* Radio dot */}
-    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}>
+    <div
+      className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${selected ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
+    >
       {selected && <div className="w-2 h-2 bg-white rounded-full" />}
     </div>
 
@@ -556,12 +771,16 @@ const ContributionCard = ({ option, selected, onToggle }) => (
 
     {/* Text */}
     <div className="flex-1 min-w-0">
-      <h4 className="font-bold text-sm text-gray-900 leading-tight">{option.name}</h4>
+      <h4 className="font-bold text-sm text-gray-900 leading-tight">
+        {option.name}
+      </h4>
       <p className="text-[10px] text-gray-500 font-medium">{option.desc}</p>
     </div>
 
     {/* Price */}
-    <span className="text-orange-600 font-black text-sm whitespace-nowrap shrink-0">₹{option.price}</span>
+    <span className="text-orange-600 font-black text-sm whitespace-nowrap shrink-0">
+      ₹{option.price}
+    </span>
   </div>
 );
 
