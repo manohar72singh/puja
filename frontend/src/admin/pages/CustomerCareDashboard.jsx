@@ -24,6 +24,7 @@ import {
   Tag,
   AlignLeft,
   CheckCheck,
+  ChartArea,
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
@@ -338,6 +339,7 @@ const CustomerCareDashboard = () => {
     { id: "users", icon: Users, label: "Users" },
     { id: "pandits", icon: UserCheck, label: "Pandits" },
     { id: "querys", icon: MessageSquare, label: "Support Queries" },
+    { id: "chatsupport", icon: ChartArea, label: "Chat Support" },
   ];
 
   const stats = [
@@ -689,7 +691,6 @@ const CustomerCareDashboard = () => {
                       <Th>Contact</Th>
                       <Th>Address</Th>
                       <Th>Status</Th>
-                      <Th center>Actions</Th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-white/[0.025]">
@@ -750,18 +751,6 @@ const CustomerCareDashboard = () => {
                                 />
                                 {person.is_blocked ? "Blocked" : "Active"}
                               </span>
-                            </td>
-                            <td className="px-5 py-4 text-center">
-                              <button
-                                onClick={() => alert("Block/Unblock API call")}
-                                className={`px-3 py-1.5 rounded-lg text-[11px] font-semibold border transition ${
-                                  person.is_blocked
-                                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20"
-                                    : "bg-rose-500/10 text-rose-400 border-rose-500/20 hover:bg-rose-500/20"
-                                }`}
-                              >
-                                {person.is_blocked ? "Unblock" : "Block"}
-                              </button>
                             </td>
                           </tr>
                         ),
@@ -1102,6 +1091,9 @@ const CustomerCareDashboard = () => {
               </TableCard>
             </div>
           )}
+
+          {/* chat support */}
+          {activeTab === "chatsupport" && <div>Chat Support</div>}
         </div>
       </main>
 
