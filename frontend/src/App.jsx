@@ -48,6 +48,7 @@ import AartiPage from "./user/Pages/AartiPage";
 
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import AdminLogin from "./admin/pages/AdminLogin";
+import KundliPortal from "./user/Pages/KundliPortal";
 
 function App() {
   const location = useLocation();
@@ -75,6 +76,8 @@ function App() {
         {/* ================= PUBLIC USER LAYOUT ================= */}
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
+
+          <Route path="/kundli" element={<KundliPortal/>}/>
 
           <Route path="/temples" element={<FullTemplePage />} />
           <Route path="/temples/:id" element={<MandirDetailsPage />} />

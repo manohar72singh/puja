@@ -7,6 +7,9 @@ import partnerRouter from "./routes/partnerRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
+import kundliRouter from './routes/kundliRouter.js';
+import { debugSweph } from './controllers/kundliController.js'; 
+
 import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -43,6 +46,8 @@ app.get("/", (req, res) => {
   res.send("Server running ✅");
 });
 
+app.use('/api/kundli', kundliRouter);
+
 //get mandir
 app.use("/mandir", mandirRouter);
 
@@ -68,6 +73,8 @@ const startServer = async () => {
     // Server Listen
     app.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`📡  Kundli endpoint: POST http://localhost:${PORT}/api/kundli/generate\n`);
+       debugSweph();
     });
   } catch (error) {
     console.error("❌ Database connection failed:");
