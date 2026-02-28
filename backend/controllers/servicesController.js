@@ -85,7 +85,11 @@ export const bookPuja = async (req, res) => {
 };
 
 export const homeORKathaPujaBookingDetails = async (req, res) => {
+  const connection = await db.getConnection();
+
   try {
+    await connection.beginTransaction();
+
     const {
       puja_id,
       date,
@@ -95,63 +99,113 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
       state,
       devoteeName,
       ticket_type,
-      donations,
+      donations, // 👈 string aayegi
       bookingId,
       total_price,
+      samagriKit,
     } = req.body;
-    console.log("Received Booking Data:", req.body);
-    const userId = req.user.id;
 
+    const userId = req.user.id;
+    console.log(req.body);
     const formattedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
 
-    // 👇 Important Logic Change
-    const isTempleBooking = !!ticket_type;
+    // ==============================
+    // ✅ HANDLE DONATIONS (STRING)
+    // ==============================
 
-    const query = `
+    let totalDonationAmount = 0;
+
+    const donationNames = donations
+      ? donations.split(",").map((d) => d.trim())
+      : [];
+
+    // 1️⃣ Insert puja request first
+    const [result] = await connection.query(
+      `
       INSERT INTO puja_requests 
-      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name, total_price) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?,?)
-    `;
+      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name, total_price, samagrikit) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?)
+      `,
+      [
+        userId,
+        puja_id,
+        formattedDate,
+        time || "Morning Slot",
+        location,
+        city || "N/A",
+        state || "N/A",
+        bookingId,
+        ticket_type || null,
+        0, // 👈 temporarily 0 (later update karenge)
+        devoteeName || "User",
+        total_price,
+        samagriKit ? 1 : 0,
+      ],
+    );
 
-    const [result] = await db.query(query, [
-      userId,
-      puja_id,
-      formattedDate,
-      time || "Morning Slot",
-      location,
-      city || "N/A",
-      state || "N/A",
-      // 🔥 Temple booking me address NULL
-      bookingId,
-      // isTempleBooking
-      //   ? null
-      //   : `${location || "N/A"}, Pincode: ${pincode || "N/A"}`,
+    const pujaRequestId = result.insertId;
 
-      isTempleBooking ? ticket_type : null,
-      // isTempleBooking ? donations || "None" : null,
-      donations || "None",
-      devoteeName || "User",
-      total_price,
-    ]);
+    // 2️⃣ Fetch price from DB & insert contributions
+    for (let name of donationNames) {
+      console.log("name:::", name);
+
+      const [rows] = await connection.query(
+        `SELECT id, price FROM contribution_types 
+         WHERE name LIKE ? AND is_active = 1`,
+        [`%${name}%`],
+      );
+
+      if (rows.length) {
+        const contribution = rows[0];
+
+        totalDonationAmount += Number(contribution.price);
+
+        await connection.query(
+          `
+          INSERT INTO service_contributions
+          (puja_request_id, service_id, contribution_type_id, amount)
+          VALUES (?, ?, ?, ?)
+          `,
+          [pujaRequestId, puja_id, contribution.id, contribution.price],
+        );
+      }
+    }
+
+    // 3️⃣ Update donation total in puja_requests
+    await connection.query(
+      `UPDATE puja_requests SET donations = ? WHERE id = ?`,
+      [totalDonationAmount, pujaRequestId],
+    );
+
+    await connection.commit();
 
     res.status(201).json({
       success: true,
-      message: "Booking successfully stored!",
-      bookingId: result.insertId,
+      message: "Home/Katha Booking Stored Successfully",
+      bookingId: pujaRequestId,
+      totalDonationAmount,
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    await connection.rollback();
+    console.error("Booking Error:", error);
+
     res.status(500).json({
       success: false,
-      message: "Server Error: " + error.message,
+      message: "Server Error",
     });
+  } finally {
+    connection.release();
   }
 };
 
 export const bookingDetails = async (req, res) => {
+  const connection = await db.getConnection();
+
   try {
+    await connection.beginTransaction();
+
     const {
       puja_id,
       date,
@@ -160,62 +214,83 @@ export const bookingDetails = async (req, res) => {
       city,
       state,
       devoteeName,
-      // pincode,
       ticket_type,
       donations,
       bookingId,
       total_price,
     } = req.body;
-    console.log("Received Booking Data:", req.body);
+    console.log("req body", req.body);
     const userId = req.user.id;
 
     const formattedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
 
-    // 👇 Important Logic Change
-    const isTempleBooking = !!ticket_type;
+    const totalDonationAmount = donations.reduce(
+      (sum, item) => sum + Number(item.amount),
+      0,
+    );
 
-    const query = `
+    // ✅ Insert temple booking (samagrikit = 0 always)
+    const [result] = await connection.query(
+      `
       INSERT INTO puja_requests 
-      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name,total_price) 
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?,?)
-    `;
+      (user_id, service_id, preferred_date, preferred_time, address, city, state, status, bookingId, ticket_type, donations, devotee_name, total_price, samagrikit) 
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, 0)
+      `,
+      [
+        userId,
+        puja_id,
+        formattedDate,
+        time || "Morning Slot",
+        address,
+        city || "N/A",
+        state || "N/A",
+        bookingId,
+        ticket_type,
+        totalDonationAmount,
+        devoteeName || "User",
+        total_price,
+      ],
+    );
 
-    const [result] = await db.query(query, [
-      userId,
-      puja_id,
-      formattedDate,
-      time || "Morning Slot",
-      address,
-      city || "N/A",
-      state || "N/A",
-      // 🔥 Temple booking me address NULL
-      bookingId,
-      // isTempleBooking
-      //   ? null
-      //   : `${location || "N/A"}, Pincode: ${pincode || "N/A"}`,
+    const pujaRequestId = result.insertId;
 
-      isTempleBooking ? ticket_type : null,
-      isTempleBooking ? donations || "None" : null,
-      devoteeName || "User",
-      total_price,
-    ]);
+    // ✅ Save donations
+    for (let donation of donations) {
+      await connection.query(
+        `
+        INSERT INTO service_contributions 
+        (puja_request_id, service_id, contribution_type_id, amount) 
+        VALUES (?, ?, ?, ?)
+        `,
+        [
+          pujaRequestId,
+          puja_id,
+          donation.contribution_type_id,
+          donation.amount,
+        ],
+      );
+    }
+
+    await connection.commit();
 
     res.status(201).json({
       success: true,
-      message: "Booking successfully stored!",
-      bookingId: result.insertId,
+      message: "Temple Booking Stored Successfully",
+      bookingId: pujaRequestId,
     });
   } catch (error) {
-    console.error("Database Error:", error);
+    await connection.rollback();
+    console.error(error);
     res.status(500).json({
       success: false,
-      message: "Server Error: " + error.message,
+      message: "Server Error",
     });
+  } finally {
+    connection.release();
   }
 };
-
 export const getUserBookings = async (req, res) => {
   try {
     const userId = req.user.id;
