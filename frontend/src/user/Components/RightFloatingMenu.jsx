@@ -1,13 +1,19 @@
 import { Sparkles, Calendar, Heart } from "lucide-react";
 import { useState } from "react";
+import {useNavigate} from "react-router-dom"
 
 export function RightFloatingMenu() {
     const [isOpen, setIsOpen] = useState(false);
+    const navigate = useNavigate();
 
     const items = [
+        { label: "Kundli", icon: <Heart size={13} />,path:"/kundli" },
         { label: "Panchang", icon: <Calendar size={13} /> }, // Icon size thoda badhaya
-        { label: "Kundli", icon: <Heart size={13} /> },
     ];
+
+    const handleNavigation = (path) => {
+        navigate(path);
+    };
 
     return (
         <div
@@ -72,6 +78,7 @@ export function RightFloatingMenu() {
                     <div className="bg-white border border-orange-100 shadow-sm p-2 space-y-1">
                         {items.map(({ label, icon }) => (
                             <button
+                                onClick={() => handleNavigation(path)}
                                 key={label}
                                 className="flex items-center justify-between w-full px-2 py-2 rounded-md text-gray-700 hover:bg-orange-50 transition-all text-[12px] font-medium"
                             >
@@ -112,6 +119,7 @@ export function RightFloatingMenu() {
                     <div className="bg-white border border-orange-100 shadow-sm p-2 space-y-1">
                         {items.map(({ label, icon }) => (
                             <button
+                                onClick={() => handleNavigation(path)}
                                 key={label}
                                 className="flex items-center justify-between w-full px-2 py-2 rounded-md text-gray-700 hover:bg-orange-50 transition-all text-[12px] font-medium"
                             >
