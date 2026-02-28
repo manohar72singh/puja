@@ -40,15 +40,15 @@ const PindDanBooking = () => {
   const [selectedTicket, setSelectedTicket] = useState("Single");
   const [activeTab, setActiveTab] = useState("about");
   const [aboutExpanded, setAboutExpanded] = useState(false);
+  const [contributionOptions, setContributionOptions] = useState("");
   const [donations, setDonations] = useState({
-    temple: false,
-    vastra: false,
-    annadan: false,
-    deepdan: false,
-    brahmin: false,
-    gau: false,
+    "Vastra Dan": false,
+    "Anna Dan": false,
+    "Deep Dan": false,
+    "Brahmin Dan": false,
+    "Gau Seva": false,
+    "Temple Donation": false,
   });
-
   const sections = {
     about: useRef(null),
     benefits: useRef(null),
@@ -74,6 +74,20 @@ const PindDanBooking = () => {
     fetchService();
   }, [id]);
 
+  useEffect(() => {
+    const fetchContributions = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/contributions/${id}`);
+        const data = await res.json();
+        if (data.success) {
+          setContributionOptions(data.data);
+        }
+      } catch (err) {
+        console.error("Error fetching contributions", err);
+      }
+    };
+    if (id) fetchContributions();
+  }, [id]);
   const handlePindDanPayment = async () => {
     const token = localStorage.getItem("token");
     const currentBookingId = `BK-${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
@@ -83,9 +97,22 @@ const PindDanBooking = () => {
     }
     setIsBooking(true);
 
-    const selectedDonations = Object.keys(donations)
-      .filter((key) => donations[key])
-      .join(", ");
+    // const selectedDonations = Object.keys(donations)
+    //   .filter((key) => donations[key])
+    //   .join(", ");
+    const selectedDonationObjects = contributionList
+      .filter((item) => donations[item.id])
+      .map((item) => {
+        // id DB se find karo
+        const dbContribution = contributionOptions.find(
+          (c) => c.name === item.title,
+        );
+
+        return {
+          contribution_type_id: dbContribution?.id,
+          amount: Number(item.price),
+        };
+      });
 
     const bookingData = {
       bookingId: currentBookingId,
@@ -96,10 +123,10 @@ const PindDanBooking = () => {
 
       time: service?.dateOfStart
         ? new Date(service.dateOfStart).toLocaleTimeString("en-US", {
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: true,
-        })
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+          })
         : "10:00 AM",
       address: service?.address || "N/A",
       city: "Default City",
@@ -108,9 +135,10 @@ const PindDanBooking = () => {
         ? JSON.parse(atob(token.split(".")[1])).name
         : "Guest User",
       ticket_type: selectedTicket,
-      donations: selectedDonations,
+      donations: selectedDonationObjects,
+      total_price: calculateTotal(),
     };
-
+    console.log("booking data", bookingData);
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
         method: "POST",
@@ -163,40 +191,44 @@ const PindDanBooking = () => {
       window.scrollTo({ top: element.offsetTop - offset, behavior: "smooth" });
     }
   };
+  const getPrice = (title) => {
+    const daan = Array.from(contributionOptions).filter((c) => c.name == title);
 
+    return Number(daan[0]?.price);
+  };
   const contributionList = [
     {
-      id: "vastra",
-      title: "Vastra Daan",
-      price: 251,
-      icon: <Shirt size={18} />,
-      sub: "Holy cloth offering",
+      id: "Vastra Dan",
+      title: "Vastra Dan",
+      price: getPrice("Vastra Dan"),
+      icon: <Shirt size={16} />,
+      sub: "Donate clothes to the needy",
     },
     {
-      id: "annadan",
-      title: "Annadan",
-      price: 501,
-      icon: <Coffee size={18} />,
-      sub: "Feed the community",
+      id: "Anna Dan",
+      title: "Anna Dan",
+      price: getPrice("Anna Dan"),
+      icon: <Coffee size={16} />,
+      sub: "Provide meals to the hungry",
     },
     {
-      id: "deepdan",
-      title: "Deepdan",
-      price: 101,
-      icon: <Flame size={18} />,
-      sub: "Light the path",
+      id: "Deep Dan",
+      title: "Deep Dan",
+      price: getPrice("Deep Dan"),
+      icon: <Flame size={16} />,
+      sub: "Light lamps at sacred temples",
     },
     {
-      id: "brahmin",
-      title: "Brahmin Bhoj",
-      price: 1100,
-      icon: <UtensilsCrossed size={18} />,
-      sub: "Blessings of Priests",
+      id: "Brahmin Dan",
+      title: "Brahmin Dan",
+      price: getPrice("Brahmin Dan"),
+      icon: <UtensilsCrossed size={16} />,
+      sub: "Feed Brahmins after ceremony",
     },
     {
-      id: "gau",
+      id: "Gau Seva",
       title: "Gau Seva",
-      price: 100,
+      price: getPrice("Gau Seva"),
       icon: <span className="text-xl">🐄</span>,
       sub: "Feed the Gau Mata",
     },
@@ -206,14 +238,24 @@ const PindDanBooking = () => {
     const base = Number(service?.standard_price) || 0;
     const extra = contributionList.reduce(
       (acc, item) => (donations[item.id] ? acc + item.price : acc),
-      0
+      0,
     );
-    return base + extra + (donations.temple ? 1 : 0);
+    return (
+      base +
+      extra +
+      (donations["Temple Donation"]
+        ? Number(
+            Array.from(contributionOptions).filter(
+              (c) => c.name == "Temple Donation",
+            )[0].price,
+          )
+        : 0)
+    );
   };
 
   const selectedContributionsTotal = contributionList.reduce(
     (acc, item) => (donations[item.id] ? acc + item.price : acc),
-    0
+    0,
   );
 
   if (loading)
@@ -240,7 +282,6 @@ const PindDanBooking = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
           <div className="lg:col-span-8 space-y-6">
-
             {/* 1. HERO SECTION */}
             <div className="bg-white rounded-2xl overflow-hidden border border-orange-200 shadow-sm">
               <div className="relative h-64 md:h-80">
@@ -268,10 +309,11 @@ const PindDanBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
-                      ? "text-orange-600 bg-orange-50/50"
-                      : "text-gray-400"
-                      }`}
+                    className={`flex-1 px-4 md:px-6 py-4 text-[12px] md:text-[13px] font-black uppercase tracking-[0.1em] md:tracking-[0.15em] transition-all relative whitespace-nowrap ${
+                      activeTab === tab
+                        ? "text-orange-600 bg-orange-50/50"
+                        : "text-gray-400"
+                    }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -285,10 +327,14 @@ const PindDanBooking = () => {
             {/* 3. ABOUT & BENEFITS BLOCK */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
               <div className="p-5 md:p-7">
-                <section ref={sections.about} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.about}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex flex-col gap-4 mb-6">
                     <span className="flex items-center gap-2 text-[14px] font-medium text-gray-500">
-                      <MapPin size={16} className="text-orange-500" /> {service?.address}
+                      <MapPin size={16} className="text-orange-500" />{" "}
+                      {service?.address}
                     </span>
                     <span className="flex items-center gap-2 text-[13px] font-medium text-gray-500">
                       <Calendar size={16} className="text-orange-500" />{" "}
@@ -307,8 +353,9 @@ const PindDanBooking = () => {
                   </div>
                   <div>
                     <p
-                      className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${!aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""
-                        }`}
+                      className={`text-[16px] text-gray-600 leading-relaxed text-justify transition-all ${
+                        !aboutExpanded ? "line-clamp-4 md:line-clamp-none" : ""
+                      }`}
                     >
                       {service?.description}
                     </p>
@@ -330,17 +377,44 @@ const PindDanBooking = () => {
 
               {/* BENEFITS */}
               <div className="p-5 md:p-7 bg-[#FFFDF8]">
-                <section ref={sections.benefits} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.benefits}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Gem size={20} /> Benefits of {service?.puja_name}
                   </div>
                   <div className="grid grid-cols-2 gap-3">
-                    <BenefitSmall icon={<Heart />} title="Spiritual Peace" desc="Inner calm through sacred rituals" />
-                    <BenefitSmall icon={<Shield />} title="Protection" desc="Divine protection for family" />
-                    <BenefitSmall icon={<Zap />} title="Prosperity" desc="Remove obstacles from path" />
-                    <BenefitSmall icon={<Users />} title="Harmony" desc="Strengthen family bonds" />
-                    <BenefitSmall icon={<Sparkles />} title="Positive Energy" desc="Purify soul with mantras" />
-                    <BenefitSmall icon={<Star />} title="Karma" desc="Balance spiritual energies" />
+                    <BenefitSmall
+                      icon={<Heart />}
+                      title="Spiritual Peace"
+                      desc="Inner calm through sacred rituals"
+                    />
+                    <BenefitSmall
+                      icon={<Shield />}
+                      title="Protection"
+                      desc="Divine protection for family"
+                    />
+                    <BenefitSmall
+                      icon={<Zap />}
+                      title="Prosperity"
+                      desc="Remove obstacles from path"
+                    />
+                    <BenefitSmall
+                      icon={<Users />}
+                      title="Harmony"
+                      desc="Strengthen family bonds"
+                    />
+                    <BenefitSmall
+                      icon={<Sparkles />}
+                      title="Positive Energy"
+                      desc="Purify soul with mantras"
+                    />
+                    <BenefitSmall
+                      icon={<Star />}
+                      title="Karma"
+                      desc="Balance spiritual energies"
+                    />
                   </div>
                 </section>
               </div>
@@ -349,7 +423,10 @@ const PindDanBooking = () => {
             {/* 4. SACRED CONTRIBUTIONS BLOCK */}
             <div className="bg-white rounded-2xl border border-orange-200 shadow-sm overflow-hidden">
               <div className="p-5 md:p-7">
-                <section ref={sections.contributions} className="scroll-mt-44 space-y-4">
+                <section
+                  ref={sections.contributions}
+                  className="scroll-mt-44 space-y-4"
+                >
                   <div className="flex items-center gap-2 text-orange-600 font-bold text-[13px] uppercase tracking-widest">
                     <Sparkles size={20} /> Sacred Contributions
                   </div>
@@ -360,7 +437,10 @@ const PindDanBooking = () => {
                         item={item}
                         selected={donations[item.id]}
                         onToggle={() =>
-                          setDonations((p) => ({ ...p, [item.id]: !p[item.id] }))
+                          setDonations((p) => ({
+                            ...p,
+                            [item.id]: !p[item.id],
+                          }))
                         }
                       />
                     ))}
@@ -381,14 +461,18 @@ const PindDanBooking = () => {
                   </h4>
                   <p className="text-[13px] text-gray-600 mt-2">
                     The photos and videos of your puja will be shared via{" "}
-                    <span className="font-bold text-gray-900">WhatsApp</span> after completion.
+                    <span className="font-bold text-gray-900">WhatsApp</span>{" "}
+                    after completion.
                   </p>
                 </div>
               </div>
             </div>
 
             {/* 5. BOOKING SUMMARY — mobile only, above FAQ */}
-            <div id="mobile-summary" className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5">
+            <div
+              id="mobile-summary"
+              className="lg:hidden bg-white rounded-2xl border border-orange-200 shadow-sm p-5"
+            >
               <MobileSummarySection
                 service={service}
                 donations={donations}
@@ -397,6 +481,7 @@ const PindDanBooking = () => {
                 calculateTotal={calculateTotal}
                 selectedContributionsTotal={selectedContributionsTotal}
                 scrollToSection={scrollToSection}
+                getPrice={getPrice}
               />
             </div>
 
@@ -443,7 +528,9 @@ const PindDanBooking = () => {
 
               <div className="space-y-5">
                 <div className="flex justify-between items-center px-1">
-                  <span className="text-[15px] font-bold text-slate-500 tracking-wider">Base Price</span>
+                  <span className="text-[15px] font-bold text-slate-500 tracking-wider">
+                    Base Price
+                  </span>
                   <span className="text-[16px] font-bold text-slate-800">
                     ₹{Number(service?.standard_price).toLocaleString("en-IN")}
                   </span>
@@ -455,10 +542,16 @@ const PindDanBooking = () => {
                 >
                   <div className="flex items-center gap-2 text-orange-600 text-[14px] font-bold">
                     <div className="p-1.5 bg-white rounded-lg shadow-sm group-hover:shadow-md transition-all">
-                      <Heart size={16} fill="currentColor" className="text-orange-500" />
+                      <Heart
+                        size={16}
+                        fill="currentColor"
+                        className="text-orange-500"
+                      />
                     </div>
                     <span className="font-bold text-[13px]">
-                      {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+                      {selectedContributionsTotal > 0
+                        ? "Edit Contributions"
+                        : "Add Contributions"}
                     </span>
                   </div>
                   <div className="flex items-center gap-1">
@@ -467,7 +560,10 @@ const PindDanBooking = () => {
                         +₹{selectedContributionsTotal.toLocaleString("en-IN")}
                       </span>
                     ) : (
-                      <ChevronRight size={16} className="text-orange-400 group-hover:translate-x-1 transition-transform" />
+                      <ChevronRight
+                        size={16}
+                        className="text-orange-400 group-hover:translate-x-1 transition-transform"
+                      />
                     )}
                   </div>
                 </button>
@@ -476,9 +572,12 @@ const PindDanBooking = () => {
                   <label className="flex items-center gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={donations.temple}
+                      checked={donations["Temple Donation"]}
                       onChange={(e) =>
-                        setDonations((prev) => ({ ...prev, temple: e.target.checked }))
+                        setDonations((prev) => ({
+                          ...prev,
+                          "Temple Donation": e.target.checked,
+                        }))
                       }
                       className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
                     />
@@ -486,17 +585,27 @@ const PindDanBooking = () => {
                       Temple Donation
                     </span>
                   </label>
-                  <span className="text-[14px] font-black text-orange-500">+₹1</span>
+                  <span className="text-[14px] font-black text-orange-500">
+                    +₹{getPrice("Temple Donation")}
+                  </span>
                 </div>
 
                 <div className="border-t border-dashed border-gray-300 w-full my-2" />
 
                 <div className="flex justify-between items-start pt-2 px-1">
                   <div className="flex flex-col gap-1">
-                    <span className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">Total Amount</span>
+                    <span className="text-[13px] font-bold text-slate-400 uppercase tracking-wider">
+                      Total Amount
+                    </span>
                     <div className="flex items-center gap-1.5 text-emerald-600">
-                      <ShieldCheck size={14} fill="currentColor" className="opacity-20" />
-                      <span className="text-[11px] font-bold">Inclusive of all taxes</span>
+                      <ShieldCheck
+                        size={14}
+                        fill="currentColor"
+                        className="opacity-20"
+                      />
+                      <span className="text-[11px] font-bold">
+                        Inclusive of all taxes
+                      </span>
                     </div>
                   </div>
                   <span className="text-2xl font-black text-orange-600 tracking-tighter">
@@ -517,7 +626,11 @@ const PindDanBooking = () => {
                     ) : (
                       <>
                         <span>Proceed to Pay</span>
-                        <ChevronRight size={18} strokeWidth={3} className="group-hover:translate-x-1 transition-transform" />
+                        <ChevronRight
+                          size={18}
+                          strokeWidth={3}
+                          className="group-hover:translate-x-1 transition-transform"
+                        />
                       </>
                     )}
                   </div>
@@ -537,13 +650,15 @@ const PindDanBooking = () => {
         onClick={(e) => {
           if (e.target.closest("#mobile-cta-btn")) return;
           const el = document.getElementById("mobile-summary");
-          if (el) window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
+          if (el)
+            window.scrollTo({ top: el.offsetTop - 100, behavior: "smooth" });
         }}
       >
         <div className="flex items-center justify-between gap-4">
           <div>
             <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-              Total Amount <ChevronRight size={11} className="text-orange-400" />
+              Total Amount{" "}
+              <ChevronRight size={11} className="text-orange-400" />
             </p>
             <p className="text-xl font-black text-orange-600 leading-tight">
               ₹{calculateTotal().toLocaleString("en-IN")}
@@ -584,6 +699,7 @@ const MobileSummarySection = ({
   calculateTotal,
   selectedContributionsTotal,
   scrollToSection,
+  getPrice,
 }) => (
   <div>
     <div className="mb-5">
@@ -598,7 +714,9 @@ const MobileSummarySection = ({
 
     <div className="space-y-4">
       <div className="flex justify-between items-center px-1">
-        <span className="text-[14px] font-bold text-slate-500 tracking-wider">Base Price</span>
+        <span className="text-[14px] font-bold text-slate-500 tracking-wider">
+          Base Price
+        </span>
         <span className="text-[15px] font-bold text-slate-800">
           ₹{Number(service?.standard_price).toLocaleString("en-IN")}
         </span>
@@ -613,7 +731,9 @@ const MobileSummarySection = ({
             <Heart size={15} fill="currentColor" className="text-orange-500" />
           </div>
           <span className="font-bold text-[13px]">
-            {selectedContributionsTotal > 0 ? "Edit Contributions" : "Add Contributions"}
+            {selectedContributionsTotal > 0
+              ? "Edit Contributions"
+              : "Add Contributions"}
           </span>
         </div>
         <div className="flex items-center gap-1">
@@ -631,9 +751,12 @@ const MobileSummarySection = ({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
-            checked={donations.temple}
+            checked={donations["Temple Donation"]}
             onChange={(e) =>
-              setDonations((prev) => ({ ...prev, temple: e.target.checked }))
+              setDonations((prev) => ({
+                ...prev,
+                "Temple Donation": e.target.checked,
+              }))
             }
             className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
           />
@@ -653,7 +776,9 @@ const MobileSummarySection = ({
           </span>
           <div className="flex items-center gap-1 text-emerald-600 mt-0.5">
             <ShieldCheck size={11} />
-            <span className="text-[10px] font-bold">Inclusive of all taxes</span>
+            <span className="text-[10px] font-bold">
+              Inclusive of all taxes
+            </span>
           </div>
         </div>
         <span className="text-xl font-black text-orange-600">
@@ -672,15 +797,19 @@ const MobileSummarySection = ({
 const ContributionCard = ({ item, selected, onToggle }) => (
   <button
     onClick={onToggle}
-    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${selected
-      ? "border-orange-400 bg-orange-50"
-      : "border-orange-200 bg-white hover:border-orange-300"
-      }`}
+    className={`flex items-center justify-between p-3 md:p-5 rounded-xl border transition-all shadow-sm w-full gap-2 ${
+      selected
+        ? "border-orange-400 bg-orange-50"
+        : "border-orange-200 bg-white hover:border-orange-300"
+    }`}
   >
     <div className="flex items-center gap-3 text-left">
       <div
-        className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${selected ? "bg-orange-500 text-white" : "bg-orange-100 text-orange-500"
-          }`}
+        className={`hidden md:flex p-2.5 rounded-lg shrink-0 transition-all ${
+          selected
+            ? "bg-orange-500 text-white"
+            : "bg-orange-100 text-orange-500"
+        }`}
       >
         {item.icon}
       </div>
@@ -688,8 +817,9 @@ const ContributionCard = ({ item, selected, onToggle }) => (
         <h4 className="text-[13px] md:text-[15px] font-bold text-gray-800 leading-tight">
           {item.title}
         </h4>
-        <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">{item.sub}</p>
-
+        <p className="text-[11px] md:text-[12px] text-gray-500 mt-0.5">
+          {item.sub}
+        </p>
       </div>
     </div>
     <span className="text-[13px] md:text-[16px] font-black text-orange-600 whitespace-nowrap shrink-0">
@@ -730,17 +860,22 @@ const FAQItem = ({ q, a }) => {
       onClick={() => setOpen(!open)}
     >
       <div className="flex justify-between items-center gap-4">
-        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">{q}</span>
+        <span className="text-[14px] md:text-[15px] text-gray-700 font-bold leading-tight pr-5">
+          {q}
+        </span>
         <ChevronRight
           size={18}
           className={`text-orange-400 transition-transform duration-300 shrink-0 ${open ? "rotate-90" : ""}`}
         />
       </div>
       <div
-        className={`overflow-hidden transition-all duration-300 ease-in-out ${open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"
-          }`}
+        className={`overflow-hidden transition-all duration-300 ease-in-out ${
+          open ? "max-h-96 mt-3 opacity-100" : "max-h-0 opacity-0"
+        }`}
       >
-        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">{a}</p>
+        <p className="text-[13px] md:text-[14px] text-gray-500 leading-relaxed font-medium">
+          {a}
+        </p>
       </div>
     </div>
   );
