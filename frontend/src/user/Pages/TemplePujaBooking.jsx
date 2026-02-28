@@ -45,12 +45,12 @@ const TemplePujaBooking = () => {
   const [aboutExpanded, setAboutExpanded] = useState(false);
   const [contributionOptions, setContributionOptions] = useState("");
   const [donations, setDonations] = useState({
-    temple: false,
-    vastra: false,
-    annadan: false,
-    deepdan: false,
-    brahmin: false,
-    gau: false,
+    "Vastra Dan": false,
+    "Anna Dan": false,
+    "Deep Dan": false,
+    "Brahmin Dan": false,
+    "Gau Seva": false,
+    "Temple Donation": false,
   });
 
   const sections = {
@@ -104,10 +104,24 @@ const TemplePujaBooking = () => {
     }
     setIsBooking(true);
 
-    const selectedDonations = Object.keys(donations)
-      .filter((key) => donations[key])
-      .join(", ");
+    // const selectedDonations = Object.keys(donations)
+    //   .filter((key) => donations[key])
+    //   .join(", ");
+    // 🔥 selected donation objects banao
+    const selectedDonationObjects = contributionList
+      .filter((item) => donations[item.id])
+      .map((item) => {
+        // id DB se find karo
+        const dbContribution = contributionOptions.find(
+          (c) => c.name === item.title,
+        );
 
+        return {
+          contribution_type_id: dbContribution?.id,
+          amount: Number(item.price),
+        };
+      })
+      .filter((d) => d.contribution_type_id); // safety
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,
@@ -128,10 +142,10 @@ const TemplePujaBooking = () => {
         ? JSON.parse(atob(token.split(".")[1])).name
         : "Guest User",
       ticket_type: selectedTicket,
-      donations: selectedDonations,
+      donations: selectedDonationObjects,
       total_price: calculateTotal(),
     };
-    console.log(bookingData);
+    console.log("booking data", bookingData);
 
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
@@ -191,35 +205,35 @@ const TemplePujaBooking = () => {
 
   const contributionList = [
     {
-      id: "vastra",
+      id: "Vastra Dan",
       title: "Vastra Dan",
       price: getPrice("Vastra Dan"),
-      icon: <Shirt size={18} />,
-      sub: "Holy cloth offering",
+      icon: <Shirt size={16} />,
+      sub: "Donate clothes to the needy",
     },
     {
-      id: "annadan",
+      id: "Anna Dan",
       title: "Anna Dan",
       price: getPrice("Anna Dan"),
-      icon: <Coffee size={18} />,
-      sub: "Feed the community",
+      icon: <Coffee size={16} />,
+      sub: "Provide meals to the hungry",
     },
     {
-      id: "deepdan",
+      id: "Deep Dan",
       title: "Deep Dan",
       price: getPrice("Deep Dan"),
-      icon: <Flame size={18} />,
-      sub: "Light the path",
+      icon: <Flame size={16} />,
+      sub: "Light lamps at sacred temples",
     },
     {
-      id: "brahmin",
+      id: "Brahmin Dan",
       title: "Brahmin Dan",
       price: getPrice("Brahmin Dan"),
-      icon: <UtensilsCrossed size={18} />,
-      sub: "Blessings of Priests",
+      icon: <UtensilsCrossed size={16} />,
+      sub: "Feed Brahmins after ceremony",
     },
     {
-      id: "gau",
+      id: "Gau Seva",
       title: "Gau Seva",
       price: getPrice("Gau Seva"),
       icon: <span className="text-xl">🐄</span>,
@@ -257,7 +271,7 @@ const TemplePujaBooking = () => {
     return (
       base +
       extra +
-      (donations.temple
+      (donations["Temple Donation"]
         ? Number(
             Array.from(contributionOptions).filter(
               (c) => c.name == "Temple Donation",
@@ -615,11 +629,11 @@ const TemplePujaBooking = () => {
                   <label className="flex items-center gap-3 cursor-pointer group">
                     <input
                       type="checkbox"
-                      checked={donations.temple}
+                      checked={donations["Temple Donation"]}
                       onChange={(e) =>
                         setDonations((prev) => ({
                           ...prev,
-                          temple: e.target.checked,
+                          "Temple Donation": e.target.checked,
                         }))
                       }
                       className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
@@ -822,9 +836,12 @@ const MobileSummarySection = ({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
-            checked={donations.temple}
+            checked={donations["Temple Donation"]}
             onChange={(e) =>
-              setDonations((prev) => ({ ...prev, temple: e.target.checked }))
+              setDonations((prev) => ({
+                ...prev,
+                "Temple Donation": e.target.checked,
+              }))
             }
             className="w-4 h-4 accent-orange-500 rounded cursor-pointer"
           />

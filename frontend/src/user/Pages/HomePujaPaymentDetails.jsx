@@ -26,6 +26,7 @@ const HomePujaPaymentDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
+  // console.log("props::", useLocation().state);
 
   const [puja, setPuja] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -55,12 +56,12 @@ const HomePujaPaymentDetails = () => {
   });
 
   const [donations, setDonations] = useState({
-    vastra: false,
-    annadan: false,
-    deepdan: false,
-    bhoj: false,
-    gau: false,
-    temple: false,
+    "Vastra Dan": false,
+    "Anna Dan": false,
+    "Deep Dan": false,
+    "Brahmin Dan": false,
+    "Gau Seva": false,
+    "Temple Donation": false,
   });
 
   const getPrice = (title) => {
@@ -73,29 +74,29 @@ const HomePujaPaymentDetails = () => {
 
   const contributionOptions = [
     {
-      id: "vastra",
-      name: "Vastra Daan",
+      id: "Vastra Dan",
+      name: "Vastra Dan",
       price: getPrice("Vastra Dan"),
       icon: <Shirt size={16} />,
       desc: "Donate clothes to the needy",
     },
     {
-      id: "annadan",
-      name: "Annadan",
+      id: "Anna Dan",
+      name: "Anna Dan",
       price: getPrice("Anna Dan"),
       icon: <Coffee size={16} />,
       desc: "Provide meals to the hungry",
     },
     {
-      id: "deepdan",
-      name: "Deepdan",
+      id: "Deep Dan",
+      name: "Deep Dan",
       price: getPrice("Deep Dan"),
       icon: <Flame size={16} />,
       desc: "Light lamps at sacred temples",
     },
     {
-      id: "bhoj",
-      name: "Brahmin Bhoj",
+      id: "Brahmin Dan",
+      name: "Brahmin Dan",
       price: getPrice("Brahmin Dan"),
       icon: <UtensilsCrossed size={16} />,
       desc: "Feed Brahmins after ceremony",
@@ -121,7 +122,9 @@ const HomePujaPaymentDetails = () => {
       bookingId,
       donations: selectedDonations,
       total_price: grandTotal,
+      samagriKit: isSamagriSelected,
     };
+    console.log("payload", payload);
     try {
       const response = await fetch(
         `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,
@@ -198,14 +201,14 @@ const HomePujaPaymentDetails = () => {
       (acc, opt) => (donations[opt.id] ? acc + opt.price : acc),
       0,
     );
-    if (donations.gau) sum += getPrice("Gau Seva");
+    if (donations["Gau Seva"]) sum += getPrice("Gau Seva");
     return sum;
   };
 
   const basePrice = Number(puja?.standard_price || 0);
-  const samagriPrice = isSamagriSelected ? 600 : 0;
+  const samagriPrice = isSamagriSelected ? getPrice("Samagri Kit") : 0;
   const dharmicTotal = getDharmicTotal();
-  const templeDonation = donations.temple
+  const templeDonation = donations["Temple Donation"]
     ? Number(
         Array.from(contributionOptions2).filter(
           (c) => c.name == "Temple Donation",
@@ -447,17 +450,17 @@ const HomePujaPaymentDetails = () => {
 
                 {/* Gau Seva */}
                 <div
-                  onClick={() => toggleDonation("gau")}
+                  onClick={() => toggleDonation("Gau Seva")}
                   className={`p-4 flex items-center gap-4 transition-all cursor-pointer rounded-xl border-2 ${
-                    donations.gau
+                    donations["Gau Seva"]
                       ? "border-orange-500 bg-orange-50/30"
                       : "border-orange-200 bg-white hover:border-orange-300"
                   }`}
                 >
                   <div
-                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${donations.gau ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
+                    className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${donations["Gau Seva"] ? "bg-orange-500 border-orange-500" : "border-orange-200"}`}
                   >
-                    {donations.gau && (
+                    {donations["Gau Seva"] && (
                       <div className="w-2 h-2 bg-white rounded-full" />
                     )}
                   </div>
@@ -576,8 +579,8 @@ const HomePujaPaymentDetails = () => {
                       <label className="flex items-center gap-2 cursor-pointer">
                         <input
                           type="checkbox"
-                          checked={donations.temple}
-                          onChange={() => toggleDonation("temple")}
+                          checked={donations["Temple Donation"]}
+                          onChange={() => toggleDonation("Temple Donation")}
                           className="w-3.5 h-3.5 accent-orange-500"
                         />
                         <span className="text-[10px] font-bold text-gray-700 uppercase">
@@ -733,8 +736,8 @@ const MobileSummaryInline = ({
         <label className="flex items-center gap-3 cursor-pointer">
           <input
             type="checkbox"
-            checked={donations.temple}
-            onChange={() => toggleDonation("temple")}
+            checked={donations["Temple Donation"]}
+            onChange={() => toggleDonation("Temple Donation")}
             className="w-4 h-4 accent-orange-500 cursor-pointer"
           />
           <span className="text-[13px] text-slate-500 font-bold uppercase tracking-wider">
