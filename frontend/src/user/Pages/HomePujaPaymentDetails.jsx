@@ -202,20 +202,21 @@ const HomePujaPaymentDetails = () => {
       0,
     );
     if (donations["Gau Seva"]) sum += getPrice("Gau Seva");
+    if (donations["Temple Donation"]) sum += getPrice("Temple Donation");
     return sum;
   };
 
   const basePrice = Number(puja?.standard_price || 0);
   const samagriPrice = isSamagriSelected ? getPrice("Samagri Kit") : 0;
   const dharmicTotal = getDharmicTotal();
-  const templeDonation = donations["Temple Donation"]
-    ? Number(
-        Array.from(contributionOptions2).filter(
-          (c) => c.name == "Temple Donation",
-        )[0].price,
-      )
-    : 0;
-  const grandTotal = basePrice + samagriPrice + dharmicTotal + templeDonation;
+  // const templeDonation = donations["Temple Donation"]
+  //   ? Number(
+  //       Array.from(contributionOptions2).filter(
+  //         (c) => c.name == "Temple Donation",
+  //       )[0].price,
+  //     )
+  //   : 0;
+  const grandTotal = basePrice + samagriPrice + dharmicTotal;
 
   const inputBaseClass =
     "w-full bg-gray-50 border border-orange-200 rounded-xl px-3 py-3 text-gray-800 placeholder:text-gray-400 focus:outline-none focus:border-orange-500 transition-all font-medium text-sm";

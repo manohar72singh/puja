@@ -148,7 +148,7 @@ const PindDanBooking = () => {
         },
         body: JSON.stringify(bookingData),
       });
-
+      console.log("data", bookingData);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Server crashed");

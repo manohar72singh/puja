@@ -122,6 +122,7 @@ const TemplePujaBooking = () => {
         };
       })
       .filter((d) => d.contribution_type_id); // safety
+
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,

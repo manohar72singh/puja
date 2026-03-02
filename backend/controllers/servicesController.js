@@ -106,7 +106,7 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
     } = req.body;
 
     const userId = req.user.id;
-    console.log(req.body);
+    console.log("request body---", req.body);
     const formattedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];
@@ -149,8 +149,6 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
 
     // 2️⃣ Fetch price from DB & insert contributions
     for (let name of donationNames) {
-      console.log("name:::", name);
-
       const [rows] = await connection.query(
         `SELECT id, price FROM contribution_types 
          WHERE name LIKE ? AND is_active = 1`,
@@ -219,7 +217,7 @@ export const bookingDetails = async (req, res) => {
       bookingId,
       total_price,
     } = req.body;
-    console.log("req body", req.body);
+    // console.log("req body", req.body);
     const userId = req.user.id;
 
     const formattedDate = date
@@ -584,7 +582,7 @@ export const postSupportQuery = async (req, res) => {
 
 export const getUserSupportQueries = async (req, res) => {
   try {
-    console.log("--- Fetching from DB ---");
+    // console.log("--- Fetching from DB ---");
     const userId = req.user.id;
 
     const sql =
@@ -594,7 +592,7 @@ export const getUserSupportQueries = async (req, res) => {
     // results ek array return karta hai jisme pehla element data hota hai
     const [results] = await pool.query(sql, [userId]);
 
-    console.log("DB Success! Rows found:", results.length);
+    // console.log("DB Success! Rows found:", results.length);
 
     return res.status(200).json(results);
   } catch (error) {
