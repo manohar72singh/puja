@@ -1,48 +1,141 @@
 import React from "react";
+import { BoltIcon } from "@heroicons/react/24/solid";
 
-const RecentBookings = ({ bookings }) => {
-  console.log("Recent Bookings:", bookings); // Debugging log
+const RecentBookings = ({ bookings = [] }) => {
   return (
-    <div className="bg-white rounded-2xl shadow p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold">Recent Bookings</h2>
-        <span className="text-sm text-gray-500">
-          Last {bookings.length} bookings
+    <div
+      style={{
+        background: "#161b27",
+        border: "1px solid rgba(255,255,255,0.06)",
+        borderRadius: 12,
+        padding: "20px",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          marginBottom: 16,
+        }}
+      >
+        <span style={{ fontSize: 16 }}>📅</span>
+        <span
+          style={{
+            color: "#f9fafb",
+            fontWeight: 700,
+            fontSize: 16,
+            fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Recent Bookings
         </span>
       </div>
 
-      <div className="space-y-4">
-        {bookings.map((b) => (
-          <div
-            key={b.id}
-            className="flex justify-between items-center p-4 border rounded-xl hover:shadow-md transition"
-          >
-            <div>
-              <p className="font-semibold">{b.bookingId}</p>
-              <p className="text-sm text-gray-500">
-                {b.user_name} • {b.puja_name}
-              </p>
-            </div>
+      {/* Bookings List */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {bookings.length === 0 ? (
+          <p style={{ color: "#9ca3af", fontSize: 14 }}>
+            No recent bookings found.
+          </p>
+        ) : (
+          bookings.map((b, index) => {
+            const formattedDate = new Date(b.created_at).toLocaleString(
+              "en-IN",
+              {
+                day: "2-digit",
+                month: "short",
+                hour: "2-digit",
+                minute: "2-digit",
+              }
+            );
 
-            <div className="text-right">
-              <p className="font-semibold text-green-600">₹ {b.price}</p>
-              <span
-                className={`text-xs px-3 py-1 rounded-full 
-                ${
-                  b.status === "completed"
-                    ? "bg-green-100 text-green-700"
-                    : b.status === "pending"
-                      ? "bg-yellow-100 text-yellow-700"
-                      : b.status === "declined"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-blue-100 text-blue-700"
-                }`}
+            const statusColors = {
+              accepted: "#3b82f6",
+              pending: "#f59e0b",
+              completed: "#22c55e",
+              declined: "#ef4444",
+            };
+
+            return (
+              <div
+                key={index}
+                style={{
+                  background: "#1c2233",
+                  padding: "14px 16px",
+                  borderRadius: 10,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                }}
               >
-                {b.status}
-              </span>
-            </div>
-          </div>
-        ))}
+                {/* Left */}
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div
+                    style={{
+                      background: "#2a3145",
+                      padding: 8,
+                      borderRadius: 8,
+                    }}
+                  >
+                    <BoltIcon width={16} color="#cbd5e1" />
+                  </div>
+
+                  <div>
+                    <div
+                      style={{
+                        color: "#ffffff",
+                        fontWeight: 600,
+                        fontSize: 14,
+                      }}
+                    >
+                      {b.user_name}
+                    </div>
+                    <div
+                      style={{
+                        color: "#9ca3af",
+                        fontSize: 12,
+                      }}
+                    >
+                      {b.puja_name} • {formattedDate}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right */}
+                <div style={{ textAlign: "right" }}>
+                  <div
+                    style={{
+                      color: "#22c55e",
+                      fontWeight: 600,
+                      fontSize: 14,
+                    }}
+                  >
+                    ₹{Number(b.price).toLocaleString("en-IN")}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 4,
+                      fontSize: 11,
+                      padding: "4px 10px",
+                      borderRadius: 20,
+                      display: "inline-block",
+                      background: `${statusColors[b.status]}20`,
+                      color: statusColors[b.status],
+                      textTransform: "capitalize",
+                    }}
+                  >
+                    {b.status === "accepted"
+                      ? "confirmed"
+                      : b.status}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
     </div>
   );
