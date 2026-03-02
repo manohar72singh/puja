@@ -1,7 +1,9 @@
 import React,
  { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
-const API_URL = "http://localhost:5000/api/kundli/generate";
+const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+
+const API_URL = `${API_BASE_URL}/api/kundli/generate`;
 
 // ── Planet display data ───────────────────────────────────────
 const PLANET_SYMBOLS = {

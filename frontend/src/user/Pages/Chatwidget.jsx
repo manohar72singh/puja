@@ -11,7 +11,7 @@ import { jwtDecode } from "jwt-decode";
 
 // agar Redux nahi use karte toh neeche comment dekho
 
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "http://localhost:5000";
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 export default function ChatWidget() {
 

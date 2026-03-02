@@ -7,7 +7,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { io } from "socket.io-client";
 
-const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || "http://localhost:4000";
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL;
 
 export default function AgentPanel() {
   const [sessions, setSessions] = useState([]);

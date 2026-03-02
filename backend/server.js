@@ -90,7 +90,6 @@ const startServer = async () => {
     // app.listen ki jagah server.listen — Socket.io ke liye zaroori hai
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
-      console.log(`📡  Kundli endpoint: POST http://localhost:${PORT}/api/kundli/generate\n`);
       console.log(`💬  Chat Socket ready on port ${PORT}`);
       debugSweph();
     });
