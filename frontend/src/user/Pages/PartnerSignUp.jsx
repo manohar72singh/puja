@@ -196,7 +196,7 @@ const PartnerSignUp = () => {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                 {/* PANDIT TYPE DROPDOWN */}
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-bold text-[#8C7A6B] uppercase">Select Pandit Type</label>
+                                    <label className="text-[10px] font-black text-[#8C7A6B] uppercase ml-1 tracking-wider">Select Pandit Type</label>
                                     <select
                                         name="panditType"
                                         value={formData.panditType}
@@ -211,7 +211,7 @@ const PartnerSignUp = () => {
 
                                 {/* FILE UPLOAD FIELD */}
                                 <div className="space-y-1">
-                                    <label className="text-[13px] font-bold text-[#8C7A6B] uppercase">Upload Identity/Cert</label>
+                                    <label className="text-[10px] font-black text-[#8C7A6B] uppercase ml-1 tracking-wider">Upload Identity/Cert</label>
                                     <div className="relative">
                                         <input
                                             type="file"
@@ -271,7 +271,7 @@ const PartnerSignUp = () => {
                                 </div>
                             </div>
 
-                            <button onClick={handleSendOTP} disabled={isLoading} className="w-full py-4 mt-2 bg-orange-400 text-white font-black rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center text-[10px] uppercase tracking-[0.2em] h-14">
+                            <button onClick={handleSendOTP} disabled={isLoading} className="w-full py-4 mt-6 bg-orange-400 text-white font-black rounded-xl shadow-lg active:scale-[0.98] transition-all flex items-center justify-center text-[10px] uppercase tracking-[0.2em] h-14">
                                 {isLoading ? <Loader2 className="animate-spin" /> : "Initiate Verification"}
                             </button>
                         </div>
@@ -290,7 +290,7 @@ const PartnerSignUp = () => {
                         </div>
                     )}
 
-                    <div className="mt-6 pt-4 border-t border-gray-100 w-full flex justify-center">
+                    <div className="pt-3 border-t border-gray-100 w-full flex justify-center">
                         <div className="flex items-center gap-2 text-[9px] font-black text-emerald-600 bg-emerald-50/50 px-4 py-1.5 rounded-full border border-emerald-100/50">
                             <ShieldCheck size={12} strokeWidth={3} /> SECURE ONBOARDING
                         </div>

@@ -10,6 +10,7 @@ import {
   Clock
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import ChatWidget from "./Chatwidget";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -296,6 +297,7 @@ const HelpSection = () => {
           )}
         </div>
       </div>
+      <ChatWidget />
     </div>
   );
 };

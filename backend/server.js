@@ -1,6 +1,8 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { createServer } from "http";
+import { Server } from "socket.io";
 import authRouter from "./routes/authRouter.js";
 import servicesRouter from "./routes/servicesRoutes.js";
 import partnerRouter from "./routes/partnerRouter.js";
@@ -8,8 +10,9 @@ import adminRouter from "./routes/adminRouter.js";
 import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
 import kundliRouter from './routes/kundliRouter.js';
-import { debugSweph } from './controllers/kundliController.js'; 
-
+import { debugSweph } from './controllers/kundliController.js';
+import chatRouter from "./routes/chatRouter.js"
+import initChatSocket from "./socket/chatSocket.js";
 import contribution from "./routes/contributionRouter.js";
 import pool from "./config/db.js";
 import path from "path";
@@ -31,7 +34,16 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 1. Middlewares (Sabke peeche semicolon zaroori hai)
+// HTTP server + Socket.io ke liye
+const server = createServer(app);
+const io = new Server(server, {
+  cors: { origin: "*" },
+});
+
+// Chat Socket initialize
+initChatSocket(io);
+
+// 1. Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -49,7 +61,7 @@ app.get("/", (req, res) => {
 
 app.use('/api/kundli', kundliRouter);
 
-//get mandir
+// get mandir
 app.use("/mandir", mandirRouter);
 
 // 3. Routes
@@ -63,29 +75,30 @@ app.use("/admin", adminRouter);
 // customer care routes
 app.use("/customerCare", customerCare);
 
-// contibution
+// chat routes
+app.use("/api/chat", chatRouter);
+
+// contribution
 app.use("/contributions", contribution);
 
-// 4. 🔥 DATABASE CONNECTION + SERVER START
-// Is IIFE (async function) se pehle semicolon lagana best practice hai
+// 4. DATABASE CONNECTION + SERVER START
 const startServer = async () => {
   try {
-    // Database connection check
     await pool.query("SELECT 1");
     console.log("✅ Database connected successfully");
 
-    // Server Listen
-    app.listen(PORT, () => {
+    // app.listen ki jagah server.listen — Socket.io ke liye zaroori hai
+    server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`📡  Kundli endpoint: POST http://localhost:${PORT}/api/kundli/generate\n`);
-       debugSweph();
+      console.log(`💬  Chat Socket ready on port ${PORT}`);
+      debugSweph();
     });
   } catch (error) {
     console.error("❌ Database connection failed:");
     console.error(error.message);
-    process.exit(1); // Error hone par process band kar dein
+    process.exit(1);
   }
 };
 
-// Start the sequence
 startServer();
