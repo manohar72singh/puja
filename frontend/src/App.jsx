@@ -50,6 +50,8 @@ import AdminDashboard from "./admin/pages/AdminDashboard";
 import AdminLogin from "./admin/pages/AdminLogin";
 import KundliPortal from "./user/Pages/KundliPortal";
 
+import Chatwidget from "./user/Pages/Chatwidget";
+
 function App() {
   const location = useLocation();
 
@@ -66,7 +68,8 @@ function App() {
     "/customerCare/signIn",
     "/customerCare/dashboard",
     "/admin/login",
-    "/admin/dashboard"
+    "/admin/dashboard",
+    "/kundli"
   ].includes(location.pathname);
 
   return (
@@ -77,7 +80,8 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
 
-          <Route path="/kundli" element={<KundliPortal/>}/>
+            {/* <Route path="/chat" element={<Chatwidget />} /> */}
+          <Route path="/kundli" element={<KundliPortal />} />
 
           <Route path="/temples" element={<FullTemplePage />} />
           <Route path="/temples/:id" element={<MandirDetailsPage />} />
@@ -132,7 +136,7 @@ function App() {
             <Route path="/profile" element={<ProfileSection />} />
             <Route path="/manageSankalp" element={<ManageSankalp />} />
             <Route path="/savedAddresses" element={<SavedAddresses />} />
-            <Route path="/my-booking" element={<MyBookings/>} />
+            <Route path="/my-booking" element={<MyBookings />} />
           </Route>
 
           <Route path="/help">
@@ -146,6 +150,7 @@ function App() {
         <Route path="/signup" element={<SignUp />} />
         <Route path="/partnerSignIn" element={<PartnerSignIn />} />
         <Route path="/partnerSignUp" element={<PartnerSignUp />} />
+
 
         {/* ================= PARTNER ROUTES ================= */}
         <Route element={<ProtectedLayout allowedRoles={["pandit"]} />}>
@@ -164,15 +169,13 @@ function App() {
         {/* admin routes */}
         <Route path="/admin/login" element={<AdminLogin />} />
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        {/* <Route element={<ProtectedLayout allowedRoles={["admin"]} />}>
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        </Route> */}
 
         {/* ================= 404 ================= */}
         <Route path="*" element={<h1>Not Found</h1>} />
       </Routes>
 
       {!hideFloatingMenu && <RightFloatingMenu />}
+      {/* {!hideFloatingMenu && <Chatwidget />} */}
     </>
   );
 }

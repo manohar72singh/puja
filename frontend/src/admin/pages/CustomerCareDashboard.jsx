@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { io } from "socket.io-client";
 import {
   Users,
   BookOpen,
@@ -25,9 +26,12 @@ import {
   AlignLeft,
   CheckCheck,
   ChartArea,
+  Send,
+  MessageCircle,
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
 
 /* ── Booking Status config ── */
 const STATUS_CFG = {
@@ -161,6 +165,400 @@ const Th = ({ children, center }) => (
     {children}
   </th>
 );
+
+/* ════════════════════════════════════════════
+   CHAT SUPPORT PANEL — NAYA COMPONENT
+   Sirf yeh add kiya hai, baaki sab original hai
+════════════════════════════════════════════ */
+const ChatSupportPanel = ({ token }) => {
+  const [sessions, setSessions] = useState([]);
+  const [activeSessionId, setActiveSessionId] = useState(null);
+  const [messages, setMessages] = useState({});
+  const [inputText, setInputText] = useState("");
+  const [userTyping, setUserTyping] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [unread, setUnread] = useState({});
+  const [notification, setNotification] = useState(null);
+
+  const socketRef = useRef(null);
+  const messagesEndRef = useRef(null);
+  const typingTimeoutRef = useRef(null);
+  const notifRef = useRef(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, activeSessionId]);
+
+  useEffect(() => {
+    if (!token) return;
+    const socket = io(SOCKET_URL, { auth: { token } });
+    socketRef.current = socket;
+
+    socket.on("connect", () => setIsConnected(true));
+    socket.on("disconnect", () => setIsConnected(false));
+
+    socket.on("agent:sessions", (existing) => {
+      setSessions(existing);
+      const msgs = {};
+      existing.forEach((s) => { msgs[s.sessionId] = s.messages || []; });
+      setMessages(msgs);
+    });
+
+    socket.on("agent:new-session", (session) => {
+      setSessions((prev) =>
+        prev.find((s) => s.sessionId === session.sessionId) ? prev : [session, ...prev]
+      );
+      setMessages((prev) => ({ ...prev, [session.sessionId]: [] }));
+      setUnread((prev) => ({ ...prev, [session.sessionId]: true }));
+      showNotif(`Naya user: ${session.userName}`);
+    });
+
+    socket.on("agent:session-updated", (session) => {
+      setSessions((prev) =>
+        prev.map((s) => (s.sessionId === session.sessionId ? session : s))
+      );
+    });
+
+    socket.on("message:received", (msg) => {
+      setMessages((prev) => ({
+        ...prev,
+        [msg.sessionId]: [...(prev[msg.sessionId] || []), msg],
+      }));
+      if (msg.senderType === "user")
+        setUnread((prev) => ({ ...prev, [msg.sessionId]: true }));
+    });
+
+    socket.on("typing:show", ({ senderType }) => {
+      if (senderType === "user") setUserTyping(true);
+    });
+    socket.on("typing:hide", () => setUserTyping(false));
+
+    socket.on("session:closed", ({ sessionId }) => {
+      setSessions((prev) =>
+        prev.map((s) => (s.sessionId === sessionId ? { ...s, status: "closed" } : s))
+      );
+    });
+
+    return () => socket.disconnect();
+  }, [token]);
+
+  const showNotif = (text) => {
+    setNotification(text);
+    clearTimeout(notifRef.current);
+    notifRef.current = setTimeout(() => setNotification(null), 4000);
+  };
+
+  const acceptSession = (sessionId) => {
+    socketRef.current.emit("agent:accept-session", { sessionId });
+    setActiveSessionId(sessionId);
+    setUnread((prev) => ({ ...prev, [sessionId]: false }));
+  };
+
+  const selectSession = (sessionId) => {
+    setActiveSessionId(sessionId);
+    setUnread((prev) => ({ ...prev, [sessionId]: false }));
+  };
+
+  const sendMessage = useCallback(() => {
+    const session = sessions.find((s) => s.sessionId === activeSessionId);
+    if (!inputText.trim() || !activeSessionId || session?.status !== "active") return;
+    socketRef.current.emit("message:send", { sessionId: activeSessionId, text: inputText.trim() });
+    setInputText("");
+    socketRef.current.emit("typing:stop", { sessionId: activeSessionId });
+  }, [inputText, activeSessionId, sessions]);
+
+  const handleTyping = (e) => {
+    setInputText(e.target.value);
+    if (!activeSessionId) return;
+    socketRef.current.emit("typing:start", { sessionId: activeSessionId, senderType: "agent" });
+    clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(
+      () => socketRef.current?.emit("typing:stop", { sessionId: activeSessionId }),
+      1500
+    );
+  };
+
+  const closeSession = () => {
+    if (!activeSessionId) return;
+    socketRef.current.emit("session:close", { sessionId: activeSessionId });
+  };
+
+  const activeSession = sessions.find((s) => s.sessionId === activeSessionId);
+  const activeMessages = activeSessionId ? messages[activeSessionId] || [] : [];
+  const waitingCount = sessions.filter((s) => s.status === "waiting").length;
+
+  const statusBadge = {
+    waiting: "bg-amber-400/10 text-amber-400 border-amber-400/25",
+    active:  "bg-emerald-400/10 text-emerald-400 border-emerald-400/25",
+    closed:  "bg-slate-500/10 text-slate-400 border-slate-500/25",
+  };
+  const statusDot = { waiting: "bg-amber-400", active: "bg-emerald-400", closed: "bg-slate-500" };
+  const statusLabel = { waiting: "Wait", active: "Live", closed: "Band" };
+
+  return (
+    <div className="flex h-[calc(100vh-8rem)] bg-gradient-to-br from-[#0d1829] to-[#080f1c] border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
+
+      {/* Notification */}
+      {notification && (
+        <div className="absolute top-4 right-4 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-blue-500/30">
+          🔔 {notification}
+        </div>
+      )}
+
+      {/* ── LEFT: Sessions List ── */}
+      <div className="w-72 border-r border-white/[0.04] flex flex-col flex-shrink-0">
+
+        {/* Header */}
+        <div className="px-5 py-4 border-b border-white/[0.04] bg-gradient-to-r from-blue-500/[0.08] to-indigo-500/[0.05]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <MessageCircle size={16} className="text-blue-400" />
+              <span className="text-sm font-bold text-slate-200">Live Chats</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span
+                className={`w-2 h-2 rounded-full ${isConnected ? "bg-emerald-400" : "bg-rose-400"}`}
+                style={isConnected ? { boxShadow: "0 0 6px #4ade80" } : {}}
+              />
+              <span className="text-[10px] text-slate-500">
+                {isConnected ? "Online" : "Offline"}
+              </span>
+            </div>
+          </div>
+
+          {/* Mini stats */}
+          <div className="flex gap-2 mt-3">
+            {[
+              { label: "Total", count: sessions.length,                                          color: "text-blue-400",    bg: "bg-blue-500/10 border-blue-500/20"    },
+              { label: "Live",  count: sessions.filter((s) => s.status === "active").length,   color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+              { label: "Wait",  count: waitingCount,                                             color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/20"  },
+            ].map((s) => (
+              <div key={s.label} className={`flex-1 text-center py-1.5 rounded-lg border ${s.bg}`}>
+                <div className={`font-mono text-base font-bold ${s.color}`}>{s.count}</div>
+                <div className="text-[9px] text-slate-600 uppercase tracking-wider">{s.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Sessions list */}
+        <div className="flex-1 overflow-y-auto">
+          {sessions.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-full text-slate-600 gap-3">
+              <MessageSquare size={32} className="opacity-40" />
+              <span className="text-xs">Koi user nahi abhi</span>
+            </div>
+          ) : (
+            sessions.map((session) => (
+              <div
+                key={session.sessionId}
+                onClick={() => selectSession(session.sessionId)}
+                className={`px-4 py-3.5 cursor-pointer border-b border-white/[0.03] transition-all duration-150
+                  ${activeSessionId === session.sessionId
+                    ? "bg-blue-500/[0.08] border-l-2 border-l-blue-500"
+                    : "hover:bg-white/[0.02] border-l-2 border-l-transparent"
+                  }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-blue-500/20 flex items-center justify-center font-bold text-blue-300 text-[13px]">
+                        {session.userName.charAt(0).toUpperCase()}
+                      </div>
+                      {unread[session.sessionId] && (
+                        <span className="absolute -top-1 -right-1 w-3 h-3 bg-rose-500 rounded-full border-2 border-[#080f1c]" />
+                      )}
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[13px] font-semibold text-slate-200 truncate">
+                        {session.userName}
+                      </p>
+                      <p className="text-[10px] text-slate-600">
+                        {new Date(session.startedAt).toLocaleTimeString("en-IN", {
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ml-1 ${statusBadge[session.status] || "bg-slate-700 text-slate-400 border-slate-600"}`}>
+                    {statusLabel[session.status]}
+                  </span>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* ── RIGHT: Chat Window ── */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {activeSession ? (
+          <>
+            {/* Chat Header */}
+            <div className="px-6 py-4 border-b border-white/[0.04] flex items-center justify-between bg-[#05080f]/40 flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-blue-500/20 flex items-center justify-center font-bold text-blue-300 text-[15px]">
+                  {activeSession.userName.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-slate-200">{activeSession.userName}</p>
+                  <p className="text-[10px] text-slate-500">{activeSession.userEmail || activeSession.sessionId}</p>
+                </div>
+                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ml-2 ${statusBadge[activeSession.status] || ""}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusDot[activeSession.status]}`} />
+                  {activeSession.status === "active" ? "Live" : activeSession.status === "waiting" ? "Waiting" : "Band"}
+                </span>
+              </div>
+
+              <div className="flex gap-2">
+                {activeSession.status === "waiting" && (
+                  <button
+                    onClick={() => acceptSession(activeSession.sessionId)}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition"
+                  >
+                    <CheckCircle size={13} /> Accept
+                  </button>
+                )}
+                {activeSession.status === "active" && (
+                  <button
+                    onClick={closeSession}
+                    className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-[12px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition"
+                  >
+                    <XCircle size={13} /> Band Karen
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-6 py-4 flex flex-col gap-3 bg-[#060d1a]/30">
+              {activeMessages.length === 0 && (
+                <div className="flex flex-col items-center justify-center flex-1 text-slate-600 gap-3 mt-20">
+                  <MessageSquare size={36} className="opacity-30" />
+                  <span className="text-xs">Koi message nahi abhi</span>
+                  {activeSession.status === "waiting" && (
+                    <span className="text-[11px] text-amber-400/70 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg">
+                      Accept karo chat shuru karne ke liye
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {activeMessages.map((msg) =>
+                msg.type === "system" ? (
+                  <div
+                    key={msg.id}
+                    className="text-center text-[11px] text-blue-400/70 bg-blue-500/[0.06] border border-blue-500/15 px-4 py-1.5 rounded-full mx-auto"
+                  >
+                    {msg.text}
+                  </div>
+                ) : (
+                  <div
+                    key={msg.id}
+                    className={`flex items-end gap-2.5 ${msg.senderType === "agent" ? "flex-row-reverse" : "flex-row"}`}
+                  >
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${msg.senderType === "agent" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-300"}`}>
+                      {msg.senderType === "agent" ? <Headphones size={13} /> : msg.senderName.charAt(0).toUpperCase()}
+                    </div>
+                    <div className={`max-w-[65%] flex flex-col ${msg.senderType === "agent" ? "items-end" : "items-start"}`}>
+                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed break-words
+                        ${msg.senderType === "agent"
+                          ? "bg-gradient-to-br from-blue-600/80 to-indigo-600/80 text-white rounded-br-sm border border-blue-500/30"
+                          : "bg-[#0d1829] border border-white/[0.06] text-slate-200 rounded-bl-sm"
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                      <span className="text-[10px] text-slate-600 mt-1 px-1">
+                        {new Date(msg.timestamp).toLocaleTimeString("en-IN", {
+                          hour: "2-digit", minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  </div>
+                )
+              )}
+
+              {userTyping && (
+                <div className="flex items-center gap-2">
+                  <div className="flex gap-1 bg-[#0d1829] border border-white/[0.06] px-3 py-2 rounded-xl">
+                    {[0, 1, 2].map((i) => (
+                      <span
+                        key={i}
+                        className="w-1.5 h-1.5 bg-slate-500 rounded-full inline-block"
+                        style={{ animation: `ccBounce 1.2s ${i * 0.15}s ease-in-out infinite` }}
+                      />
+                    ))}
+                  </div>
+                  <span className="text-[11px] text-slate-500 italic">
+                    {activeSession.userName} likh raha hai...
+                  </span>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="px-6 py-4 border-t border-white/[0.04] flex gap-3 bg-[#05080f]/60 flex-shrink-0">
+              <input
+                value={inputText}
+                onChange={handleTyping}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                disabled={activeSession?.status !== "active"}
+                placeholder={
+                  activeSession?.status === "active"
+                    ? "Reply likhein... (Enter to send)"
+                    : activeSession?.status === "waiting"
+                    ? "Pehle chat accept karein..."
+                    : "Chat band ho gayi"
+                }
+                className="flex-1 bg-[#0a1220] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500/30 disabled:opacity-40 transition"
+              />
+              <button
+                onClick={sendMessage}
+                disabled={activeSession?.status !== "active" || !inputText.trim()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-500/30 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_4px_15px_rgba(59,130,246,0.2)]"
+              >
+                <Send size={14} /> Bhejo
+              </button>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex flex-col items-center justify-center text-slate-600 gap-4">
+            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+              <Headphones size={28} className="text-blue-400/50" />
+            </div>
+            <div className="text-center">
+              <p className="text-slate-400 font-semibold text-sm">Chat Support Panel</p>
+              <p className="text-xs mt-1">Left side se koi session select karein</p>
+            </div>
+            {waitingCount > 0 && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs font-semibold">
+                <Clock size={13} />
+                {waitingCount} user{waitingCount > 1 ? "s" : ""} intezaar mein hain!
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <style>{`
+        @keyframes ccBounce {
+          0%, 60%, 100% { transform: translateY(0); }
+          30% { transform: translateY(-4px); }
+        }
+      `}</style>
+    </div>
+  );
+};
+/* ════════════════════════════════════════════
+   CHAT SUPPORT PANEL END
+════════════════════════════════════════════ */
 
 const CustomerCareDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -1092,8 +1490,9 @@ const CustomerCareDashboard = () => {
             </div>
           )}
 
-          {/* chat support */}
-          {activeTab === "chatsupport" && <div>Chat Support</div>}
+          {/* ── CHAT SUPPORT — sirf yeh 1 line badli hai ── */}
+          {activeTab === "chatsupport" && <ChatSupportPanel token={token} />}
+
         </div>
       </main>
 

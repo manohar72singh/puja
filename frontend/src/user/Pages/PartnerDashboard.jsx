@@ -182,12 +182,15 @@ const PartnerDashboard = () => {
               </span>
               <button
                 onClick={() => setIsOnline(!isOnline)}
-                className={`relative w-12 h-6.5 rounded-full transition-all duration-300 ${isOnline ? "bg-green-500" : "bg-gray-300"}`}
+                className={`relative w-12 h-6 rounded-full transition-all duration-300 ${isOnline ? "bg-green-500" : "bg-gray-300"
+                  }`}
               >
-                <span className={`absolute top-1 left-1 w-5 h-5 bg-white rounded-full shadow transition-all duration-300 ${isOnline ? "translate-x-5.5" : ""}`} />
+                <span
+                  className={`absolute top-1/2 -translate-y-1/2 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-all duration-300 ${isOnline ? "translate-x-6" : "translate-x-0"
+                    }`}
+                />
               </button>
             </div>
-            <Bell size={22} className="text-[#6b5840] cursor-pointer" />
             <LogOut
               size={22}
               className="text-[#6b5840] cursor-pointer hover:text-red-500 transition"
@@ -216,8 +219,8 @@ const PartnerDashboard = () => {
               key={t.key}
               onClick={() => setActiveTab(t.key)}
               className={`flex-1 flex items-center justify-center gap-2.5 py-3 rounded-xl text-[14px] font-bold transition-all ${activeTab === t.key
-                  ? "bg-[#FDFAF4] shadow text-[#1a1208]"
-                  : "text-[#a89880] hover:text-[#6b5840]"
+                ? "bg-[#FDFAF4] shadow text-[#1a1208]"
+                : "text-[#a89880] hover:text-[#6b5840]"
                 }`}
             >
               {t.icon} {t.label}

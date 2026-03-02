@@ -216,7 +216,7 @@ const getHouseLayout = (h) => {
     10: { rx: M + 70, ry: M + 5,    px: (3 * M) / 2 + 15, py: M + 10 },
 
     // OUTER TRIANGLES (Shifted away from inner lines)
-    2:  { rx: M - 110, ry: 40,       px: M / 2 + 10, py: 90 },     // Top-Left: Thoda niche aur right shift
+    2:  { rx: M - 110, ry: 40,       px: M / 2 , py: 35 },     // Top-Left: Thoda niche aur right shift
     3:  { rx: 30,     ry: M - 140,   px: 80,         py: M / 2 - 5 }, // Left-Mid: Thoda right shift
     5:  { rx: 20,     ry: M + 140,   px: 80,         py: (3 * S) / 4 + 5 }, 
     6:  { rx: M - 120, ry: S - 35,   px: M / 2 + 10, py: S - 80 }, 

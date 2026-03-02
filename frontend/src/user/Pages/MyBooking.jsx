@@ -160,7 +160,7 @@ const MyBookings = () => {
 
         {bookings.length === 0 ? (
           <div className="bg-white p-8 sm:p-10 rounded-3xl text-center shadow-sm">
-            <p className="text-gray-500 font-medium">Abhi tak koi booking nahi ki gayi hai.</p>
+            <p className="text-gray-500 font-medium">No bookings have been made yet.</p>
           </div>
         ) : (
           <div className="space-y-4">

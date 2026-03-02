@@ -55,7 +55,7 @@ const PartnerSignIn = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDF8F1] flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#FDF8F1] flex flex-col items-center justify-start pt-8 p-4 relative overflow-hidden font-sans">
 
       {/* Background Blurs */}
       <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-orange-100 rounded-full blur-[120px] opacity-60" />
@@ -72,7 +72,7 @@ const PartnerSignIn = () => {
         </div>
 
         {/* MAIN CARD */}
-        <div className="bg-white rounded-[40px] shadow-[0_25px_80px_-10px_rgba(0,0,0,0.20)]
+        <div className="bg-white rounded-[28px] shadow-[0_25px_80px_-10px_rgba(0,0,0,0.20)]
           border border-white/50 p-8 md:p-10 flex flex-col items-center">
 
           {/* Logo with custom src */}
