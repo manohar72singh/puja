@@ -30,6 +30,8 @@ router.post(
   verifyToken,
   homeORKathaPujaBookingDetails,
 );
+
+
 //user ko uski sare bookings dikh rahi hai..
 router.get("/my-bookings", verifyToken, getUserBookings);
 

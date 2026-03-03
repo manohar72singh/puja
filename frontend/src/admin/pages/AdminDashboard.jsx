@@ -137,36 +137,6 @@ const Sidebar = ({ active, setActive }) => {
             </button>
           );
         })}
-
-        {/* Extra nav items like in screenshot */}
-        {["Product & CMS", "Operations", "Workforce", "Financial", "User CRM", "Marketing", "Logistics", "Analytics", "Feedback"].map((label) => (
-          <button
-            key={label}
-            style={{
-              width: "100%",
-              display: "flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 12px",
-              borderRadius: 8,
-              border: "none",
-              cursor: "pointer",
-              marginBottom: 2,
-              background: "transparent",
-              color: "#9ca3af",
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14,
-              fontWeight: 400,
-              textAlign: "left",
-              transition: "all 0.15s ease",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
-          >
-            <span style={{ width: 18, height: 18, borderRadius: 4, background: "rgba(255,255,255,0.06)", display: "inline-block" }} />
-            {label}
-          </button>
-        ))}
       </nav>
     </div>
   );
@@ -453,18 +423,15 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-
-
-
                 {/* Recent Bookings */}
                 <RecentBookings bookings={stats.recentBookings || []} />
               </>
             )}
 
+            {tab === "Product & CMS" && <Services />}
             {tab === "Bookings" && <Bookings />}
             {tab === "Users" && <Users />}
             {tab === "Pandits" && <Pandit />}
-            {tab === "Services" && <Services />}
           </div>
         </div>
       </div>

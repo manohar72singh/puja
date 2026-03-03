@@ -121,7 +121,6 @@ const KathaPujaPaymentDetails = () => {
       total_price: grandTotal,
       samagriKit: isSamagriSelected,
     };
-    console.log("payload", payload);
     try {
       const response = await fetch(
         `${API_BASE_URL}/puja/home_KathaPujaBookingDetails`,

@@ -29,8 +29,6 @@ export default function ChatWidget() {
 
     if (!decoded || decoded.role !== "user") return null;
 
-    console.log("Decoded:", decoded);
-    console.log("Role:", decoded?.role);
 
 
     const [isOpen, setIsOpen] = useState(

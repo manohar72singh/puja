@@ -615,7 +615,7 @@ export const deletePandit = async (req, res) => {
 
 export const getAllServices = async (req, res) => {
   try {
-    const { puja_type, search, status } = req.query;
+    const { puja_type, category, search, status } = req.query;
 
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 12;
@@ -624,10 +624,10 @@ export const getAllServices = async (req, res) => {
     let whereClause = `WHERE 1=1`;
     const params = [];
 
-    if (puja_type) {
-      whereClause += ` AND s.puja_type = ?`;
-      params.push(puja_type);
-    }
+    if (puja_type || category) {
+  whereClause += ` AND s.puja_type = ?`;
+  params.push(puja_type || category);
+}
 
     if (search) {
       whereClause += ` AND s.puja_name LIKE ?`;

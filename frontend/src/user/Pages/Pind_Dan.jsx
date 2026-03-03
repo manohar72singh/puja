@@ -101,8 +101,8 @@ export default function Pind_Dan() {
                   <div className="absolute top-3 left-3 z-20">
                     <div className="bg-orange-500/90 backdrop-blur-sm text-white px-2.5 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
                       <Sparkles size={10} fill="white" className="text-white" />
-                      <span className="text-[11px] md:text-[13px] font-bold tracking-wide">
-                        Special
+                      <span className="text-[11px] md:text-[13px] capitalize font-bold tracking-wide">
+                        {service.status}
                       </span>
                     </div>
                   </div>

@@ -13,6 +13,7 @@ export const getServicesByType = async (req, res) => {
           s.puja_type,
           s.description,
           s.image_url,
+          s.status,
 
           MAX(CASE WHEN p.pricing_type = 'standard' THEN p.price END) AS standard_price,
           MAX(CASE WHEN p.pricing_type = 'single' THEN p.price END) AS single_price,
@@ -340,6 +341,7 @@ export const templePuja = async (req, res) => {
         s.puja_type,
         s.description,
         s.image_url,
+        s.status,
         s.created_at AS service_created_at,
 
         t.id AS temple_id,
@@ -439,6 +441,7 @@ export const pindDan = async (req, res) => {
         s.puja_type,
         s.description,
         s.image_url,
+        s.status,
         s.created_at AS service_created_at,
 
         t.id AS temple_id,

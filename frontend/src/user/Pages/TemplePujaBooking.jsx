@@ -69,7 +69,6 @@ const TemplePujaBooking = () => {
         });
         const data = await response.json();
         if (data.success) setService(data.data[0]);
-        console.log(data.data[0]);
       } catch (err) {
         console.error(err);
       } finally {
@@ -93,7 +92,6 @@ const TemplePujaBooking = () => {
     };
     if (id) fetchContributions();
   }, [id]);
-  // console.log("contributionOptions", contributionOptions);
 
   const handleTemplePayment = async () => {
     const token = localStorage.getItem("token");
@@ -146,7 +144,6 @@ const TemplePujaBooking = () => {
       donations: selectedDonationObjects,
       total_price: calculateTotal(),
     };
-    console.log("booking data", bookingData);
 
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {

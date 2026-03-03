@@ -200,7 +200,6 @@ const PartnerDashboard = () => {
       console.error("Fetch Error:", e);
     }
   };
-  console.log("my puja Data", pujas);
   const handleMarkAsComplete = async (id) => {
     if (!window.confirm("Kya ye puja sampann ho gayi hai?")) return;
     try {

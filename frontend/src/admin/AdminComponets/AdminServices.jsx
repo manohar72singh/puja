@@ -16,11 +16,18 @@ const AdminServices = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [openModal, setOpenModal] = useState(false);
   const [editData, setEditData] = useState(null);
+  const [category, setCategory] = useState("");
 
   const fetchServices = async () => {
+
     const { data } = await API.get(`/services`, {
-      params: { page, limit: 12 },
+      params: {
+        page,
+        limit: 15,
+        category: category || undefined
+      },
     });
+
     if (data.success) {
       setServices(data.services);
       setTotalPages(data.totalPages);
@@ -29,7 +36,7 @@ const AdminServices = () => {
 
   useEffect(() => {
     fetchServices();
-  }, [page]);
+  }, [page, category]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this service?")) return;
@@ -58,13 +65,11 @@ const AdminServices = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b1120] text-white p-5">
+    <>
       {/* Header */}
       <div className="flex justify-between items-center mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-900">
-            <LayoutGrid size={18} className="text-white" />
-          </div>
+
           <div>
             <h1 className="text-base font-extrabold text-white leading-tight">
               Product & CMS
@@ -73,15 +78,32 @@ const AdminServices = () => {
           </div>
         </div>
 
-        <button
-          onClick={() => {
-            setEditData(null);
-            setOpenModal(true);
-          }}
-          className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-orange-900/40"
-        >
-          <Plus size={14} /> Add Service
-        </button>
+        <div className="flex items-center gap-2">
+          <select
+            value={category}
+            onChange={(e) => {
+              setCategory(e.target.value);
+              setPage(1);
+            }}
+            className="bg-[#131e32] border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-orange-500"
+          >
+            <option value="">All Categories</option>
+            <option value="home_puja">Home Puja</option>
+            <option value="katha">Katha</option>
+            <option value="temple_puja">Temple Puja</option>
+            <option value="pind_dan">Pind Dan</option>
+          </select>
+
+          <button
+            onClick={() => {
+              setEditData(null);
+              setOpenModal(true);
+            }}
+            className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-orange-900/40"
+          >
+            <Plus size={14} /> Add Service
+          </button>
+        </div>
       </div>
 
       {/* Table Card */}
@@ -134,12 +156,12 @@ const AdminServices = () => {
                       {(service.prices?.length > 0
                         ? service.prices
                         : [
-                            {
-                              price_id: null,
-                              pricing_type: "standard",
-                              price: "",
-                            },
-                          ]
+                          {
+                            price_id: null,
+                            pricing_type: "standard",
+                            price: "",
+                          },
+                        ]
                       ).map((p, index) => (
                         <span
                           key={p.price_id ?? index}
@@ -198,11 +220,10 @@ const AdminServices = () => {
             <button
               key={index}
               onClick={() => setPage(index + 1)}
-              className={`w-7 h-7 text-[11px] font-bold rounded-lg transition ${
-                page === index + 1
-                  ? "bg-orange-500 text-white shadow-md shadow-orange-900"
-                  : "bg-[#131e32] border border-slate-700 text-slate-400 hover:bg-[#1a2744]"
-              }`}
+              className={`w-7 h-7 text-[11px] font-bold rounded-lg transition ${page === index + 1
+                ? "bg-orange-500 text-white shadow-md shadow-orange-900"
+                : "bg-[#131e32] border border-slate-700 text-slate-400 hover:bg-[#1a2744]"
+                }`}
             >
               {index + 1}
             </button>
@@ -226,7 +247,7 @@ const AdminServices = () => {
           refresh={fetchServices}
         />
       )}
-    </div>
+    </>
   );
 };
 

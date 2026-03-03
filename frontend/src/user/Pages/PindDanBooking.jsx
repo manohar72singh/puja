@@ -138,7 +138,6 @@ const PindDanBooking = () => {
       donations: selectedDonationObjects,
       total_price: calculateTotal(),
     };
-    console.log("booking data", bookingData);
     try {
       const response = await fetch(`${API_BASE_URL}/puja/bookingDetails`, {
         method: "POST",
@@ -148,7 +147,6 @@ const PindDanBooking = () => {
         },
         body: JSON.stringify(bookingData),
       });
-      console.log("data", bookingData);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || "Server crashed");
