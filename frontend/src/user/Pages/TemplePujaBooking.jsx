@@ -122,7 +122,19 @@ const TemplePujaBooking = () => {
         };
       })
       .filter((d) => d.contribution_type_id); // safety
+    // 🔥 Temple Donation ko manually add karo agar selected hai
+    if (donations["Temple Donation"]) {
+      const templeDonation = contributionOptions.find(
+        (c) => c.name === "Temple Donation",
+      );
 
+      if (templeDonation) {
+        selectedDonationObjects.push({
+          contribution_type_id: templeDonation.id,
+          amount: Number(templeDonation.price),
+        });
+      }
+    }
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,
@@ -282,10 +294,14 @@ const TemplePujaBooking = () => {
     );
   };
 
-  const selectedContributionsTotal = contributionList.reduce(
-    (acc, item) => (donations[item.id] ? acc + item.price : acc),
-    0,
-  );
+  const selectedContributionsTotal =
+    contributionList.reduce(
+      (acc, item) => (donations[item.id] ? acc + item.price : acc),
+      0,
+    ) +
+    (donations["Temple Donation"]
+      ? Number(getPrice("Temple Donation") || 0)
+      : 0);
 
   if (loading)
     return (
