@@ -413,19 +413,6 @@ export const filtarUsers = async (req, res) => {
 // pandit management, CRUD operations of pandit
 //========================================================================
 
-// export const getAllPandits = async (req, res) => {
-//   try {
-//     const [pandits] = await db.execute(
-//       "SELECT id, name, email, phone, role, created_at FROM users WHERE role='pandit' ORDER BY created_at DESC",
-//     );
-//     const totalPandits = pandits.length;
-//     res.status(200).json({ success: true, totalPandits, pandits });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
-
 // =====================================
 // 1️⃣ Create Pandit
 // =====================================

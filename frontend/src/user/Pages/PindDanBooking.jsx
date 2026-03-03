@@ -40,7 +40,7 @@ const PindDanBooking = () => {
   const [selectedTicket, setSelectedTicket] = useState("Single");
   const [activeTab, setActiveTab] = useState("about");
   const [aboutExpanded, setAboutExpanded] = useState(false);
-  const [contributionOptions, setContributionOptions] = useState("");
+  const [contributionOptions, setContributionOptions] = useState([]);
   const [donations, setDonations] = useState({
     "Vastra Dan": false,
     "Anna Dan": false,
@@ -113,7 +113,19 @@ const PindDanBooking = () => {
           amount: Number(item.price),
         };
       });
+    // 🔥 Temple Donation manually add karo
+    if (donations["Temple Donation"]) {
+      const temple = contributionOptions.find(
+        (c) => c.name === "Temple Donation",
+      );
 
+      if (temple) {
+        selectedDonationObjects.push({
+          contribution_type_id: temple.id,
+          amount: Number(temple.price),
+        });
+      }
+    }
     const bookingData = {
       bookingId: currentBookingId,
       puja_id: id,
@@ -189,10 +201,14 @@ const PindDanBooking = () => {
       window.scrollTo({ top: element.offsetTop - offset, behavior: "smooth" });
     }
   };
-  const getPrice = (title) => {
-    const daan = Array.from(contributionOptions).filter((c) => c.name == title);
+  // const getPrice = (title) => {
+  //   const daan = Array.from(contributionOptions).filter((c) => c.name == title);
 
-    return Number(daan[0]?.price);
+  //   return Number(daan[0]?.price);
+  // };
+  const getPrice = (title) => {
+    const item = contributionOptions.find((c) => c.name === title);
+    return item ? Number(item.price) : 0;
   };
   const contributionList = [
     {
@@ -241,13 +257,7 @@ const PindDanBooking = () => {
     return (
       base +
       extra +
-      (donations["Temple Donation"]
-        ? Number(
-            Array.from(contributionOptions).filter(
-              (c) => c.name == "Temple Donation",
-            )[0].price,
-          )
-        : 0)
+      (donations["Temple Donation"] ? getPrice("Temple Donation") : 0)
     );
   };
 
@@ -762,7 +772,9 @@ const MobileSummarySection = ({
             Temple Donation
           </span>
         </label>
-        <span className="text-[13px] font-black text-orange-500">+₹1</span>
+        <span className="text-[13px] font-black text-orange-500">
+          +₹{getPrice("Temple Donation")}
+        </span>
       </div>
 
       <div className="border-t border-dashed border-gray-300 w-full" />
