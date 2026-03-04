@@ -9,9 +9,9 @@ import partnerRouter from "./routes/partnerRouter.js";
 import adminRouter from "./routes/adminRouter.js";
 import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
-import kundliRouter from './routes/kundliRouter.js';
-import { debugSweph } from './controllers/kundliController.js';
-import chatRouter from "./routes/chatRouter.js"
+import kundliRouter from "./routes/kundliRouter.js";
+import { debugSweph } from "./controllers/kundliController.js";
+import chatRouter from "./routes/chatRouter.js";
 import initChatSocket from "./socket/chatSocket.js";
 import contribution from "./routes/contributionRouter.js";
 import pool from "./config/db.js";
@@ -59,7 +59,7 @@ app.get("/", (req, res) => {
   res.send("Server running ✅");
 });
 
-app.use('/api/kundli', kundliRouter);
+app.use("/api/kundli", kundliRouter);
 
 // get mandir
 app.use("/mandir", mandirRouter);
