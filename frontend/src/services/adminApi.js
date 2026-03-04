@@ -11,6 +11,21 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// ── Admin routes (/admin/...) ──────────────────────────────
 export const getDashboardData = () => API.get("/dashboard");
 export const getMonthlyGrowth = () => API.get("/monthly-growth");
 export const getTodayBookings = () => API.get("/bookings_today");
+
+// ── Financial routes
+export const getFinancialSummary = () => API.get("/summary");
+export const getMonthlyRevenue = () => API.get("/monthly-revenue");
+export const getRevenueByType = () => API.get("/by-service-type");
+export const getTopServices = () => API.get("/top-services?limit=7");
+export const getRevenueByCity = () => API.get("/by-city");
+export const getDonationBreakdown = () => API.get("/donations");
+export const getSamagriKit = () => API.get("/samagri-kit");
+export const getTransactions = (page = 1, limit = 15) =>
+  API.get(`/transactions?page=${page}&limit=${limit}`);
+export const getPanditEarnings = () => API.get("/pandit-earnings");
+export const getDateRangeRevenue = (from, to) =>
+  API.get(`/date-range?from=${from}&to=${to}`);

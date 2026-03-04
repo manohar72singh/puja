@@ -612,9 +612,9 @@ export const getAllServices = async (req, res) => {
     const params = [];
 
     if (puja_type || category) {
-  whereClause += ` AND s.puja_type = ?`;
-  params.push(puja_type || category);
-}
+      whereClause += ` AND s.puja_type = ?`;
+      params.push(puja_type || category);
+    }
 
     if (search) {
       whereClause += ` AND s.puja_name LIKE ?`;
@@ -1034,27 +1034,351 @@ export const getTodayBookings = async (req, res) => {
   }
 };
 
-// =====================================
-// 7️⃣ Assign Pandit To Booking
-// =====================================
-// export const assignPanditToBooking = async (req, res) => {
-//   try {
-//     const { bookingId } = req.params;
-//     const { pandit_id } = req.body;
+// Finance
+// ─────────────────────────────────────────────
+// 1. DASHBOARD SUMMARY (Top KPI Cards)
+// ─────────────────────────────────────────────
+export const getDashboardSummary = async (req, res) => {
+  try {
+    // Total Revenue (completed bookings)
+    const [totalRevenue] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) AS total_revenue
+      FROM puja_requests
+      WHERE status = 'completed'
+    `);
 
-//     await db.query(
-//       `UPDATE puja_requests
-//        SET pandit_id=?, status='accepted'
-//        WHERE id=?`,
-//       [pandit_id, bookingId],
-//     );
+    // Total Bookings
+    const [totalBookings] = await db.query(`
+      SELECT COUNT(*) AS total_bookings FROM puja_requests
+    `);
 
-//     res.json({
-//       success: true,
-//       message: "Pandit assigned successfully",
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
+    // Bookings by status
+    const [statusCounts] = await db.query(`
+      SELECT status, COUNT(*) AS count
+      FROM puja_requests
+      GROUP BY status
+    `);
+
+    // Total Donations (service_contributions)
+    const [totalDonations] = await db.query(`
+  SELECT COALESCE(SUM(CAST(donations AS UNSIGNED)), 0) AS total_donations
+  FROM puja_requests
+  WHERE donations IS NOT NULL
+    AND donations != ''
+    AND donations != '0'
+    AND donations REGEXP '^[0-9]+$'
+    AND status = 'completed'
+`);
+
+    // Total Users (role = 'user')
+    const [totalUsers] = await db.query(`
+      SELECT COUNT(*) AS total_users FROM users WHERE role = 'user'
+    `);
+
+    // Total Pandits
+    const [totalPandits] = await db.query(`
+      SELECT COUNT(*) AS total_pandits FROM users WHERE role = 'pandit'
+    `);
+
+    // Today's Revenue
+    const [todayRevenue] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) AS today_revenue
+      FROM puja_requests
+      WHERE status = 'completed'
+        AND DATE(completed_at) = CURDATE()
+    `);
+
+    // This Month Revenue
+    const [monthRevenue] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) AS month_revenue
+      FROM puja_requests
+      WHERE status = 'completed'
+        AND MONTH(completed_at) = MONTH(CURDATE())
+        AND YEAR(completed_at) = YEAR(CURDATE())
+    `);
+
+    res.json({
+      success: true,
+      data: {
+        total_revenue: totalRevenue[0].total_revenue,
+        total_donations: totalDonations[0].total_donations,
+        total_bookings: totalBookings[0].total_bookings,
+        today_revenue: todayRevenue[0].today_revenue,
+        month_revenue: monthRevenue[0].month_revenue,
+        total_users: totalUsers[0].total_users,
+        total_pandits: totalPandits[0].total_pandits,
+        booking_status: statusCounts,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 2. MONTHLY REVENUE TREND (Last 12 Months)
+// ─────────────────────────────────────────────
+export const getMonthlyRevenue = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        DATE_FORMAT(completed_at, '%Y-%m') AS month,
+        COALESCE(SUM(total_price), 0)      AS revenue,
+        COUNT(*)                            AS bookings
+      FROM puja_requests
+      WHERE status = 'completed'
+        AND completed_at >= DATE_SUB(CURDATE(), INTERVAL 12 MONTH)
+      GROUP BY DATE_FORMAT(completed_at, '%Y-%m')
+      ORDER BY month ASC
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 3. REVENUE BY SERVICE TYPE
+// ─────────────────────────────────────────────
+export const getRevenueByServiceType = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        s.puja_type,
+        COUNT(pr.id)                       AS total_bookings,
+        COALESCE(SUM(pr.total_price), 0)   AS revenue
+      FROM puja_requests pr
+      JOIN services s ON pr.service_id = s.id
+      WHERE pr.status = 'completed'
+      GROUP BY s.puja_type
+      ORDER BY revenue DESC
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 4. TOP PERFORMING SERVICES (by Revenue)
+// ─────────────────────────────────────────────
+export const getTopServices = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        s.id,
+        s.puja_name,
+        s.puja_type,
+        COUNT(pr.id)                     AS total_bookings,
+        COALESCE(SUM(pr.total_price), 0) AS total_revenue
+      FROM puja_requests pr
+      JOIN services s ON pr.service_id = s.id
+      WHERE pr.status = 'completed'
+      GROUP BY s.id, s.puja_name, s.puja_type
+      ORDER BY total_revenue DESC
+      LIMIT ?
+    `,
+      [limit],
+    );
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 5. DONATION BREAKDOWN (by Contribution Type)
+// ─────────────────────────────────────────────
+export const getDonationBreakdown = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        ct.name                          AS donation_type,
+        COUNT(sc.id)                     AS count,
+        COALESCE(SUM(sc.amount), 0)      AS total_amount
+      FROM service_contributions sc
+      JOIN contribution_types ct ON sc.contribution_type_id = ct.id
+      JOIN puja_requests pr ON sc.puja_request_id = pr.id
+      WHERE pr.status = 'completed'
+      GROUP BY ct.id, ct.name
+      ORDER BY total_amount DESC
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 6. SAMAGRI KIT REVENUE
+// ─────────────────────────────────────────────
+export const getSamagriKitRevenue = async (req, res) => {
+  try {
+    const SAMAGRI_PRICE = 600; // from contribution_types table
+
+    const [rows] = await db.query(`
+      SELECT
+        COUNT(*)                              AS total_kits_sold,
+        COUNT(*) * ${SAMAGRI_PRICE}           AS samagri_revenue
+      FROM puja_requests
+      WHERE samagrikit = 1 AND status = 'completed'
+    `);
+
+    res.json({ success: true, data: rows[0] });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 7. REVENUE BY CITY (Top Cities)
+// ─────────────────────────────────────────────
+export const getRevenueByCity = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        city,
+        COUNT(*)                         AS bookings,
+        COALESCE(SUM(total_price), 0)    AS revenue
+      FROM puja_requests
+      WHERE status = 'completed'
+        AND city NOT IN ('N/A', 'default city', 'Default City', 'defalut city')
+      GROUP BY city
+      ORDER BY revenue DESC
+      LIMIT 10
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 8. RECENT TRANSACTIONS (Paginated)
+// ─────────────────────────────────────────────
+export const getRecentTransactions = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const offset = (page - 1) * limit;
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        pr.id,
+        pr.bookingId,
+        u.name        AS user_name,
+        u.phone,
+        s.puja_name,
+        s.puja_type,
+        pr.city,
+        pr.state,
+        pr.status,
+        pr.total_price,
+        pr.samagrikit,
+        pr.donations,
+        pr.created_at,
+        pr.completed_at
+      FROM puja_requests pr
+      JOIN users u    ON pr.user_id    = u.id
+      JOIN services s ON pr.service_id = s.id
+      ORDER BY pr.created_at DESC
+      LIMIT ? OFFSET ?
+    `,
+      [limit, offset],
+    );
+
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) AS total FROM puja_requests`,
+    );
+
+    res.json({
+      success: true,
+      data: rows,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 9. PANDIT EARNINGS (per Pandit)
+// ─────────────────────────────────────────────
+export const getPanditEarnings = async (req, res) => {
+  try {
+    const [rows] = await db.query(`
+      SELECT
+        u.id          AS pandit_id,
+        u.name        AS pandit_name,
+        u.phone,
+        COUNT(pr.id)                     AS completed_pujas,
+        COALESCE(SUM(pr.total_price), 0) AS total_earned
+      FROM users u
+      LEFT JOIN puja_requests pr
+        ON pr.pandit_id = u.id AND pr.status = 'completed'
+      WHERE u.role = 'pandit'
+      GROUP BY u.id, u.name, u.phone
+      ORDER BY total_earned DESC
+    `);
+
+    res.json({ success: true, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+// ─────────────────────────────────────────────
+// 10. DATE RANGE FILTER (Custom Report)
+// ─────────────────────────────────────────────
+export const getRevenueByDateRange = async (req, res) => {
+  try {
+    const { from, to } = req.query; // ?from=2026-02-01&to=2026-03-03
+
+    if (!from || !to)
+      return res
+        .status(400)
+        .json({ success: false, message: "from aur to date required hai" });
+
+    const [rows] = await db.query(
+      `
+      SELECT
+        DATE(created_at)                 AS date,
+        COUNT(*)                         AS bookings,
+        COALESCE(SUM(total_price), 0)    AS revenue,
+        SUM(CASE WHEN status = 'completed' THEN 1 ELSE 0 END)  AS completed,
+        SUM(CASE WHEN status = 'pending'   THEN 1 ELSE 0 END)  AS pending,
+        SUM(CASE WHEN status = 'declined'  THEN 1 ELSE 0 END)  AS declined
+      FROM puja_requests
+      WHERE DATE(created_at) BETWEEN ? AND ?
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `,
+      [from, to],
+    );
+
+    const [[summary]] = await db.query(
+      `
+      SELECT
+        COALESCE(SUM(total_price), 0) AS total_revenue,
+        COUNT(*)                      AS total_bookings
+      FROM puja_requests
+      WHERE status = 'completed'
+        AND DATE(created_at) BETWEEN ? AND ?
+    `,
+      [from, to],
+    );
+
+    res.json({ success: true, summary, data: rows });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
