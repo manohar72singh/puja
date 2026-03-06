@@ -8,7 +8,7 @@ export function RightFloatingMenu() {
 
     const items = [
         { label: "Kundli", icon: <Heart size={13} />, path: "/kundli" },
-        { label: "Panchang", icon: <Calendar size={13} />, path: "/panchang" },
+        { label: "Name", icon: <Calendar size={13} />, path: "/nameCorrection" },
     ];
 
     const handleNavigation = (path) => {

@@ -11,6 +11,7 @@ import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
 import kundliRouter from './routes/kundliRouter.js';
 import { debugSweph } from './controllers/kundliController.js';
+import nameCorrectionRouter from "./controllers/nameCorrectionController.js"
 import chatRouter from "./routes/chatRouter.js"
 import initChatSocket from "./socket/chatSocket.js";
 import contribution from "./routes/contributionRouter.js";
@@ -18,6 +19,7 @@ import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";
+
 
 const storage = multer.diskStorage({
   destination: "./uploads",
@@ -60,6 +62,7 @@ app.get("/", (req, res) => {
 });
 
 app.use('/api/kundli', kundliRouter);
+app.use('/api/name', nameCorrectionRouter);
 
 // get mandir
 app.use("/mandir", mandirRouter);

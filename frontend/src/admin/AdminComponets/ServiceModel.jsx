@@ -1,289 +1,205 @@
-// import React, { useState } from "react";
-import {
-  X,
-  Plus,
-  Trash2,
-  Image,
-  Tag,
-  AlignLeft,
-  IndianRupee,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { X, Plus, Trash2, Image, Tag, AlignLeft, IndianRupee, MapPin, Calendar, Info, Clock, Activity } from "lucide-react"; 
 import { API } from "../../services/adminApi";
-import { useState } from "react";
 
 const ServiceModal = ({ close, editData, refresh }) => {
   const [form, setForm] = useState({
-    puja_name: editData?.puja_name || "",
-    puja_type: editData?.puja_type || "",
-    description: editData?.description || "",
-    prices:
-      editData?.prices?.length > 0
-        ? editData.prices
-        : [{ pricing_type: "standard", price: "" }],
+    puja_name: "",
+    puja_type: "home_puja",
+    description: "",
+    status: "", // Ab ye string text store karega
+    address: "",
+    about: "",
+    dateOfStart: "", 
+    prices: [{ pricing_type: "standard", price: "" }],
   });
 
   const [image, setImage] = useState(null);
   const [preview, setPreview] = useState(null);
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    setImage(file);
-    if (file) setPreview(URL.createObjectURL(file));
-  };
+  useEffect(() => {
+    if (editData) {
+      let formattedDateTime = "";
+      if (editData.dateOfStart) {
+        formattedDateTime = editData.dateOfStart.replace(" ", "T").substring(0, 16);
+      }
 
-  const handleSubmit = async () => {
+      setForm({
+        puja_name: editData.puja_name || "",
+        puja_type: editData.puja_type || "home_puja",
+        description: editData.description || "",
+        status: editData.status || "", // Backend se text status uthayega
+        address: editData.address || "",
+        about: editData.about || "",
+        dateOfStart: formattedDateTime, 
+        prices: editData.prices?.length > 0 ? editData.prices : [{ pricing_type: "standard", price: "" }],
+      });
+
+      if (editData.image_url) {
+        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        setPreview(`${baseUrl}${editData.image_url}`);
+      }
+    }
+  }, [editData]);
+
+  const isTempleType = ["temple_puja", "pind_dan"].includes(form.puja_type);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     const formData = new FormData();
-    formData.append("puja_name", form.puja_name);
-    formData.append("puja_type", form.puja_type);
-    formData.append("description", form.description);
-    formData.append(
-      "prices",
-      JSON.stringify(form.prices.filter((p) => p.pricing_type && p.price)),
-    );
+    
+    Object.keys(form).forEach(key => {
+      if (key === 'prices') {
+        const validPrices = form.prices.filter(p => p.pricing_type && p.price);
+        formData.append(key, JSON.stringify(validPrices));
+      } else {
+        formData.append(key, form[key]);
+      }
+    });
+
     if (image) formData.append("image", image);
 
     try {
-      if (editData) {
-        await API.put(`/services/${editData.id}`, formData);
-      } else {
-        await API.post(`/services`, formData);
-      }
-      refresh();
-      close();
-    } catch (err) {
-      console.error(err);
-      alert("Error saving service.");
+      if (editData) await API.put(`/services/${editData.id}`, formData);
+      else await API.post(`/services`, formData);
+      refresh(); close();
+    } catch (err) { 
+      alert("Error saving service"); 
     }
   };
 
-  const typeColor = (type) => {
-    const map = {
-      home_puja: "border-sky-600 bg-sky-900/20",
-      katha: "border-violet-600 bg-violet-900/20",
-      temple_puja: "border-amber-600 bg-amber-900/20",
-      pind_dan: "border-rose-600 bg-rose-900/20",
-    };
-    return map[type] || "";
-  };
-
   return (
-    <div
-      className="fixed inset-0 bg-black/70 backdrop-blur-sm flex justify-center items-center z-50 p-4"
-      onClick={(e) => e.target === e.currentTarget && close()}
-    >
-      <div className="bg-[#131e32] w-full max-w-md rounded-2xl border border-slate-700 shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
-        {/* Modal Header */}
-        <div className="flex justify-between items-center px-5 py-4 border-b border-slate-700/60">
+    <div className="fixed inset-0 bg-black/90 backdrop-blur-md flex justify-center items-center z-[100] p-4 animate-in fade-in duration-300">
+      <div className="bg-[#131e32] w-full max-w-2xl rounded-3xl border border-slate-700/50 shadow-2xl flex flex-col max-h-[95vh] overflow-hidden">
+
+        {/* Header */}
+        <div className="flex justify-between items-center px-8 py-5 border-b border-slate-800 bg-[#0f172a]/50">
           <div>
-            <h2 className="text-sm font-extrabold text-white">
-              {editData ? "Edit Service" : "Add New Service"}
-            </h2>
-            <p className="text-[11px] text-slate-500 mt-0.5">
-              {editData
-                ? "Update service details"
-                : "Fill in details to add a service"}
-            </p>
+            <h2 className="text-lg font-black text-white">{editData ? "Edit Service" : "Create New Service"}</h2>
+            <p className="text-[11px] text-slate-500 uppercase tracking-widest font-bold">Service Management</p>
           </div>
-          <button
-            onClick={close}
-            className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 transition"
-          >
-            <X size={16} />
-          </button>
+          <button onClick={close} className="p-2 rounded-full hover:bg-slate-800 text-slate-400 transition"><X size={20} /></button>
         </div>
 
-        {/* Scrollable Body */}
-        <div className="overflow-y-auto flex-1 px-5 py-4 space-y-3">
-          {/* Service Name */}
-          <div className="relative">
-            <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-            <input
-              type="text"
-              placeholder="Service Name"
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#0b1120] border border-slate-700 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500/50"
-              value={form.puja_name}
-              onChange={(e) => setForm({ ...form, puja_name: e.target.value })}
-            />
+        {/* Form Body */}
+        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1 px-8 py-6 space-y-6 scrollbar-hide">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-4">
+              {/* Service Name */}
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase mb-1.5 block px-1">Service Name</label>
+                <div className="relative">
+                  <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input type="text" required value={form.puja_name} onChange={(e) => setForm({ ...form, puja_name: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-700 rounded-2xl text-sm text-white focus:border-orange-500 outline-none" placeholder="e.g. Navratri Special Puja" />
+                </div>
+              </div>
+
+              {/* Category Type */}
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase mb-1.5 block px-1">Category Type</label>
+                <select value={form.puja_type} onChange={(e) => setForm({ ...form, puja_type: e.target.value })} className="w-full px-4 py-3 bg-[#0b1120] border border-slate-700 rounded-2xl text-sm text-white outline-none focus:border-orange-500">
+                  <option value="home_puja">Home Puja</option>
+                  <option value="katha">Katha</option>
+                  <option value="temple_puja">Temple Puja</option>
+                  <option value="pind_dan">Pind Dan</option>
+                </select>
+              </div>
+
+              {/* Status Text Input - Updated to Text Field */}
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase mb-1.5 block px-1 flex items-center gap-2">
+                  <Activity size={12} /> Service Status Label
+                </label>
+                <div className="relative">
+                  <Activity className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <input 
+                    type="text" 
+                    value={form.status} 
+                    onChange={(e) => setForm({ ...form, status: e.target.value })} 
+                    className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-700 rounded-2xl text-sm text-white focus:border-orange-500 outline-none" 
+                    placeholder="e.g. Active, Coming Soon, 10% Off" 
+                  />
+                </div>
+                <p className="text-[9px] text-slate-600 mt-1 px-1">This text will be stored in the status column.</p>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-4">
+              <div>
+                <label className="text-[10px] font-black text-slate-500 uppercase mb-1.5 block px-1">Description</label>
+                <div className="relative">
+                  <AlignLeft className="absolute left-4 top-4 w-4 h-4 text-slate-500" />
+                  <textarea rows={8} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-700 rounded-2xl text-sm text-white resize-none outline-none focus:border-orange-500" />
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Type Select */}
-          <select
-            className={`w-full px-3 py-2.5 rounded-xl bg-[#0b1120] border text-xs text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-colors ${
-              form.puja_type
-                ? typeColor(form.puja_type) + " border-opacity-80"
-                : "border-slate-700 text-slate-500"
-            }`}
-            value={form.puja_type}
-            onChange={(e) => {
-              const type = e.target.value;
-              let prices = form.prices;
-              if (type === "temple_puja") {
-                if (prices.length === 1) {
-                  prices = [
-                    { pricing_type: "standard", price: "" },
-                    { pricing_type: "single", price: "" },
-                    { pricing_type: "couple", price: "" },
-                  ];
-                }
-              } else {
-                prices = [{ pricing_type: "standard", price: "" }];
-              }
-              setForm({ ...form, puja_type: type, prices });
-            }}
-          >
-            <option value="">Select Type</option>
-            <option value="home_puja">Home Puja</option>
-            <option value="katha">Katha</option>
-            <option value="temple_puja">Temple Puja</option>
-            <option value="pind_dan">Pind Dan</option>
-          </select>
+          {/* Conditional Fields for Temple/Pind Dan */}
+          {isTempleType && (
+            <div className="p-6 bg-[#0f172a] rounded-3xl border border-orange-500/20 space-y-4">
+              <div className="flex items-center gap-2 text-orange-400 font-black text-[10px] uppercase tracking-tighter mb-2">
+                <MapPin size={14} /> Schedule & Location
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                  <input type="text" value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-800 rounded-2xl text-sm text-white outline-none focus:border-orange-400" placeholder="Address" />
+                </div>
+                <div className="relative">
+                  <Clock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
+                  <input type="datetime-local" value={form.dateOfStart} onChange={(e) => setForm({ ...form, dateOfStart: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-800 rounded-2xl text-sm text-white outline-none focus:border-orange-400" style={{ colorScheme: 'dark' }} />
+                </div>
+              </div>
+              <div className="relative">
+                <Info className="absolute left-4 top-4 w-4 h-4 text-slate-600" />
+                <textarea rows={3} value={form.about} onChange={(e) => setForm({ ...form, about: e.target.value })} className="w-full pl-11 pr-4 py-3 bg-[#0b1120] border border-slate-800 rounded-2xl text-sm text-white resize-none outline-none focus:border-orange-400" placeholder="About significance..." />
+              </div>
+            </div>
+          )}
 
-          {/* Description */}
-          <div className="relative">
-            <AlignLeft className="absolute left-3 top-3 w-3.5 h-3.5 text-slate-500" />
-            <textarea
-              placeholder="Description"
-              rows={3}
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-[#0b1120] border border-slate-700 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50 resize-none"
-              value={form.description}
-              onChange={(e) =>
-                setForm({ ...form, description: e.target.value })
-              }
-            />
-          </div>
-
-          {/* Prices */}
-          <div>
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <IndianRupee size={11} /> Pricing
-            </p>
-
-            <div className="space-y-2">
+          {/* Pricing */}
+          <div className="space-y-4">
+            <div className="flex justify-between items-center px-1">
+              <label className="text-[10px] font-black text-slate-500 uppercase flex items-center gap-2">
+                <IndianRupee size={12} /> Pricing Configurations
+              </label>
+              <button type="button" onClick={() => setForm({ ...form, prices: [...form.prices, { pricing_type: "standard", price: "" }] })} className="text-[10px] font-black text-emerald-400 uppercase hover:underline">Add Tier +</button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {form.prices.map((p, index) => (
-                <div key={index} className="flex gap-2">
-                  {form.puja_type === "temple_puja" && (
-                    <select
-                      className="flex-1 px-3 py-2 rounded-xl bg-[#0b1120] border border-slate-700 text-xs text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-                      value={p.pricing_type}
-                      onChange={(e) => {
-                        const updated = [...form.prices];
-                        updated[index].pricing_type = e.target.value;
-                        setForm({ ...form, prices: updated });
-                      }}
-                    >
-                      <option value="">Type</option>
-                      <option value="standard">Standard</option>
-                      <option value="single">Single</option>
-                      <option value="couple">Couple</option>
-                      <option value="family">Family</option>
-                    </select>
-                  )}
-
-                  {form.puja_type !== "temple_puja" && (
-                    <div className="flex-1 px-3 py-2 rounded-xl bg-slate-800/50 border border-slate-700 text-xs text-slate-500 capitalize">
-                      {p.pricing_type}
-                    </div>
-                  )}
-
-                  <div className="relative flex-1">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs">
-                      ₹
-                    </span>
-                    <input
-                      type="number"
-                      placeholder="Amount"
-                      className="w-full pl-7 pr-3 py-2 rounded-xl bg-[#0b1120] border border-slate-700 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-orange-500/50"
-                      value={p.price}
-                      onChange={(e) => {
-                        const updated = [...form.prices];
-                        updated[index].price = e.target.value;
-                        setForm({ ...form, prices: updated });
-                      }}
-                    />
-                  </div>
-
-                  {form.puja_type === "temple_puja" && (
-                    <button
-                      onClick={() =>
-                        setForm({
-                          ...form,
-                          prices: form.prices.filter((_, i) => i !== index),
-                        })
-                      }
-                      className="p-2 rounded-xl bg-rose-900/30 hover:bg-rose-900/60 text-rose-400 transition border border-rose-800/50"
-                    >
-                      <Trash2 size={13} />
-                    </button>
-                  )}
+                <div key={index} className="flex gap-2 items-center bg-[#0b1120] p-2 rounded-2xl border border-slate-700">
+                  <select value={p.pricing_type} onChange={(e) => { const up = [...form.prices]; up[index].pricing_type = e.target.value; setForm({ ...form, prices: up }); }} className="bg-transparent text-xs text-orange-400 font-bold outline-none px-2">
+                    <option value="standard">Standard</option>
+                    <option value="single">Single</option>
+                    <option value="couple">Couple</option>
+                    <option value="family">Family</option>
+                  </select>
+                  <input type="number" value={p.price} onChange={(e) => { const up = [...form.prices]; up[index].price = e.target.value; setForm({ ...form, prices: up }); }} className="bg-transparent flex-1 text-sm text-white outline-none" placeholder="Price" />
+                  <button type="button" onClick={() => setForm({ ...form, prices: form.prices.filter((_, i) => i !== index) })} className="p-1.5 text-rose-500 hover:bg-rose-500/10 rounded-lg"><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>
-
-            {form.puja_type === "temple_puja" && (
-              <button
-                onClick={() =>
-                  setForm({
-                    ...form,
-                    prices: [...form.prices, { pricing_type: "", price: "" }],
-                  })
-                }
-                className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition px-3 py-1.5 rounded-lg bg-emerald-900/20 border border-emerald-800/40"
-              >
-                <Plus size={11} /> Add Price Tier
-              </button>
-            )}
           </div>
 
-          {/* Image Upload */}
-          <div>
-            <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1">
-              <Image size={11} /> Service Image
-            </p>
-
-            <label className="block cursor-pointer">
-              <div
-                className={`border-2 border-dashed rounded-xl p-4 text-center transition-colors ${
-                  preview
-                    ? "border-orange-600/50 bg-orange-900/10"
-                    : "border-slate-700 hover:border-slate-500"
-                }`}
-              >
-                {preview ? (
-                  <img
-                    src={preview}
-                    alt="preview"
-                    className="h-24 mx-auto rounded-lg object-cover"
-                  />
-                ) : (
-                  <div className="text-slate-600 text-xs">
-                    <Image size={24} className="mx-auto mb-1 opacity-40" />
-                    Click to upload image
-                  </div>
-                )}
+          {/* Banner */}
+          <div className="pt-2">
+            <label className="block group cursor-pointer">
+              <div className={`border-2 border-dashed rounded-3xl p-6 text-center transition-all ${preview ? "border-orange-500/50 bg-orange-500/5" : "border-slate-800 hover:border-slate-600"}`}>
+                {preview ? <img src={preview} alt="preview" className="h-32 mx-auto rounded-2xl shadow-lg" /> : <div className="text-slate-600 flex flex-col items-center gap-2"><Image size={32} className="opacity-30" /> <span className="text-[11px] font-bold uppercase">Upload Banner</span></div>}
               </div>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleImageChange}
-              />
+              <input type="file" className="hidden" onChange={(e) => { const file = e.target.files[0]; if(file){ setImage(file); setPreview(URL.createObjectURL(file)); } }} />
             </label>
           </div>
-        </div>
+        </form>
 
-        {/* Footer Actions */}
-        <div className="flex gap-2 px-5 py-4 border-t border-slate-700/60 bg-[#0f172a]/50">
-          <button
-            onClick={close}
-            className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-slate-700 hover:bg-slate-700/50 transition text-slate-400"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSubmit}
-            className="flex-1 py-2.5 text-xs font-bold rounded-xl bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all text-white shadow-lg shadow-orange-900/40"
-          >
-            {editData ? "Update Service" : "Save Service"}
+        {/* Action Buttons */}
+        <div className="px-8 py-6 border-t border-slate-800 flex gap-4 bg-[#0f172a]/50">
+          <button type="button" onClick={close} className="flex-1 py-4 text-[11px] font-black uppercase text-slate-400 border border-slate-800 rounded-2xl hover:bg-slate-800">Discard</button>
+          <button onClick={handleSubmit} className="flex-[2] py-4 text-[11px] font-black uppercase text-white bg-orange-500 rounded-2xl hover:bg-orange-600 shadow-xl shadow-orange-900/40 transition-all active:scale-95">
+            {editData ? "Update Service" : "Deploy Service"}
           </button>
         </div>
       </div>

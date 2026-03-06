@@ -29,7 +29,6 @@ export default function TrendingPuja() {
           }
         );
         const data = await response.json();
-        console.log("home page",data.services)
         setServices(data.services);
       } catch (error) {
         console.log("Error", error);

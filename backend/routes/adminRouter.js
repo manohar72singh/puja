@@ -25,6 +25,7 @@ import {
   updatePandit,
   updateService,
   updateUser,
+  getPanditBookingHistory
 } from "../controllers/adminController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { upload } from "../middleware/multerMiddleware.js";
@@ -52,20 +53,8 @@ router.delete("/users/:id", verifyToken, adminOnly, deleteUser);
 
 router.get("/services", verifyToken, adminOnly, getAllServices);
 router.get("/services/:id", verifyToken, adminOnly, getServiceById);
-router.post(
-  "/services",
-  verifyToken,
-  adminOnly,
-  upload.single("image"),
-  createService,
-);
-router.put(
-  "/services/:id",
-  verifyToken,
-  adminOnly,
-  upload.single("image"),
-  updateService,
-);
+router.post("/services",verifyToken,adminOnly,upload.single("image"),createService,);
+router.put("/services/:id",verifyToken,adminOnly,upload.single("image"),updateService,);
 router.delete("/services/:id", verifyToken, adminOnly, deleteService);
 
 // booking management routes for admin can be added here
@@ -81,5 +70,7 @@ router.get("/pandits/:id", verifyToken, adminOnly, getSinglePandit);
 router.put("/pandits/:id", verifyToken, adminOnly, updatePandit);
 router.delete("/pandits/:id", verifyToken, adminOnly, deletePandit);
 router.put("/pandits/block/:id", verifyToken, adminOnly, togglePanditBlock);
+
+router.get("/pandits/history/:id", verifyToken, adminOnly, getPanditBookingHistory);
 // router.put("/pandits/assign/:bookingId", assignPanditToBooking);
 export default router;

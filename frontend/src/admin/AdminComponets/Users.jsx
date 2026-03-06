@@ -1,4 +1,3 @@
-// import { useEffect, useState } from "react";
 import { useEffect, useState } from "react";
 import { API } from "../../services/adminApi";
 import {
@@ -46,7 +45,7 @@ const Users = () => {
       setTotalPages(res.data.totalPages);
       setTotal(res.data.total || 0);
     } catch (err) {
-      showToast("Failed to fetch users", err);
+      showToast("Failed to fetch users", "error");
     } finally {
       setLoading(false);
     }
@@ -109,23 +108,22 @@ const Users = () => {
 
   const avatarColor = (name) => {
     const colors = [
-      "bg-violet-100 text-violet-600",
-      "bg-sky-100 text-sky-600",
-      "bg-amber-100 text-amber-600",
-      "bg-rose-100 text-rose-600",
-      "bg-emerald-100 text-emerald-600",
-      "bg-orange-100 text-orange-600",
-      "bg-teal-100 text-teal-600",
+      "bg-orange-500/20 text-orange-500 border-orange-500/20",
+      "bg-sky-500/20 text-sky-500 border-sky-500/20",
+      "bg-amber-500/20 text-amber-500 border-amber-500/20",
+      "bg-rose-500/20 text-rose-500 border-rose-500/20",
+      "bg-emerald-500/20 text-emerald-500 border-emerald-500/20",
+      "bg-violet-500/20 text-violet-500 border-violet-500/20",
     ];
     return colors[(name?.charCodeAt(0) || 0) % colors.length];
   };
 
   const ModalWrapper = ({ children, onClose }) => (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/70 backdrop-blur-md flex items-center justify-center z-50 p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white w-full max-w-sm rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+      <div className="bg-[#131e32] w-full max-w-sm rounded-3xl shadow-2xl border border-slate-800 overflow-hidden ring-1 ring-slate-700/50">
         {children}
       </div>
     </div>
@@ -139,93 +137,85 @@ const Users = () => {
     onChange,
   }) => (
     <div className="relative">
-      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+      <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
       <input
         type={type}
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-xs bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent placeholder:text-gray-300"
+        className="w-full pl-11 pr-4 py-3 border border-slate-800 rounded-2xl text-xs bg-[#0f172a] text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 placeholder:text-slate-600 transition-all"
       />
     </div>
   );
 
   return (
-    <div className="p-4 bg-slate-50 min-h-screen">
+    <div className=" bg-transparent min-h-screen">
       {/* Toast */}
       {toast && (
         <div
-          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 ${
+          className={`fixed top-6 right-6 z-[60] px-5 py-3 rounded-2xl shadow-2xl text-xs font-bold flex items-center gap-3 border animate-in slide-in-from-right-5 ${
             toast.type === "error"
-              ? "bg-rose-500 text-white"
-              : "bg-emerald-500 text-white"
+              ? "bg-rose-950/40 text-rose-400 border-rose-800/50 backdrop-blur-md"
+              : "bg-emerald-950/40 text-emerald-400 border-emerald-800/50 backdrop-blur-md"
           }`}
         >
-          {toast.type === "error" ? (
-            <XCircle size={14} />
-          ) : (
-            <CheckCircle2 size={14} />
-          )}
+          {toast.type === "error" ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
           {toast.message}
         </div>
       )}
 
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-200">
-            <UsersIcon size={18} className="text-white" />
+          <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center shadow-lg shadow-orange-900/20">
+            <UsersIcon size={20} className="text-white" />
           </div>
           <div>
-            <h1 className="text-base font-extrabold text-slate-800 leading-tight">
+            <h1 className="text-base font-extrabold text-white leading-tight">
               User Management
             </h1>
-            <p className="text-[11px] text-slate-400">
-              Manage all registered users
-            </p>
+            <p className="text-[11px] text-slate-500">Manage all registered users</p>
           </div>
         </div>
         <button
           onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-1.5 bg-indigo-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-200"
+          className="flex items-center gap-2 bg-orange-500 text-white px-4 py-2.5 rounded-xl text-xs font-bold hover:bg-orange-600 active:scale-95 transition-all shadow-lg shadow-orange-900/20"
         >
-          <Plus size={14} /> Add User
+          <Plus size={16} /> Add User
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 gap-2 mb-3">
-        <div className="flex items-center justify-between px-3 py-2 rounded-xl border bg-indigo-50 text-indigo-600 border-indigo-100 text-xs font-bold">
-          <span className="opacity-70">Total Users</span>
-          <span className="text-base font-extrabold">{total}</span>
+      <div className="grid grid-cols-2 gap-3 mb-5">
+        <div className="flex items-center justify-between px-4 py-3 rounded-2xl border bg-[#131e32] text-orange-500 border-orange-500/20 shadow-xl">
+          <span className="text-[10px] uppercase tracking-widest font-bold opacity-60">Total</span>
+          <span className="text-lg font-black">{total}</span>
         </div>
-        <div className="flex items-center justify-between px-3 py-2 rounded-xl border bg-emerald-50 text-emerald-600 border-emerald-100 text-xs font-bold">
-          <span className="opacity-70">This Page</span>
-          <span className="text-base font-extrabold">
-            {filteredUsers.length}
-          </span>
+        <div className="flex items-center justify-between px-4 py-3 rounded-2xl border bg-[#131e32] text-emerald-500 border-emerald-500/20 shadow-xl">
+          <span className="text-[10px] uppercase tracking-widest font-bold opacity-60">Current</span>
+          <span className="text-lg font-black">{filteredUsers.length}</span>
         </div>
       </div>
 
       {/* Main Card */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+      <div className="bg-[#131e32] rounded-3xl shadow-2xl border border-slate-800 overflow-hidden">
         {/* Search */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+        <div className="px-5 py-4 border-b border-slate-800/50 bg-[#0f172a]/30">
+          <div className="relative max-w-xs">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
             <input
               type="text"
-              placeholder="Search name, email or phone…"
+              placeholder="Search database..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-8 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50"
+              className="w-full pl-10 pr-10 py-2.5 border border-slate-800 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-orange-500/50 focus:border-orange-500 bg-[#0f172a] text-white placeholder:text-slate-600 transition-all"
             />
             {search && (
               <button
                 onClick={() => setSearch("")}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 hover:text-orange-500"
               >
-                <X size={12} />
+                <X size={14} />
               </button>
             )}
           </div>
@@ -234,104 +224,89 @@ const Users = () => {
         {/* Table */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-16 gap-2 text-slate-400">
-              <Loader2 size={18} className="animate-spin" />
-              <span className="text-xs">Loading…</span>
+            <div className="flex flex-col items-center justify-center py-24 gap-3 text-slate-500">
+              <Loader2 size={32} className="animate-spin text-orange-500" />
+              <span className="text-[10px] uppercase tracking-widest font-bold">Accessing Records...</span>
             </div>
           ) : filteredUsers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-16 text-slate-300">
-              <UsersIcon size={36} className="mb-2" />
-              <p className="text-xs font-semibold text-slate-400">
-                No users found
-              </p>
+            <div className="flex flex-col items-center justify-center py-24 text-slate-600">
+              <UsersIcon size={48} className="mb-3 opacity-20" />
+              <p className="text-xs font-bold uppercase tracking-widest">No matching users</p>
             </div>
           ) : (
-            <table className="w-full text-xs">
+            <table className="w-full text-xs text-left">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider text-[10px]">
-                  <th className="px-4 py-2.5 text-left font-semibold">#</th>
-                  <th className="px-4 py-2.5 text-left font-semibold">User</th>
-                  <th className="px-4 py-2.5 text-left font-semibold">Email</th>
-                  <th className="px-4 py-2.5 text-left font-semibold">Phone</th>
-                  <th className="px-4 py-2.5 text-center font-semibold">
-                    Role
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-semibold">
-                    Joined
-                  </th>
-                  <th className="px-4 py-2.5 text-right font-semibold">
-                    Actions
-                  </th>
+                <tr className="bg-[#0f172a] border-b border-slate-800 text-slate-500 uppercase tracking-widest text-[10px]">
+                  <th className="px-5 py-4 font-bold">User Identity</th>
+                  <th className="px-5 py-4 font-bold">Contact Channel</th>
+                  <th className="px-5 py-4 text-center font-bold">Permissions</th>
+                  <th className="px-5 py-4 font-bold">Registered</th>
+                  <th className="px-5 py-4 text-right font-bold">Actions</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-800/50">
                 {filteredUsers.map((u, i) => (
                   <tr
                     key={u.id}
-                    className={`border-b border-slate-50 transition-colors ${
+                    className={`transition-colors ${
                       actionLoading === u.id
-                        ? "opacity-40 pointer-events-none"
-                        : "hover:bg-indigo-50/20"
-                    } ${i % 2 !== 0 ? "bg-slate-50/40" : ""}`}
+                        ? "opacity-30 pointer-events-none"
+                        : "hover:bg-[#1a2744]"
+                    } ${i % 2 !== 0 ? "bg-[#0f172a]/30" : ""}`}
                   >
-                    <td className="px-4 py-2.5 text-slate-300 font-mono">
-                      {u.id}
-                    </td>
-
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2">
+                    <td className="px-5 py-4">
+                      <div className="flex items-center gap-3">
                         <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${avatarColor(u.name)}`}
+                          className={`w-9 h-9 rounded-xl flex items-center justify-center font-black text-xs border ${avatarColor(u.name)}`}
                         >
                           {u.name?.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-semibold text-slate-700">
+                        <span className="font-bold text-slate-200">
                           {u.name}
                         </span>
                       </div>
                     </td>
 
-                    <td className="px-4 py-2.5 text-slate-400 max-w-[160px] truncate">
-                      {u.email || <span className="text-slate-200">—</span>}
+                    <td className="px-5 py-4">
+                       <div className="space-y-1">
+                          <p className="text-slate-400 font-medium">{u.email || "No Email"}</p>
+                          <p className="text-orange-500/80 font-mono text-[10px]">{u.phone}</p>
+                       </div>
                     </td>
 
-                    <td className="px-4 py-2.5 font-medium text-slate-600">
-                      {u.phone}
-                    </td>
-
-                    <td className="px-4 py-2.5 text-center">
+                    <td className="px-5 py-4 text-center">
                       <span
-                        className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                        className={`inline-block px-3 py-1 rounded-full text-[10px] font-black border uppercase tracking-tighter ${
                           u.role === "admin"
-                            ? "bg-indigo-50 text-indigo-600 border-indigo-200"
+                            ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
                             : u.role === "pandit"
-                              ? "bg-amber-50 text-amber-600 border-amber-200"
-                              : "bg-slate-50 text-slate-500 border-slate-200"
+                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              : "bg-slate-500/10 text-slate-400 border-slate-500/20"
                         }`}
                       >
                         {u.role}
                       </span>
                     </td>
 
-                    <td className="px-4 py-2.5 text-slate-400">
-                      {new Date(u.created_at).toLocaleDateString("en-IN")}
+                    <td className="px-5 py-4 text-slate-500 font-medium">
+                      {new Date(u.created_at).toLocaleDateString("en-IN", {
+                        day: '2-digit', month: 'short', year: 'numeric'
+                      })}
                     </td>
 
-                    <td className="px-4 py-2.5">
-                      <div className="flex justify-end gap-0.5">
+                    <td className="px-5 py-4">
+                      <div className="flex justify-end gap-2">
                         <button
                           onClick={() => setEditingUser(u)}
-                          className="p-1.5 rounded-lg text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                          title="Edit"
+                          className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-orange-500 hover:border-orange-500/50 border border-transparent transition-all"
                         >
-                          <Pencil size={13} />
+                          <Pencil size={14} />
                         </button>
                         <button
                           onClick={() => deleteUser(u.id)}
-                          className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                          title="Delete"
+                          className="p-2 rounded-xl bg-slate-800 text-slate-400 hover:text-rose-500 hover:border-rose-500/50 border border-transparent transition-all"
                         >
-                          <Trash2 size={13} />
+                          <Trash2 size={14} />
                         </button>
                       </div>
                     </td>
@@ -344,202 +319,90 @@ const Users = () => {
 
         {/* Pagination */}
         {!loading && users.length > 0 && (
-          <div className="flex justify-between items-center px-4 py-2.5 border-t border-slate-100 bg-slate-50/50">
-            <span className="text-[11px] text-slate-400">
-              Page <b className="text-slate-600">{page}</b> /{" "}
-              <b className="text-slate-600">{totalPages}</b>
+          <div className="flex justify-between items-center px-6 py-4 border-t border-slate-800 bg-[#0f172a]/50">
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">
+              Page <b className="text-orange-500">{page}</b> of {totalPages}
             </span>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
                 disabled={page === 1}
                 onClick={() => setPage(page - 1)}
-                className="flex items-center gap-0.5 px-2.5 py-1 text-[11px] font-semibold border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition bg-white"
+                className="p-2 bg-[#131e32] border border-slate-700 text-slate-400 rounded-xl disabled:opacity-10 hover:bg-slate-800 transition"
               >
-                <ChevronLeft size={12} /> Prev
+                <ChevronLeft size={16} />
               </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                const pg =
-                  totalPages <= 5
-                    ? i + 1
-                    : page <= 3
-                      ? i + 1
-                      : page >= totalPages - 2
-                        ? totalPages - 4 + i
-                        : page - 2 + i;
-                return (
-                  <button
-                    key={pg}
-                    onClick={() => setPage(pg)}
-                    className={`w-7 h-7 text-[11px] font-bold rounded-lg transition ${
-                      page === pg
-                        ? "bg-indigo-600 text-white shadow-sm"
-                        : "border border-slate-200 hover:bg-white bg-white text-slate-500"
-                    }`}
-                  >
-                    {pg}
-                  </button>
-                );
-              })}
               <button
                 disabled={page === totalPages}
                 onClick={() => setPage(page + 1)}
-                className="flex items-center gap-0.5 px-2.5 py-1 text-[11px] font-semibold border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition bg-white"
+                className="p-2 bg-[#131e32] border border-slate-700 text-slate-400 rounded-xl disabled:opacity-10 hover:bg-slate-800 transition"
               >
-                Next <ChevronRight size={12} />
+                <ChevronRight size={16} />
               </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* ADD MODAL */}
-      {showAddModal && (
-        <ModalWrapper onClose={() => setShowAddModal(false)}>
-          <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
-                <User size={15} className="text-indigo-600" />
-              </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-gray-900">
-                  Add User
-                </h3>
-                <p className="text-[11px] text-gray-400">Register a new user</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition"
-            >
-              <X size={16} />
-            </button>
+      {/* ADD/EDIT MODAL UI SHARED STYLE */}
+      {(showAddModal || editingUser) && (
+        <ModalWrapper onClose={() => { setShowAddModal(false); setEditingUser(null); }}>
+          <div className="px-6 py-5 border-b border-slate-800 bg-[#0f172a]/50">
+             <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                   <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+                      <User size={18} className="text-orange-500" />
+                   </div>
+                   <div>
+                      <h3 className="text-sm font-black text-white uppercase tracking-tight">
+                        {showAddModal ? "New User" : "Update Identity"}
+                      </h3>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Database Record</p>
+                   </div>
+                </div>
+                <button onClick={() => { setShowAddModal(false); setEditingUser(null); }} className="text-slate-500 hover:text-white transition">
+                   <X size={20} />
+                </button>
+             </div>
           </div>
 
-          <div className="p-5 space-y-3">
+          <div className="p-6 space-y-4">
             <ModalField
               icon={User}
-              placeholder="Full Name *"
-              value={newUser.name}
-              onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+              placeholder="Display Name *"
+              value={showAddModal ? newUser.name : editingUser?.name}
+              onChange={(e) => showAddModal ? setNewUser({ ...newUser, name: e.target.value }) : setEditingUser({ ...editingUser, name: e.target.value })}
             />
             <ModalField
               icon={Mail}
-              placeholder="Email"
+              placeholder="Email Address"
               type="email"
-              value={newUser.email}
-              onChange={(e) =>
-                setNewUser({ ...newUser, email: e.target.value })
-              }
+              value={showAddModal ? newUser.email : editingUser?.email}
+              onChange={(e) => showAddModal ? setNewUser({ ...newUser, email: e.target.value }) : setEditingUser({ ...editingUser, email: e.target.value })}
             />
             <ModalField
               icon={Phone}
-              placeholder="Phone *"
+              placeholder="Phone Number *"
               type="tel"
-              value={newUser.phone}
-              onChange={(e) =>
-                setNewUser({ ...newUser, phone: e.target.value })
-              }
+              value={showAddModal ? newUser.phone : editingUser?.phone}
+              onChange={(e) => showAddModal ? setNewUser({ ...newUser, phone: e.target.value }) : setEditingUser({ ...editingUser, phone: e.target.value })}
             />
           </div>
 
-          <div className="flex gap-2 px-5 py-4 border-t border-gray-100 bg-slate-50/50">
-            <button
-              onClick={() => setShowAddModal(false)}
-              className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={addUser}
-              disabled={actionLoading === "add"}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 shadow-md shadow-indigo-100"
-            >
-              {actionLoading === "add" ? (
-                <>
-                  <Loader2 size={13} className="animate-spin" /> Saving…
-                </>
-              ) : (
-                "Create User"
-              )}
-            </button>
-          </div>
-        </ModalWrapper>
-      )}
-
-      {/* EDIT MODAL */}
-      {editingUser && (
-        <ModalWrapper onClose={() => setEditingUser(null)}>
-          <div className="flex justify-between items-center px-5 py-4 border-b border-gray-100">
-            <div className="flex items-center gap-2.5">
-              <div
-                className={`w-8 h-8 rounded-xl flex items-center justify-center font-bold text-sm ${avatarColor(editingUser.name)}`}
-              >
-                {editingUser.name?.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h3 className="text-sm font-extrabold text-gray-900">
-                  Edit User
-                </h3>
-                <p className="text-[11px] text-gray-400">Update user details</p>
-              </div>
-            </div>
-            <button
-              onClick={() => setEditingUser(null)}
-              className="p-1.5 rounded-lg hover:bg-gray-100 text-gray-400 transition"
-            >
-              <X size={16} />
-            </button>
-          </div>
-
-          <div className="p-5 space-y-3">
-            <ModalField
-              icon={User}
-              placeholder="Full Name"
-              value={editingUser.name}
-              onChange={(e) =>
-                setEditingUser({ ...editingUser, name: e.target.value })
-              }
-            />
-            <ModalField
-              icon={Mail}
-              placeholder="Email"
-              type="email"
-              value={editingUser.email}
-              onChange={(e) =>
-                setEditingUser({ ...editingUser, email: e.target.value })
-              }
-            />
-            <ModalField
-              icon={Phone}
-              placeholder="Phone"
-              type="tel"
-              value={editingUser.phone}
-              onChange={(e) =>
-                setEditingUser({ ...editingUser, phone: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="flex gap-2 px-5 py-4 border-t border-gray-100 bg-slate-50/50">
-            <button
-              onClick={() => setEditingUser(null)}
-              className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-gray-200 hover:bg-gray-100 transition text-gray-600"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={updateUser}
-              disabled={actionLoading === "edit"}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 shadow-md shadow-indigo-100"
-            >
-              {actionLoading === "edit" ? (
-                <>
-                  <Loader2 size={13} className="animate-spin" /> Saving…
-                </>
-              ) : (
-                "Update User"
-              )}
-            </button>
+          <div className="px-6 py-5 bg-[#0f172a]/50 border-t border-slate-800 flex gap-3">
+             <button
+               onClick={() => { setShowAddModal(false); setEditingUser(null); }}
+               className="flex-1 py-3 text-[11px] font-black uppercase tracking-widest rounded-2xl border border-slate-700 text-slate-400 hover:bg-slate-800 transition"
+             >
+               Discard
+             </button>
+             <button
+               onClick={showAddModal ? addUser : updateUser}
+               disabled={actionLoading === "add" || actionLoading === "edit"}
+               className="flex-1 flex items-center justify-center gap-2 py-3 text-[11px] font-black uppercase tracking-widest rounded-2xl bg-orange-500 text-white hover:bg-orange-600 shadow-lg shadow-orange-900/20 transition disabled:opacity-50"
+             >
+               {actionLoading ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}
+               Commit
+             </button>
           </div>
         </ModalWrapper>
       )}

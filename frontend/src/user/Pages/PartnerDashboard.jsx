@@ -201,7 +201,9 @@ const PartnerDashboard = () => {
     }
   };
   const handleMarkAsComplete = async (id) => {
-    if (!window.confirm("Kya ye puja sampann ho gayi hai?")) return;
+    if (!window.confirm("Is this puja completed?")) return;
+
+    
     try {
       const res = await axios.put(
         `${API_BASE_URL}/partner/complete-puja/${id}`,

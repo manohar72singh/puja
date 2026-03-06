@@ -1,44 +1,55 @@
 import db from "../config/db.js";
 import jwt from "jsonwebtoken";
 
-let otpStore = {}; // Temporary memory for OTPs
+let otpStore = {};
 
-// --- 1. SIGNUP REQUEST ---
+// =============================
+// 1️⃣ SIGNUP REQUEST
+// =============================
 export const signupRequest = async (req, res) => {
   try {
     const { name, phone, email, gotra } = req.body;
-    if (!phone || !name)
-      return res.status(400).json({ message: "Name and Phone are required" });
 
-    const [existing] = await db.query("SELECT id FROM users WHERE phone = ?", [
-      phone,
-    ]);
-    if (existing.length > 0)
+    if (!phone || !name) {
+      return res.status(400).json({ message: "Name and Phone are required" });
+    }
+
+    const [existing] = await db.query(
+      "SELECT id FROM users WHERE phone = ?",
+      [phone]
+    );
+
+    if (existing.length > 0) {
       return res
         .status(409)
         .json({ message: "Already registered. Please Login." });
+    }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
+
     otpStore[phone] = {
       userData: { name, phone, email, gotra },
-      otp: otp,
-      type: "SIGNUP",
+      otp,
       expires: Date.now() + 10 * 60 * 1000,
     };
 
-    console.log(`\n--- SIGNUP OTP FOR ${phone}: ${otp} ---\n`);
+    console.log(`\n--- OTP FOR ${phone}: ${otp} ---\n`);
+
     res.status(200).json({ message: "OTP sent successfully" });
+
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
 
-// --- 2. SIGNUP VERIFY (With Transactions & Address) ---
+// =============================
+// 2️⃣ SIGNUP VERIFY
+// =============================
 export const signupVerify = async (req, res) => {
   let connection;
+
   try {
-    // 1. req.body se naye fields (panditType) nikaalein
-    // Multer ki wajah se baaki text data req.body mein hi milega
     const {
       phone,
       otp,
@@ -51,47 +62,48 @@ export const signupVerify = async (req, res) => {
       name,
       pincode,
       address_type,
-      panditType, // Naya field
+      panditType,
     } = req.body;
 
-    // 2. req.file se uploaded file ka path lein
     const documentPath = req.file ? req.file.path : null;
 
     const session = otpStore[phone];
-
-    // OTP Bypass check (development ke liye) ya Session check
-    const isBypass = otp.toString() === "123456";
+    const isBypass = otp?.toString() === "123456";
 
     if (
-      !isBypass && 
-      (!session || session.otp.toString() !== otp.toString())
+      !isBypass &&
+      (!session ||
+        session.otp.toString() !== otp?.toString() ||
+        session.expires < Date.now())
     ) {
-      return res.status(400).json({ message: "Invalid OTP or Session Expired" });
+      return res.status(400).json({
+        message: "Invalid OTP or Session Expired",
+      });
     }
 
     connection = await db.getConnection();
     await connection.beginTransaction();
 
-    // 3. User Insert (pandit_type aur document_url columns ke saath)
-    // Note: Database mein ye columns hone zaroori hain
+    // 1️⃣ Insert into users
     const [userResult] = await connection.query(
-      "INSERT INTO users (name, phone, email, gotra, role, pandit_type, document_url) VALUES (?, ?, ?, ?, ?, ?, ?)",
+      "INSERT INTO users (name, phone, email, gotra, role) VALUES (?, ?, ?, ?, ?)",
       [
-        name, 
-        phone, 
-        email || null, 
-        gotra || null, 
-        role || "user", 
-        panditType || 'Standard', 
-        documentPath
-      ],
+        name,
+        phone,
+        email || null,
+        gotra || null,
+        role || "user",
+      ]
     );
 
     const newUserId = userResult.insertId;
 
+    // 2️⃣ Insert Address
     if (address) {
       await connection.query(
-        "INSERT INTO addresses (user_id, address_line1, city, state, address_type, pincode, is_default) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        `INSERT INTO addresses
+        (user_id, address_line1, city, state, address_type, pincode, is_default)
+        VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           newUserId,
           address,
@@ -100,7 +112,19 @@ export const signupVerify = async (req, res) => {
           address_type || "home",
           pincode || null,
           1,
-        ],
+        ]
+      );
+    }
+
+    // 3️⃣ Insert Pandit Data
+    if (role === "pandit") {
+      await connection.query(
+        "INSERT INTO pandits (user_id, pandit_type, document_url) VALUES (?, ?, ?)",
+        [
+          newUserId,
+          panditType || "Standard",
+          documentPath,
+        ]
       );
     }
 
@@ -110,19 +134,22 @@ export const signupVerify = async (req, res) => {
     const token = jwt.sign(
       { id: newUserId, name, phone, role: role || "user" },
       process.env.JWT_SECRET || "secret",
-      { expiresIn: "7d" },
+      { expiresIn: "7d" }
     );
 
-    res.status(201).json({ 
-      message: "Verified Successfully!", 
-      token, 
-      role: role || "user" 
+    res.status(201).json({
+      message: "Verified Successfully!",
+      token,
+      role: role || "user",
     });
 
   } catch (error) {
     console.error("Signup Error:", error);
     if (connection) await connection.rollback();
-    res.status(500).json({ message: "Error saving data", error: error.message });
+    res.status(500).json({
+      message: "Error saving data",
+      error: error.message,
+    });
   } finally {
     if (connection) connection.release();
   }

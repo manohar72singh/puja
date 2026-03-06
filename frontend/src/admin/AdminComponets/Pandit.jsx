@@ -1,121 +1,103 @@
-import { useEffect, useState, useCallback } from "react";
-import { API } from "../../services/adminApi";
+import React, { useState, useEffect } from "react";
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  ShieldOff,
-  ShieldCheck,
-  X,
-  User,
-  Phone,
-  Mail,
-  Hash,
-  Loader2,
-  Users,
-  CheckCircle2,
-  XCircle,
+  Users, Plus, Search, Loader2, Phone, Mail, Pencil,
+  Trash2, ShieldCheck, ShieldOff, X, User, Hash,
+  Clock, FileText, Award, Link as LinkIcon, ChevronLeft,
+  ChevronRight, XCircle, CheckCircle2
 } from "lucide-react";
+import { API } from "../../services/adminApi.js"; // Aapka API utility path
 
-export default function Pandits() {
+const Pandits = () => {
+  // --- States ---
   const [pandits, setPandits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editingPandit, setEditingPandit] = useState(null);
+
+  // History States
+  const [showHistory, setShowHistory] = useState(false);
+  const [history, setHistory] = useState([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [selectedPanditName, setSelectedPanditName] = useState("");
+
+  // Pagination & Search
+  const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [search, setSearch] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editingPandit, setEditingPandit] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [actionLoading, setActionLoading] = useState(null);
-  const [toast, setToast] = useState(null);
+  const [activeCount, setActiveCount] = useState(0);
+  const [blockedCount, setBlockedCount] = useState(0);
+
+  // Form State
   const [formData, setFormData] = useState({
     name: "",
-    gotra: "",
     email: "",
     phone: "",
+    pandit_type: "", // Updated from Gotra
+    document_url: ""  // New Field
   });
+
+  const [toast, setToast] = useState(null);
+
+  // --- Functions ---
 
   const showToast = (message, type = "success") => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchPandits = useCallback(async () => {
+  const fetchPandits = async () => {
     setLoading(true);
     try {
-      const res = await API.get(
-        `/pandits?page=${page}&limit=10&search=${search}`,
-      );
+      const res = await API.get(`/pandits?page=${page}&search=${search}`);
       setPandits(res.data.pandits);
       setTotalPages(res.data.totalPages);
       setTotal(res.data.total);
-    } catch {
-      showToast("Failed to fetch pandits", "error");
+      // Stats update (Assuming backend sends these or calculate from data)
+      setActiveCount(res.data.pandits.filter(p => !p.is_blocked).length);
+      setBlockedCount(res.data.pandits.filter(p => p.is_blocked).length);
+    } catch (err) {
+      showToast("Failed to fetch records", "error");
     } finally {
       setLoading(false);
     }
-  }, [page, search]);
+  };
 
   useEffect(() => {
     fetchPandits();
-  }, [fetchPandits]);
+  }, [page, search]);
 
-  const openAddModal = () => {
-    setEditingPandit(null);
-    setFormData({ name: "", gotra: "", email: "", phone: "" });
-    setShowModal(true);
-  };
-
-  const openEditModal = (p) => {
-    setEditingPandit(p);
-    setFormData({
-      name: p.name,
-      gotra: p.gotra || "",
-      email: p.email || "",
-      phone: p.phone,
-    });
-    setShowModal(true);
-  };
-
-  const closeModal = () => {
-    setShowModal(false);
-    setEditingPandit(null);
-    setFormData({ name: "", gotra: "", email: "", phone: "" });
+  const openHistoryModal = async (pandit) => {
+    setSelectedPanditName(pandit.name);
+    setShowHistory(true);
+    setHistoryLoading(true);
+    try {
+      const res = await API.get(`/admin/pandits/history/${pandit.id}`);
+      setHistory(res.data);
+    } catch (err) {
+      showToast("History load nahi ho payi", "error");
+    } finally {
+      setHistoryLoading(false);
+    }
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone)
-      return showToast("Name and phone are required", "error");
+    if (!formData.name || !formData.phone) return showToast("Name & Phone are required", "error");
+
     setActionLoading("form");
     try {
       if (editingPandit) {
         await API.put(`/pandits/${editingPandit.id}`, formData);
-        showToast("Pandit updated successfully");
+        showToast("Profile Updated");
       } else {
-        await API.post(`/pandits`, formData);
-        showToast("Pandit created successfully");
+        await API.post("/admin/pandits", formData);
+        showToast("Pandit Registered");
       }
       closeModal();
-      await fetchPandits();
-    } catch {
-      showToast("Something went wrong", "error");
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this pandit?")) return;
-    setActionLoading(id);
-    try {
-      await API.delete(`/pandits/${id}`);
-      showToast("Pandit deleted");
-      await fetchPandits();
-    } catch {
-      showToast("Delete failed", "error");
+      fetchPandits();
+    } catch (err) {
+      showToast(err.response?.data?.message || "Operation failed", "error");
     } finally {
       setActionLoading(null);
     }
@@ -124,250 +106,167 @@ export default function Pandits() {
   const toggleBlock = async (id) => {
     setActionLoading(id);
     try {
-      await API.put(`/pandits/block/${id}`);
-      showToast("Status updated");
-      await fetchPandits();
-    } catch {
+      await API.put(`/admin/pandits/block/${id}`);
+      showToast("Status Changed");
+      fetchPandits();
+    } catch (err) {
       showToast("Action failed", "error");
     } finally {
       setActionLoading(null);
     }
   };
 
-  const activeCount = pandits.filter((p) => !p.is_blocked).length;
-  const blockedCount = pandits.filter((p) => p.is_blocked).length;
+  const handleDelete = async (id) => {
+    if (!window.confirm("Are you sure?")) return;
+    try {
+      await API.delete(`/pandits/${id}`);
+      showToast("Record Deleted");
+      fetchPandits();
+    } catch (err) {
+      showToast("Delete failed", "error");
+    }
+  };
+
+  const openEditModal = (p) => {
+    setEditingPandit(p);
+    setFormData({
+      name: p.name,
+      email: p.email || "",
+      phone: p.phone,
+      pandit_type: p.pandit_type || "",
+      document_url: p.document_url || ""
+    });
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setEditingPandit(null);
+    setFormData({ name: "", email: "", phone: "", pandit_type: "", document_url: "" });
+  };
 
   const avatarColor = (name) => {
-    const colors = [
-      "bg-violet-100 text-violet-600",
-      "bg-sky-100 text-sky-600",
-      "bg-amber-100 text-amber-600",
-      "bg-rose-100 text-rose-600",
-      "bg-emerald-100 text-emerald-600",
-      "bg-orange-100 text-orange-600",
-      "bg-teal-100 text-teal-600",
-    ];
-    return colors[(name?.charCodeAt(0) || 0) % colors.length];
+    const colors = ["bg-orange-500/20 border-orange-500 text-orange-500", "bg-emerald-500/20 border-emerald-500 text-emerald-500", "bg-blue-500/20 border-blue-500 text-blue-500"];
+    return colors[name?.length % 3];
   };
 
   return (
-    <div className="p-4 bg-slate-50 min-h-screen">
-      {/* Toast */}
+    <div className=" min-h-screen text-slate-300">
+      {/* Toast Notification */}
       {toast && (
-        <div
-          className={`fixed top-4 right-4 z-50 px-4 py-2.5 rounded-xl shadow-xl text-xs font-bold flex items-center gap-2 ${
-            toast.type === "error"
-              ? "bg-rose-500 text-white"
-              : "bg-emerald-500 text-white"
-          }`}
-        >
-          {toast.type === "error" ? (
-            <XCircle size={14} />
-          ) : (
-            <CheckCircle2 size={14} />
-          )}
+        <div className={`fixed top-6 right-6 z-[150] px-5 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border ${toast.type === "error" ? "bg-rose-950 border-rose-800 text-rose-400" : "bg-emerald-950 border-emerald-800 text-emerald-400"}`}>
+          {toast.type === "error" ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
           {toast.message}
         </div>
       )}
 
       {/* PAGE HEADER */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-indigo-600 flex items-center justify-center shadow-md shadow-indigo-200">
-            <Users size={18} className="text-white" />
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center gap-4">
+          <div className="w-11 h-11 rounded-2xl bg-emerald-500 flex items-center justify-center shadow-lg shadow-emerald-900/20 text-slate-900">
+            <Users size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-base font-extrabold text-slate-800 leading-tight">
-              Pandit Management
-            </h1>
-            <p className="text-[11px] text-slate-400">
-              Manage registered pandits
-            </p>
+            <h1 className="text-xl font-black text-white tracking-tight">Pandit Directory</h1>
+            <p className="text-[12px] text-slate-500 font-medium">Manage types and verification documents</p>
           </div>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-1.5 bg-indigo-600 text-white px-3.5 py-2 rounded-xl text-xs font-bold hover:bg-indigo-700 active:scale-95 transition-all shadow-md shadow-indigo-200"
-        >
-          <Plus size={14} /> Add Pandit
+        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-400 transition-all active:scale-95 shadow-lg shadow-emerald-900/10">
+          <Plus size={16} strokeWidth={3} /> Add Pandit
         </button>
       </div>
 
       {/* STATS STRIP */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          {
-            label: "Total Pandits",
-            value: total ?? "—",
-            color: "bg-indigo-50 text-indigo-600 border-indigo-100",
-          },
-          {
-            label: "Active",
-            value: activeCount,
-            color: "bg-emerald-50 text-emerald-600 border-emerald-100",
-          },
-          {
-            label: "Blocked",
-            value: blockedCount,
-            color: "bg-rose-50 text-rose-500 border-rose-100",
-          },
+          { label: "Total", value: total, color: "border-slate-800 bg-[#1e293b]/50 text-slate-400" },
+          { label: "Active", value: activeCount, color: "border-emerald-900/50 bg-emerald-950/20 text-emerald-400" },
+          { label: "Blocked", value: blockedCount, color: "border-rose-900/50 bg-rose-950/20 text-rose-400" },
         ].map((s) => (
-          <div
-            key={s.label}
-            className={`flex items-center justify-between px-3 py-2 rounded-xl border text-xs font-bold ${s.color}`}
-          >
-            <span className="opacity-70">{s.label}</span>
-            <span className="text-base font-extrabold">{s.value}</span>
+          <div key={s.label} className={`flex items-center justify-between px-5 py-3 rounded-2xl border ${s.color}`}>
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">{s.label}</span>
+            <span className="text-xl font-black">{s.value}</span>
           </div>
         ))}
       </div>
 
-      {/* MAIN CARD */}
-      <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
-        {/* SEARCH BAR */}
-        <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-100">
-          <div className="relative flex-1 max-w-xs">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+      {/* MAIN DATA CARD */}
+      <div className="bg-[#131e32] rounded-[24px] shadow-xl border border-slate-800 overflow-hidden">
+        <div className="p-4 border-b border-slate-800 bg-[#0f172a]/40">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600" />
             <input
               type="text"
-              placeholder="Search name or phone…"
+              placeholder="SEARCH BY NAME OR PHONE..."
               value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              className="w-full pl-9 pr-4 py-2 border border-slate-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50"
+              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              className="w-full pl-11 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-[11px] font-bold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 uppercase tracking-wider"
             />
-            {search && (
-              <button
-                onClick={() => {
-                  setSearch("");
-                  setPage(1);
-                }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-300 hover:text-slate-500"
-              >
-                <X size={12} />
-              </button>
-            )}
           </div>
-          {search && (
-            <span className="text-[11px] text-slate-400 bg-slate-100 px-2 py-1 rounded-lg">
-              Results for "
-              <span className="font-semibold text-slate-600">{search}</span>"
-            </span>
-          )}
         </div>
 
-        {/* TABLE */}
         <div className="overflow-x-auto">
           {loading ? (
-            <div className="flex items-center justify-center py-12 text-slate-400 gap-2">
-              <Loader2 className="animate-spin" size={18} />
-              <span className="text-xs">Loading…</span>
-            </div>
-          ) : pandits.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-slate-300">
-              <Users size={36} className="mb-2" />
-              <p className="text-xs font-semibold text-slate-400">
-                No pandits found
-              </p>
+            <div className="flex flex-col items-center justify-center py-24 gap-3">
+              <Loader2 className="animate-spin text-emerald-500" size={32} />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Loading Records...</span>
             </div>
           ) : (
-            <table className="w-full text-xs">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-100 text-slate-400 uppercase tracking-wider text-[10px]">
-                  <th className="px-4 py-2.5 text-left font-semibold">
-                    Pandit
-                  </th>
-                  <th className="px-4 py-2.5 text-left font-semibold">Gotra</th>
-                  <th className="px-4 py-2.5 text-left font-semibold">Phone</th>
-                  <th className="px-4 py-2.5 text-left font-semibold">Email</th>
-                  <th className="px-4 py-2.5 text-center font-semibold">
-                    Status
-                  </th>
-                  <th className="px-4 py-2.5 text-right font-semibold">
-                    Actions
-                  </th>
+                <tr className="bg-[#0f172a] text-slate-500 uppercase text-[10px] font-black tracking-[0.15em] border-b border-slate-800">
+                  <th className="px-6 py-4">Pandit Name</th>
+                  <th className="px-6 py-4">Type</th>
+                  <th className="px-6 py-4">Contact</th>
+                  <th className="px-6 py-4 text-center">Verification</th>
+                  <th className="px-6 py-4 text-center">History</th>
+                  <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {pandits.map((p, i) => (
-                  <tr
-                    key={p.id}
-                    className={`border-b border-slate-50 transition-colors ${
-                      actionLoading === p.id
-                        ? "opacity-40 pointer-events-none"
-                        : "hover:bg-indigo-50/20"
-                    } ${i % 2 !== 0 ? "bg-slate-50/40" : ""}`}
-                  >
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center gap-2.5">
-                        <div
-                          className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${avatarColor(p.name)}`}
-                        >
+              <tbody className="divide-y divide-slate-800/50">
+                {pandits.map((p) => (
+                  <tr key={p.id} className={`group hover:bg-emerald-500/[0.02] transition-colors ${actionLoading === p.id ? "opacity-30" : ""}`}>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-black text-xs ${avatarColor(p.name)}`}>
                           {p.name?.charAt(0).toUpperCase()}
                         </div>
-                        <span className="font-semibold text-slate-700">
-                          {p.name}
-                        </span>
+                        <p className="font-bold text-slate-200 text-sm">{p.name}</p>
                       </div>
                     </td>
-                    <td className="px-4 py-2.5 text-slate-400">
-                      {p.gotra || <span className="text-slate-200">—</span>}
-                    </td>
-                    <td className="px-4 py-2.5 font-medium text-slate-600">
-                      {p.phone}
-                    </td>
-                    <td className="px-4 py-2.5 text-slate-400 max-w-[140px] truncate">
-                      {p.email || <span className="text-slate-200">—</span>}
-                    </td>
-                    <td className="px-4 py-2.5 text-center">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
-                          p.is_blocked
-                            ? "bg-rose-50 text-rose-500 border-rose-200"
-                            : "bg-emerald-50 text-emerald-600 border-emerald-200"
-                        }`}
-                      >
-                        <span
-                          className={`w-1.5 h-1.5 rounded-full ${p.is_blocked ? "bg-rose-400" : "bg-emerald-400"}`}
-                        />
-                        {p.is_blocked ? "Blocked" : "Active"}
+                    <td className="px-6 py-5">
+                      <span className="px-3 py-1 rounded-full bg-slate-800 text-[10px] font-bold text-orange-400 border border-orange-500/20 uppercase tracking-tight">
+                        {p.pandit_type || "Standard"}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5">
-                      <div className="flex items-center justify-end gap-0.5">
-                        <button
-                          onClick={() => openEditModal(p)}
-                          title="Edit"
-                          className="p-1.5 rounded-lg text-slate-300 hover:text-indigo-600 hover:bg-indigo-50 transition-colors"
-                        >
-                          <Pencil size={13} />
-                        </button>
-                        <button
-                          onClick={() => toggleBlock(p.id)}
-                          title={p.is_blocked ? "Unblock" : "Block"}
-                          className={`p-1.5 rounded-lg transition-colors ${
-                            p.is_blocked
-                              ? "text-slate-300 hover:text-emerald-600 hover:bg-emerald-50"
-                              : "text-slate-300 hover:text-amber-500 hover:bg-amber-50"
-                          }`}
-                        >
-                          {actionLoading === p.id ? (
-                            <Loader2 size={13} className="animate-spin" />
-                          ) : p.is_blocked ? (
-                            <ShieldCheck size={13} />
-                          ) : (
-                            <ShieldOff size={13} />
-                          )}
-                        </button>
-                        <button
-                          onClick={() => handleDelete(p.id)}
-                          title="Delete"
-                          className="p-1.5 rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
-                        >
-                          <Trash2 size={13} />
-                        </button>
+                    <td className="px-6 py-5">
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
+                          <Phone size={12} className="text-emerald-500" /> {p.phone}
+                        </div>
+                        {p.email && <div className="flex items-center gap-2 text-[10px] text-slate-500"><Mail size={12} /> {p.email}</div>}
+                      </div>
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      {p.document_url ? (
+                        <a href={p.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all text-[10px] font-black uppercase">
+                          <FileText size={14} /> View
+                        </a>
+                      ) : (
+                        <span className="text-[10px] font-bold text-slate-600 uppercase italic">No Doc</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-5 text-center">
+                      <button onClick={() => openHistoryModal(p)} className="group flex items-center gap-2 mx-auto px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all">
+                        <Clock size={14} className="text-slate-500 group-hover:text-orange-400" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-orange-400">Log</span>
+                      </button>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className="flex items-center justify-end gap-2">
+                        <button onClick={() => openEditModal(p)} className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-slate-800 transition-all"><Pencil size={14} /></button>
+                        <button onClick={() => toggleBlock(p.id)} className={`p-2 rounded-xl transition-all ${p.is_blocked ? "text-emerald-500 hover:bg-emerald-500/10" : "text-amber-500 hover:bg-amber-500/10"}`}>{p.is_blocked ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}</button>
+                        <button onClick={() => handleDelete(p.id)} className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-500/10"><Trash2 size={14} /></button>
                       </div>
                     </td>
                   </tr>
@@ -376,153 +275,185 @@ export default function Pandits() {
             </table>
           )}
         </div>
-
-        {/* PAGINATION */}
-        {!loading && pandits.length > 0 && (
-          <div className="flex justify-between items-center px-4 py-2.5 border-t border-slate-100 bg-slate-50/50">
-            <span className="text-[11px] text-slate-400">
-              Page <b className="text-slate-600">{page}</b> /{" "}
-              <b className="text-slate-600">{totalPages}</b>
-            </span>
-            <div className="flex gap-1">
-              <button
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-                className="flex items-center gap-0.5 px-2.5 py-1 text-[11px] font-semibold border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition bg-white"
-              >
-                <ChevronLeft size={12} /> Prev
-              </button>
-              {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                const pg =
-                  totalPages <= 5
-                    ? i + 1
-                    : page <= 3
-                      ? i + 1
-                      : page >= totalPages - 2
-                        ? totalPages - 4 + i
-                        : page - 2 + i;
-                return (
-                  <button
-                    key={pg}
-                    onClick={() => setPage(pg)}
-                    className={`w-7 h-7 text-[11px] font-bold rounded-lg transition ${
-                      page === pg
-                        ? "bg-indigo-600 text-white shadow-sm"
-                        : "border border-slate-200 hover:bg-white bg-white text-slate-500"
-                    }`}
-                  >
-                    {pg}
-                  </button>
-                );
-              })}
-              <button
-                disabled={page === totalPages}
-                onClick={() => setPage(page + 1)}
-                className="flex items-center gap-0.5 px-2.5 py-1 text-[11px] font-semibold border border-slate-200 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-white transition bg-white"
-              >
-                Next <ChevronRight size={12} />
-              </button>
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* MODAL — side drawer on mobile, centered on desktop */}
+      {/* --- MODALS --- */}
+
+      {/* ADD/EDIT MODAL */}
+      {/* ADD/EDIT MODAL */}
       {showModal && (
-        <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-end sm:justify-center z-40"
-          onClick={(e) => e.target === e.currentTarget && closeModal()}
-        >
-          <div className="bg-white w-full sm:max-w-sm h-full sm:h-auto sm:rounded-2xl shadow-2xl flex flex-col">
-            <div className="flex justify-between items-center px-5 py-4 border-b border-slate-100">
-              <div className="flex items-center gap-2.5">
-                <div className="w-8 h-8 rounded-xl bg-indigo-100 flex items-center justify-center">
-                  <User size={15} className="text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-extrabold text-slate-900">
-                    {editingPandit ? "Edit Pandit" : "Add Pandit"}
-                  </h3>
-                  <p className="text-[11px] text-slate-400">
-                    {editingPandit ? "Update details" : "Register new pandit"}
-                  </p>
-                </div>
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
+          <div className="bg-[#131e32] w-full max-w-lg rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+
+            {/* Modal Header */}
+            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-[#0f172a]/50">
+              <div>
+                <h3 className="text-xl font-black text-white tracking-tight">
+                  {editingPandit ? "Update Professional Profile" : "Register New Pandit"}
+                </h3>
+                <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mt-1">
+                  Verification & Credentials Management
+                </p>
               </div>
-              <button
-                onClick={closeModal}
-                className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 transition"
-              >
-                <X size={16} />
+              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-all">
+                <X size={24} />
               </button>
             </div>
 
-            <div className="p-5 space-y-3 flex-1">
-              {[
-                {
-                  icon: User,
-                  key: "name",
-                  placeholder: "Full Name *",
-                  type: "text",
-                },
-                {
-                  icon: Hash,
-                  key: "gotra",
-                  placeholder: "Gotra (optional)",
-                  type: "text",
-                },
-                {
-                  icon: Phone,
-                  key: "phone",
-                  placeholder: "Phone Number *",
-                  type: "tel",
-                },
-                {
-                  icon: Mail,
-                  key: "email",
-                  placeholder: "Email (optional)",
-                  type: "email",
-                },
-              ].map(({ icon: Icon, key, placeholder, type }) => (
-                <div key={key} className="relative">
-                  <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400" />
+            {/* Modal Body / Form */}
+            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto">
+
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                <div className="relative group">
+                  <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <input
-                    type={type}
-                    placeholder={placeholder}
-                    value={formData[key]}
-                    onChange={(e) => {
-                      if (key === "phone" && e.target.value.length > 10) return;
-                      setFormData({ ...formData, [key]: e.target.value });
-                    }}
-                    className="w-full pl-9 pr-4 py-2.5 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent bg-slate-50 placeholder:text-slate-300"
+                    type="text"
+                    placeholder="e.g. Ramesh Sharma"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all uppercase placeholder:text-slate-700"
                   />
                 </div>
-              ))}
+              </div>
+
+              {/* Mobile Number */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Number</label>
+                <div className="relative group">
+                  <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    type="tel"
+                    placeholder="10-digit mobile"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all uppercase placeholder:text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Email Address */}
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address (Optional)</label>
+                <div className="relative group">
+                  <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    type="email"
+                    placeholder="example@domain.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-700"
+                  />
+                </div>
+              </div>
+
+              {/* Expertise Type */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Pandit Expertise</label>
+                <div className="relative group">
+                  <Award className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
+                  <select
+                    value={formData.pandit_type}
+                    onChange={(e) => setFormData({ ...formData, pandit_type: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer uppercase"
+                  >
+                    <option value="" className="bg-[#131e32]">Select Classification</option>
+                    <option value="Vedic" className="bg-[#131e32]">Vedic Pandit</option>
+                    <option value="Shastri" className="bg-[#131e32]">Shastri</option>
+                    <option value="Acharya" className="bg-[#131e32]">Acharya</option>
+                    <option value="Karmakandi" className="bg-[#131e32]">Karmakandi</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Document URL */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">KYC Document URL</label>
+                <div className="relative group">
+                  <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
+                  <input
+                    type="text"
+                    placeholder="G-Drive or S3 Link"
+                    value={formData.document_url}
+                    onChange={(e) => setFormData({ ...formData, document_url: e.target.value })}
+                    className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-700"
+                  />
+                </div>
+              </div>
+
             </div>
 
-            <div className="flex gap-2 px-5 py-4 border-t border-slate-100 bg-slate-50/50">
+            {/* Action Buttons */}
+            <div className="px-8 py-6 bg-[#0f172a]/50 border-t border-slate-800 flex items-center gap-4">
               <button
                 onClick={closeModal}
-                className="flex-1 py-2.5 text-xs font-bold rounded-xl border border-slate-200 hover:bg-slate-100 transition text-slate-600"
+                className="flex-1 py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl border border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white transition-all active:scale-95"
               >
-                Cancel
+                Discard Changes
               </button>
               <button
                 onClick={handleSubmit}
                 disabled={actionLoading === "form"}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition disabled:opacity-60 shadow-md shadow-indigo-100"
+                className="flex-[1.5] py-4 text-[11px] font-black uppercase tracking-widest rounded-2xl bg-emerald-500 text-slate-900 hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transition-all disabled:opacity-50 active:scale-95 flex items-center justify-center gap-2"
               >
                 {actionLoading === "form" ? (
-                  <>
-                    <Loader2 size={13} className="animate-spin" /> Saving…
-                  </>
+                  <Loader2 size={16} className="animate-spin" />
                 ) : (
-                  <>{editingPandit ? "Update" : "Create"} Pandit</>
+                  <>
+                    <ShieldCheck size={16} strokeWidth={3} />
+                    {editingPandit ? "Commit Updates" : "Register Pandit"}
+                  </>
                 )}
               </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* HISTORY MODAL (Log Table) */}
+      {showHistory && (
+        <div className="fixed inset-0 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center z-[110] p-4">
+          <div className="bg-[#131e32] w-full max-w-2xl rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-4">
+            <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-[#0f172a]/50">
+              <div>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">Service History</h3>
+                <p className="text-[11px] text-orange-400 font-bold uppercase tracking-widest">{selectedPanditName}</p>
+              </div>
+              <button onClick={() => setShowHistory(false)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400 transition"><X size={20} /></button>
+            </div>
+            <div className="p-4 overflow-y-auto scrollbar-hide flex-1">
+              {historyLoading ? (
+                <div className="flex flex-col items-center py-20 gap-3 text-slate-500"><Loader2 className="animate-spin text-orange-500" size={32} /><span className="text-[10px] font-black uppercase tracking-widest">Fetching Logs...</span></div>
+              ) : history.length === 0 ? (
+                <div className="text-center py-20 text-slate-600"><p className="text-xs font-bold uppercase tracking-widest">No record found</p></div>
+              ) : (
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className="text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/50">
+                      <th className="px-4 py-3">Puja</th>
+                      <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3 text-right">Revenue</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-800/30">
+                    {history.map((h) => (
+                      <tr key={h.id} className="text-xs">
+                        <td className="px-4 py-4 font-bold text-white uppercase">{h.puja_name}</td>
+                        <td className="px-4 py-4 text-slate-400">{h.customer_name}</td>
+                        <td className="px-4 py-4 text-right font-mono text-emerald-400 font-black">₹{h.total_price}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         </div>
       )}
     </div>
   );
-}
+};
+
+export default Pandits;

@@ -1,11 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronLeft,
-  ChevronRight,
-  LayoutGrid,
+  Plus, Pencil, Trash2, ChevronLeft, ChevronRight,
+  LayoutGrid, MapPin, Home, CheckCircle2, XCircle
 } from "lucide-react";
 import ServiceModal from "./ServiceModel";
 import { API } from "../../services/adminApi";
@@ -19,24 +15,18 @@ const AdminServices = () => {
   const [category, setCategory] = useState("");
 
   const fetchServices = async () => {
-
-    const { data } = await API.get(`/services`, {
-      params: {
-        page,
-        limit: 15,
-        category: category || undefined
-      },
-    });
-
-    if (data.success) {
-      setServices(data.services);
-      setTotalPages(data.totalPages);
-    }
+    try {
+      const { data } = await API.get(`/services`, {
+        params: { page, limit: 15, category: category || undefined },
+      });
+      if (data.success) {
+        setServices(data.services);
+        setTotalPages(data.totalPages);
+      }
+    } catch (err) { console.error("Fetch Error:", err); }
   };
 
-  useEffect(() => {
-    fetchServices();
-  }, [page, category]);
+  useEffect(() => { fetchServices(); }, [page, category]);
 
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this service?")) return;
@@ -54,38 +44,19 @@ const AdminServices = () => {
     return map[type] || "bg-slate-700 text-slate-300 border border-slate-600";
   };
 
-  const typeLabel = (type) => {
-    const map = {
-      home_puja: "Home Puja",
-      katha: "Katha",
-      temple_puja: "Temple Puja",
-      pind_dan: "Pind Dan",
-    };
-    return map[type] || type;
-  };
-
   return (
-    <>
-      {/* Header */}
-      <div className="flex justify-between items-center mb-5">
-        <div className="flex items-center gap-3">
-
-          <div>
-            <h1 className="text-base font-extrabold text-white leading-tight">
-              Product & CMS
-            </h1>
-            <p className="text-[11px] text-slate-500">Manage puja services</p>
-          </div>
+    <div className="min-h-screen">
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-xl font-black text-white tracking-tight">Product & CMS</h1>
+          <p className="text-[12px] text-slate-500">Manage spiritual services and temple data</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <select
             value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setPage(1);
-            }}
-            className="bg-[#131e32] border border-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl focus:outline-none focus:ring-1 focus:ring-orange-500"
+            onChange={(e) => { setCategory(e.target.value); setPage(1); }}
+            className="bg-[#131e32] border border-slate-700 text-slate-300 text-xs px-4 py-2.5 rounded-xl outline-none focus:border-orange-500 transition-all"
           >
             <option value="">All Categories</option>
             <option value="home_puja">Home Puja</option>
@@ -95,106 +66,90 @@ const AdminServices = () => {
           </select>
 
           <button
-            onClick={() => {
-              setEditData(null);
-              setOpenModal(true);
-            }}
-            className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 active:scale-95 transition-all px-3.5 py-2 rounded-xl text-xs font-bold shadow-lg shadow-orange-900/40"
+            onClick={() => { setEditData(null); setOpenModal(true); }}
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg shadow-orange-900/20 transition-all active:scale-95"
           >
-            <Plus size={14} /> Add Service
+            <Plus size={16} /> Add Service
           </button>
         </div>
       </div>
 
-      {/* Table Card */}
-      <div className="bg-[#131e32] rounded-2xl overflow-hidden border border-slate-800 shadow-xl">
+      <div className="bg-[#131e32] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-[#0f172a] border-b border-slate-800 text-slate-500 uppercase tracking-wider text-[10px]">
-              <th className="px-5 py-3 text-left font-semibold">
-                Service Name
-              </th>
-              <th className="px-5 py-3 text-center font-semibold">Category</th>
-              <th className="px-5 py-3 text-center font-semibold">Pricing</th>
-              <th className="px-5 py-3 text-right font-semibold">Actions</th>
+            <tr className="bg-[#0f172a] border-b border-slate-800 text-slate-500 uppercase tracking-widest text-[10px]">
+              <th className="px-6 py-4 text-left font-bold">Service Info</th>
+              <th className="px-6 py-4 text-center font-bold">Category</th>
+              <th className="px-6 py-4 text-center font-bold">Status</th>
+              <th className="px-6 py-4 text-center font-bold">Pricing Tier</th>
+              <th className="px-6 py-4 text-right font-bold">Actions</th>
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="divide-y divide-slate-800/50">
             {services.length === 0 ? (
               <tr>
-                <td colSpan={4} className="py-16 text-center text-slate-600">
-                  <LayoutGrid size={32} className="mx-auto mb-2 opacity-30" />
-                  <p className="text-xs">No services found</p>
+                <td colSpan={5} className="py-20 text-center text-slate-600">
+                  <LayoutGrid size={40} className="mx-auto mb-3 opacity-20" />
+                  <p className="text-sm">No services found in this category</p>
                 </td>
               </tr>
             ) : (
-              services.map((service, i) => (
-                <tr
-                  key={service.id}
-                  className={`border-b border-slate-800/60 transition-colors hover:bg-[#1a2744] ${i % 2 !== 0 ? "bg-[#0f172a]/40" : ""}`}
-                >
-                  {/* Name */}
-                  <td className="px-5 py-3">
-                    <span className="font-semibold text-slate-200">
-                      {service.puja_name}
-                    </span>
-                  </td>
-
-                  {/* Category badge */}
-                  <td className="px-5 py-3 text-center">
-                    <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold ${typeColor(service.puja_type)}`}
-                    >
-                      {typeLabel(service.puja_type)}
-                    </span>
-                  </td>
-
-                  {/* Prices */}
-                  <td className="px-5 py-3 text-center">
-                    <div className="flex flex-wrap justify-center gap-1">
-                      {(service.prices?.length > 0
-                        ? service.prices
-                        : [
-                          {
-                            price_id: null,
-                            pricing_type: "standard",
-                            price: "",
-                          },
-                        ]
-                      ).map((p, index) => (
-                        <span
-                          key={p.price_id ?? index}
-                          className="inline-flex items-center gap-1 bg-emerald-900/40 border border-emerald-800 text-emerald-400 text-[10px] font-semibold px-2 py-0.5 rounded-full"
-                        >
-                          <span className="text-emerald-600 capitalize">
-                            {p.pricing_type}:
-                          </span>
-                          {p.price ? `₹${p.price}` : "—"}
-                        </span>
-                      ))}
+              services.map((service) => (
+                <tr key={service.id} className="hover:bg-[#1a2744] transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex flex-col">
+                      <span className="font-bold text-slate-200 text-sm mb-1">{service.puja_name}</span>
+                      {["temple_puja", "pind_dan"].includes(service.puja_type) ? (
+                        <div className="flex items-center gap-1.5 text-[10px] text-orange-400/70">
+                          <MapPin size={12} />
+                          <span className="truncate max-w-[180px]">{service.address || "No Address Set"}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 text-[10px] text-sky-400/70">
+                          <Home size={12} />
+                          <span>Pandit Visit Service</span>
+                        </div>
+                      )}
                     </div>
                   </td>
 
-                  {/* Actions */}
-                  <td className="px-5 py-3">
-                    <div className="flex justify-end gap-1">
-                      <button
-                        onClick={() => {
-                          setEditData(service);
-                          setOpenModal(true);
-                        }}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-900/30 transition-colors"
-                        title="Edit"
-                      >
-                        <Pencil size={13} />
+                  <td className="px-6 py-4 text-center">
+                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${typeColor(service.puja_type)}`}>
+                      {service.puja_type.replace('_', ' ')}
+                    </span>
+                  </td>
+
+                  <td className="px-6 py-4 text-center">
+                    <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold text-[10px] uppercase ${
+                      service.status === 'active' 
+                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
+                      : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                    }`}>
+                      {service.status === 'active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
+                      {service.status || 'active'}
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      {service.prices?.length > 0 ? (
+                        service.prices.slice(0, 2).map((p, idx) => (
+                          <span key={idx} className="text-emerald-400 font-mono text-[11px] font-bold">
+                            ₹{p.price} <span className="text-[9px] text-slate-500 font-sans uppercase">({p.pricing_type})</span>
+                          </span>
+                        ))
+                      ) : <span className="text-slate-600">—</span>}
+                    </div>
+                  </td>
+
+                  <td className="px-6 py-4">
+                    <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button onClick={() => { setEditData(service); setOpenModal(true); }} className="p-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
+                        <Pencil size={15} />
                       </button>
-                      <button
-                        onClick={() => handleDelete(service.id)}
-                        className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 hover:bg-rose-900/30 transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={13} />
+                      <button onClick={() => handleDelete(service.id)} className="p-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
+                        <Trash2 size={15} />
                       </button>
                     </div>
                   </td>
@@ -204,50 +159,9 @@ const AdminServices = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex justify-center items-center mt-4 gap-1">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage(page - 1)}
-            className="flex items-center gap-0.5 px-2.5 py-1.5 text-[11px] font-semibold bg-[#131e32] border border-slate-700 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1a2744] transition text-slate-300"
-          >
-            <ChevronLeft size={12} /> Prev
-          </button>
-
-          {[...Array(totalPages)].map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setPage(index + 1)}
-              className={`w-7 h-7 text-[11px] font-bold rounded-lg transition ${page === index + 1
-                ? "bg-orange-500 text-white shadow-md shadow-orange-900"
-                : "bg-[#131e32] border border-slate-700 text-slate-400 hover:bg-[#1a2744]"
-                }`}
-            >
-              {index + 1}
-            </button>
-          ))}
-
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage(page + 1)}
-            className="flex items-center gap-0.5 px-2.5 py-1.5 text-[11px] font-semibold bg-[#131e32] border border-slate-700 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed hover:bg-[#1a2744] transition text-slate-300"
-          >
-            Next <ChevronRight size={12} />
-          </button>
-        </div>
-      )}
-
-      {/* Modal */}
-      {openModal && (
-        <ServiceModal
-          close={() => setOpenModal(false)}
-          editData={editData}
-          refresh={fetchServices}
-        />
-      )}
-    </>
+      {/* Pagination component here */}
+      {openModal && <ServiceModal close={() => setOpenModal(false)} editData={editData} refresh={fetchServices} />}
+    </div>
   );
 };
 

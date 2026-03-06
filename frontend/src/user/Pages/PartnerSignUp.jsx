@@ -27,8 +27,8 @@ const PartnerSignUp = () => {
         name: '', gotra: '', phone: '', email: '',
         address: '', city: '', state: '', pincode: '',
         otp: '', role: 'pandit',
-        panditType: 'Standard', // Naya field dropdown ke liye
-        document: null         // Naya field file ke liye
+        panditType: 'Standard',
+        document: null
     });
 
     useEffect(() => {
@@ -41,83 +41,107 @@ const PartnerSignUp = () => {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Dropdown change handle karne ke liye
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    // File change handle karne ke liye
     const handleFileChange = (e) => {
-        setFormData(prev => ({ ...prev, document: e.target.files[0] }));
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Optional file size check (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            setError("File size should be less than 5MB.");
+            return;
+        }
+
+        setFormData(prev => ({ ...prev, document: file }));
     };
 
+    // ================= OTP SEND =================
     const handleSendOTP = async () => {
-        // Validation mein dropdown aur file check add kar sakte hain
-        if (!formData.name || !formData.phone || !formData.city || !formData.state || !formData.address || !formData.pincode || !formData.document) {
+        if (!formData.name || !formData.phone || !formData.city ||
+            !formData.state || !formData.address ||
+            !formData.pincode || !formData.document) {
             setError("Kripya sabhi jankari bharein aur document upload karein.");
             return;
         }
+
         setIsLoading(true);
         setError("");
 
         try {
-            // OTP request ke liye JSON theek hai, bas dropdown data add kar dein
             const res = await fetch(`${API_BASE_URL}/user/signup-request`, {
                 method: "POST",
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    ...formData,
-                    document: null // OTP step par file ki zarurat nahi hoti
+                    name: formData.name,
+                    phone: formData.phone,
+                    email: formData.email,
+                    gotra: formData.gotra
                 })
             });
 
-            if (res.ok) setIsOtpStep(true);
-            else {
-                const data = await res.json();
+            const data = await res.json();
+
+            if (res.ok) {
+                setIsOtpStep(true);
+            } else {
                 setError(data.message || "Registration process mein dikkat aayi.");
             }
+
         } catch (err) {
             setError("Divine connection interrupted. Try again.");
-        } finally { setIsLoading(false); }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
+    // ================= FINAL VERIFY =================
     const handleFinalVerify = async (e) => {
         if (e) e.preventDefault();
+
+        if (formData.otp.length !== 6) {
+            setError("Please enter valid 6 digit OTP.");
+            return;
+        }
+
         setIsLoading(true);
+        setError("");
 
         try {
-            // 1. FormData banayein
             const dataToSend = new FormData();
 
-            // 2. Loop karke saara text data add karein
             Object.keys(formData).forEach(key => {
-                if (key !== 'document') {
+                if (key !== 'document' && formData[key] !== null && formData[key] !== '') {
                     dataToSend.append(key, formData[key]);
                 }
             });
 
-            // 3. File add karein (Multer 'document' field name dhoondega)
             if (formData.document) {
                 dataToSend.append('document', formData.document);
             }
 
             const response = await fetch(`${API_BASE_URL}/user/signup-verify`, {
                 method: "POST",
-                // Note: FormData bhejte waqt 'Content-Type' header NAHI lagana chahiye
                 body: dataToSend
             });
 
             const data = await response.json();
+
             if (response.ok) {
                 localStorage.setItem('token', data.token);
                 navigate('/partner/dashboard');
             } else {
                 setError(data.message || "Invalid OTP code.");
             }
+
         } catch (error) {
             setError("Verification failed.");
-        } finally { setIsLoading(false); }
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

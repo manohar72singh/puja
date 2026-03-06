@@ -29,7 +29,6 @@ export default function HomePuja() {
           },
         );
         const data = await response.json();
-        console.log(data.services)
         setServices(data.services);
       } catch (error) {
         console.log("Error", error);

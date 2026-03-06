@@ -51,6 +51,7 @@ import AdminLogin from "./admin/pages/AdminLogin";
 import KundliPortal from "./user/Pages/KundliPortal";
 
 import Chatwidget from "./user/Pages/Chatwidget";
+import NameCorrection from "./user/Pages/Namecorrection";
 
 function App() {
   const location = useLocation();
@@ -69,7 +70,6 @@ function App() {
     "/customerCare/dashboard",
     "/admin/login",
     "/admin/dashboard",
-    "/kundli"
   ].includes(location.pathname);
 
   return (
@@ -82,6 +82,7 @@ function App() {
 
             {/* <Route path="/chat" element={<Chatwidget />} /> */}
           <Route path="/kundli" element={<KundliPortal />} />
+          <Route path="/nameCorrection" element={<NameCorrection />} />
 
           <Route path="/temples" element={<FullTemplePage />} />
           <Route path="/temples/:id" element={<MandirDetailsPage />} />
