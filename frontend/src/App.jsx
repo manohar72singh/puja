@@ -21,7 +21,7 @@ import KathaPujaBookingDetails from "./user/Pages/KathaPujaBookingDetails";
 
 import ProfileSection from "./user/Pages/ProfileSection";
 import HelpSupportSection from "./user/Pages/HelpSupportSection";
-import HelpSection from "./user/Pages/HelpSection"
+import HelpSection from "./user/Pages/HelpSection";
 
 import ManageSankalp from "./user/Pages/ManageSankalp";
 import SavedAddresses from "./user/Pages/SavedAddresses";
@@ -80,7 +80,7 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
 
-            {/* <Route path="/chat" element={<Chatwidget />} /> */}
+          {/* <Route path="/chat" element={<Chatwidget />} /> */}
           <Route path="/kundli" element={<KundliPortal />} />
           <Route path="/nameCorrection" element={<NameCorrection />} />
 
@@ -152,7 +152,6 @@ function App() {
         <Route path="/partnerSignIn" element={<PartnerSignIn />} />
         <Route path="/partnerSignUp" element={<PartnerSignUp />} />
 
-
         {/* ================= PARTNER ROUTES ================= */}
         <Route element={<ProtectedLayout allowedRoles={["pandit"]} />}>
           <Route path="/partner/dashboard" element={<PartnerDashboard />} />
@@ -172,7 +171,7 @@ function App() {
         <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
         {/* ================= 404 ================= */}
-        <Route path="*" element={<h1>Not Found</h1>} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
       {!hideFloatingMenu && <RightFloatingMenu />}
