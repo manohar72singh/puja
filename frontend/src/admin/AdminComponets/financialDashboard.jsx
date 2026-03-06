@@ -936,13 +936,12 @@ export default function FinancialDashboard() {
   ];
 
   return (
-    <div className="min-h-screen font-sans" style={{ background: "#0d1120" }}>
+    <div className="min-h-screen font-sans" >
       {/* Header */}
       <div
-        className="sticky top-0 z-20 border-b border-white/5 backdrop-blur-xl"
-        style={{ background: "rgba(13,17,32,0.85)" }}
+       
       >
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-500/20 flex items-center justify-center text-xl">
               🕉️
@@ -951,7 +950,7 @@ export default function FinancialDashboard() {
               <h1 className="text-base font-black text-white tracking-tight">
                 Financial Dashboard
               </h1>
-              <p className="text-[11px] text-white/30 tracking-widest uppercase">
+              <p className="text-[11px] mb-2 text-white/30 tracking-widest uppercase">
                 Financial Overview
               </p>
             </div>
@@ -962,7 +961,7 @@ export default function FinancialDashboard() {
           </div>
         </div>
         {/* Tabs */}
-        <div className="max-w-7xl mx-auto px-6 flex gap-1 border-t border-white/5">
+        <div className="max-w-7xl mx-auto  flex gap-1 border-t border-white/5">
           {tabs.map((t) => (
             <button
               key={t.key}
@@ -979,7 +978,7 @@ export default function FinancialDashboard() {
         </div>
       </div>
 
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="py-6 max-w-7xl mx-auto">
         {activeTab === "overview" && <OverviewTab />}
         {activeTab === "transactions" && <TransactionsTab />}
         {activeTab === "pandits" && <PanditsTab />}
