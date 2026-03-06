@@ -83,4 +83,27 @@ router.put("/pandits/block/:id", verifyToken, adminOnly, togglePanditBlock);
 
 router.get("/pandits/history/:id", verifyToken, adminOnly, getPanditBookingHistory);
 // router.put("/pandits/assign/:bookingId", assignPanditToBooking);
+// financial routes
+
+// ── KPI Summary Cards
+router.get("/summary", verifyToken, adminOnly, getDashboardSummary);
+
+// ── Charts
+router.get("/monthly-revenue", verifyToken, adminOnly, getMonthlyRevenue); // last 12 months trend
+router.get("/by-service-type", verifyToken, adminOnly, getRevenueByServiceType); // home_puja, katha, etc.
+router.get("/top-services", verifyToken, adminOnly, getTopServices); // ?limit=10
+router.get("/by-city", verifyToken, adminOnly, getRevenueByCity); // top 10 cities
+
+// ── Donations
+router.get("/donations", verifyToken, adminOnly, getDonationBreakdown); // Vastra Dan, Anna Dan...
+router.get("/samagri-kit", verifyToken, adminOnly, getSamagriKitRevenue); // kit sold count + revenue
+
+// ── Transactions Table
+router.get("/transactions", verifyToken, adminOnly, getRecentTransactions); // ?page=1&limit=20
+
+// ── Pandit Performance
+router.get("/pandit-earnings", verifyToken, adminOnly, getPanditEarnings);
+
+// ── Custom Date Range Report
+router.get("/date-range", verifyToken, adminOnly, getRevenueByDateRange); // ?from=2026-02-01&to=2026-03-03
 export default router;
