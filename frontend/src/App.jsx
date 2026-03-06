@@ -52,6 +52,7 @@ import KundliPortal from "./user/Pages/KundliPortal";
 
 import Chatwidget from "./user/Pages/Chatwidget";
 import NameCorrection from "./user/Pages/Namecorrection";
+import NotFound from "./user/Components/NotFound";
 
 function App() {
   const location = useLocation();
@@ -80,7 +81,7 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
 
-          {/* <Route path="/chat" element={<Chatwidget />} /> */}
+          <Route path="/chat" element={<Chatwidget />} />
           <Route path="/kundli" element={<KundliPortal />} />
           <Route path="/nameCorrection" element={<NameCorrection />} />
 
