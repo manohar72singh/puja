@@ -36,7 +36,7 @@ const ServiceModal = ({ close, editData, refresh }) => {
       });
 
       if (editData.image_url) {
-        const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5000";
+        const baseUrl = import.meta.env.VITE_BACKEND_URL;
         setPreview(`${baseUrl}${editData.image_url}`);
       }
     }
