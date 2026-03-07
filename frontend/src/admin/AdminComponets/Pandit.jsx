@@ -1,9 +1,26 @@
 import React, { useState, useEffect } from "react";
 import {
-  Users, Plus, Search, Loader2, Phone, Mail, Pencil,
-  Trash2, ShieldCheck, ShieldOff, X, User, Hash,
-  Clock, FileText, Award, Link as LinkIcon, ChevronLeft,
-  ChevronRight, XCircle, CheckCircle2
+  Users,
+  Plus,
+  Search,
+  Loader2,
+  Phone,
+  Mail,
+  Pencil,
+  Trash2,
+  ShieldCheck,
+  ShieldOff,
+  X,
+  User,
+  Hash,
+  Clock,
+  FileText,
+  Award,
+  Link as LinkIcon,
+  ChevronLeft,
+  ChevronRight,
+  XCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { API } from "../../services/adminApi.js"; // Aapka API utility path
 
@@ -35,7 +52,7 @@ const Pandits = () => {
     email: "",
     phone: "",
     pandit_type: "", // Updated from Gotra
-    document_url: ""  // New Field
+    document_url: "", // New Field
   });
 
   const [toast, setToast] = useState(null);
@@ -55,8 +72,8 @@ const Pandits = () => {
       setTotalPages(res.data.totalPages);
       setTotal(res.data.total);
       // Stats update (Assuming backend sends these or calculate from data)
-      setActiveCount(res.data.pandits.filter(p => !p.is_blocked).length);
-      setBlockedCount(res.data.pandits.filter(p => p.is_blocked).length);
+      setActiveCount(res.data.pandits.filter((p) => !p.is_blocked).length);
+      setBlockedCount(res.data.pandits.filter((p) => p.is_blocked).length);
     } catch (err) {
       showToast("Failed to fetch records", "error");
     } finally {
@@ -73,7 +90,8 @@ const Pandits = () => {
     setShowHistory(true);
     setHistoryLoading(true);
     try {
-      const res = await API.get(`/admin/pandits/history/${pandit.id}`);
+      const res = await API.get(`/pandits/history/${pandit.id}`);
+      console.log("History Data:", res.data);
       setHistory(res.data);
     } catch (err) {
       showToast("History load nahi ho payi", "error");
@@ -83,7 +101,8 @@ const Pandits = () => {
   };
 
   const handleSubmit = async () => {
-    if (!formData.name || !formData.phone) return showToast("Name & Phone are required", "error");
+    if (!formData.name || !formData.phone)
+      return showToast("Name & Phone are required", "error");
 
     setActionLoading("form");
     try {
@@ -134,7 +153,7 @@ const Pandits = () => {
       email: p.email || "",
       phone: p.phone,
       pandit_type: p.pandit_type || "",
-      document_url: p.document_url || ""
+      document_url: p.document_url || "",
     });
     setShowModal(true);
   };
@@ -142,20 +161,52 @@ const Pandits = () => {
   const closeModal = () => {
     setShowModal(false);
     setEditingPandit(null);
-    setFormData({ name: "", email: "", phone: "", pandit_type: "", document_url: "" });
+    setFormData({
+      name: "",
+      email: "",
+      phone: "",
+      pandit_type: "",
+      document_url: "",
+    });
   };
 
   const avatarColor = (name) => {
-    const colors = ["bg-orange-500/20 border-orange-500 text-orange-500", "bg-emerald-500/20 border-emerald-500 text-emerald-500", "bg-blue-500/20 border-blue-500 text-blue-500"];
+    const colors = [
+      "bg-orange-500/20 border-orange-500 text-orange-500",
+      "bg-emerald-500/20 border-emerald-500 text-emerald-500",
+      "bg-blue-500/20 border-blue-500 text-blue-500",
+    ];
     return colors[name?.length % 3];
+  };
+
+  // Pagination helper - page numbers array generate karta hai
+  const getPaginationPages = () => {
+    const pages = [];
+    const delta = 1; // current page ke aas-paas kitne pages dikhane hain
+    const left = Math.max(2, page - delta);
+    const right = Math.min(totalPages - 1, page + delta);
+
+    pages.push(1);
+    if (left > 2) pages.push("...");
+    for (let i = left; i <= right; i++) pages.push(i);
+    if (right < totalPages - 1) pages.push("...");
+    if (totalPages > 1) pages.push(totalPages);
+
+    return pages;
   };
 
   return (
     <div className=" min-h-screen text-slate-300">
       {/* Toast Notification */}
       {toast && (
-        <div className={`fixed top-6 right-6 z-[150] px-5 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border ${toast.type === "error" ? "bg-rose-950 border-rose-800 text-rose-400" : "bg-emerald-950 border-emerald-800 text-emerald-400"}`}>
-          {toast.type === "error" ? <XCircle size={16} /> : <CheckCircle2 size={16} />}
+        <div
+          className={`fixed top-6 right-6 z-[150] px-5 py-3 rounded-2xl shadow-2xl text-[11px] font-black uppercase tracking-wider flex items-center gap-3 border ${toast.type === "error" ? "bg-rose-950 border-rose-800 text-rose-400" : "bg-emerald-950 border-emerald-800 text-emerald-400"}`}
+        >
+          {toast.type === "error" ? (
+            <XCircle size={16} />
+          ) : (
+            <CheckCircle2 size={16} />
+          )}
           {toast.message}
         </div>
       )}
@@ -167,11 +218,18 @@ const Pandits = () => {
             <Users size={22} strokeWidth={2.5} />
           </div>
           <div>
-            <h1 className="text-xl font-black text-white tracking-tight">Pandit Directory</h1>
-            <p className="text-[12px] text-slate-500 font-medium">Manage types and verification documents</p>
+            <h1 className="text-xl font-black text-white tracking-tight">
+              Pandit Directory
+            </h1>
+            <p className="text-[12px] text-slate-500 font-medium">
+              Manage types and verification documents
+            </p>
           </div>
         </div>
-        <button onClick={() => setShowModal(true)} className="flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-400 transition-all active:scale-95 shadow-lg shadow-emerald-900/10">
+        <button
+          onClick={() => setShowModal(true)}
+          className="flex items-center gap-2 bg-white text-slate-900 px-5 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-400 transition-all active:scale-95 shadow-lg shadow-emerald-900/10"
+        >
           <Plus size={16} strokeWidth={3} /> Add Pandit
         </button>
       </div>
@@ -179,12 +237,29 @@ const Pandits = () => {
       {/* STATS STRIP */}
       <div className="grid grid-cols-3 gap-3 mb-6">
         {[
-          { label: "Total", value: total, color: "border-slate-800 bg-[#1e293b]/50 text-slate-400" },
-          { label: "Active", value: activeCount, color: "border-emerald-900/50 bg-emerald-950/20 text-emerald-400" },
-          { label: "Blocked", value: blockedCount, color: "border-rose-900/50 bg-rose-950/20 text-rose-400" },
+          {
+            label: "Total",
+            value: total,
+            color: "border-slate-800 bg-[#1e293b]/50 text-slate-400",
+          },
+          {
+            label: "Active",
+            value: activeCount,
+            color: "border-emerald-900/50 bg-emerald-950/20 text-emerald-400",
+          },
+          {
+            label: "Blocked",
+            value: blockedCount,
+            color: "border-rose-900/50 bg-rose-950/20 text-rose-400",
+          },
         ].map((s) => (
-          <div key={s.label} className={`flex items-center justify-between px-5 py-3 rounded-2xl border ${s.color}`}>
-            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">{s.label}</span>
+          <div
+            key={s.label}
+            className={`flex items-center justify-between px-5 py-3 rounded-2xl border ${s.color}`}
+          >
+            <span className="text-[10px] font-black uppercase tracking-widest opacity-70">
+              {s.label}
+            </span>
             <span className="text-xl font-black">{s.value}</span>
           </div>
         ))}
@@ -199,7 +274,10 @@ const Pandits = () => {
               type="text"
               placeholder="SEARCH BY NAME OR PHONE..."
               value={search}
-              onChange={(e) => { setSearch(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
               className="w-full pl-11 pr-4 py-3 bg-[#0f172a] border border-slate-700 rounded-xl text-[11px] font-bold text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 uppercase tracking-wider"
             />
           </div>
@@ -209,7 +287,9 @@ const Pandits = () => {
           {loading ? (
             <div className="flex flex-col items-center justify-center py-24 gap-3">
               <Loader2 className="animate-spin text-emerald-500" size={32} />
-              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">Loading Records...</span>
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-500">
+                Loading Records...
+              </span>
             </div>
           ) : (
             <table className="w-full text-left border-collapse">
@@ -225,13 +305,20 @@ const Pandits = () => {
               </thead>
               <tbody className="divide-y divide-slate-800/50">
                 {pandits.map((p) => (
-                  <tr key={p.id} className={`group hover:bg-emerald-500/[0.02] transition-colors ${actionLoading === p.id ? "opacity-30" : ""}`}>
+                  <tr
+                    key={p.id}
+                    className={`group hover:bg-emerald-500/[0.02] transition-colors ${actionLoading === p.id ? "opacity-30" : ""}`}
+                  >
                     <td className="px-6 py-5">
                       <div className="flex items-center gap-4">
-                        <div className={`w-10 h-10 rounded-xl border flex items-center justify-center font-black text-xs ${avatarColor(p.name)}`}>
+                        <div
+                          className={`w-10 h-10 rounded-xl border flex items-center justify-center font-black text-xs ${avatarColor(p.name)}`}
+                        >
                           {p.name?.charAt(0).toUpperCase()}
                         </div>
-                        <p className="font-bold text-slate-200 text-sm">{p.name}</p>
+                        <p className="font-bold text-slate-200 text-sm">
+                          {p.name}
+                        </p>
                       </div>
                     </td>
                     <td className="px-6 py-5">
@@ -242,31 +329,70 @@ const Pandits = () => {
                     <td className="px-6 py-5">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2 text-xs font-bold text-slate-300">
-                          <Phone size={12} className="text-emerald-500" /> {p.phone}
+                          <Phone size={12} className="text-emerald-500" />{" "}
+                          {p.phone}
                         </div>
-                        {p.email && <div className="flex items-center gap-2 text-[10px] text-slate-500"><Mail size={12} /> {p.email}</div>}
+                        {p.email && (
+                          <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                            <Mail size={12} /> {p.email}
+                          </div>
+                        )}
                       </div>
                     </td>
                     <td className="px-6 py-5 text-center">
                       {p.document_url ? (
-                        <a href={p.document_url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all text-[10px] font-black uppercase">
+                        <a
+                          href={p.document_url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 hover:bg-emerald-500 hover:text-white transition-all text-[10px] font-black uppercase"
+                        >
                           <FileText size={14} /> View
                         </a>
                       ) : (
-                        <span className="text-[10px] font-bold text-slate-600 uppercase italic">No Doc</span>
+                        <span className="text-[10px] font-bold text-slate-600 uppercase italic">
+                          No Doc
+                        </span>
                       )}
                     </td>
                     <td className="px-6 py-5 text-center">
-                      <button onClick={() => openHistoryModal(p)} className="group flex items-center gap-2 mx-auto px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all">
-                        <Clock size={14} className="text-slate-500 group-hover:text-orange-400" />
-                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-orange-400">Log</span>
+                      <button
+                        onClick={() => openHistoryModal(p)}
+                        className="group flex items-center gap-2 mx-auto px-4 py-2 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-orange-500/50 hover:bg-orange-500/10 transition-all"
+                      >
+                        <Clock
+                          size={14}
+                          className="text-slate-500 group-hover:text-orange-400"
+                        />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 group-hover:text-orange-400">
+                          Log
+                        </span>
                       </button>
                     </td>
                     <td className="px-6 py-5">
                       <div className="flex items-center justify-end gap-2">
-                        <button onClick={() => openEditModal(p)} className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-slate-800 transition-all"><Pencil size={14} /></button>
-                        <button onClick={() => toggleBlock(p.id)} className={`p-2 rounded-xl transition-all ${p.is_blocked ? "text-emerald-500 hover:bg-emerald-500/10" : "text-amber-500 hover:bg-amber-500/10"}`}>{p.is_blocked ? <ShieldCheck size={14} /> : <ShieldOff size={14} />}</button>
-                        <button onClick={() => handleDelete(p.id)} className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-500/10"><Trash2 size={14} /></button>
+                        <button
+                          onClick={() => openEditModal(p)}
+                          className="p-2 rounded-xl text-slate-500 hover:text-white hover:bg-slate-800 transition-all"
+                        >
+                          <Pencil size={14} />
+                        </button>
+                        <button
+                          onClick={() => toggleBlock(p.id)}
+                          className={`p-2 rounded-xl transition-all ${p.is_blocked ? "text-emerald-500 hover:bg-emerald-500/10" : "text-amber-500 hover:bg-amber-500/10"}`}
+                        >
+                          {p.is_blocked ? (
+                            <ShieldCheck size={14} />
+                          ) : (
+                            <ShieldOff size={14} />
+                          )}
+                        </button>
+                        <button
+                          onClick={() => handleDelete(p.id)}
+                          className="p-2 rounded-xl text-slate-500 hover:text-rose-500 hover:bg-rose-500/10"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -275,44 +401,102 @@ const Pandits = () => {
             </table>
           )}
         </div>
+
+        {/* PAGINATION */}
+        {!loading && totalPages > 1 && (
+          <div className="px-6 py-4 border-t border-slate-800 bg-[#0f172a]/40 flex items-center justify-between gap-4">
+            <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">
+              Page {page} of {totalPages}
+            </span>
+            <div className="flex items-center gap-1.5">
+              {/* Prev Button */}
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronLeft size={14} />
+              </button>
+
+              {/* Page Numbers */}
+              {getPaginationPages().map((p, idx) =>
+                p === "..." ? (
+                  <span
+                    key={`ellipsis-${idx}`}
+                    className="px-2 text-slate-600 text-[11px] font-black"
+                  >
+                    ...
+                  </span>
+                ) : (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`w-8 h-8 rounded-xl text-[11px] font-black border transition-all ${
+                      page === p
+                        ? "bg-emerald-500 border-emerald-500 text-slate-900"
+                        : "border-slate-700 text-slate-400 hover:text-white hover:border-emerald-500/50 hover:bg-emerald-500/10"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ),
+              )}
+
+              {/* Next Button */}
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page === totalPages}
+                className="p-2 rounded-xl border border-slate-700 text-slate-400 hover:text-white hover:border-emerald-500/50 hover:bg-emerald-500/10 disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* --- MODALS --- */}
 
       {/* ADD/EDIT MODAL */}
-      {/* ADD/EDIT MODAL */}
       {showModal && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-[100] p-4">
           <div className="bg-[#131e32] w-full max-w-lg rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-
             {/* Modal Header */}
             <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-[#0f172a]/50">
               <div>
                 <h3 className="text-xl font-black text-white tracking-tight">
-                  {editingPandit ? "Update Professional Profile" : "Register New Pandit"}
+                  {editingPandit
+                    ? "Update Professional Profile"
+                    : "Register New Pandit"}
                 </h3>
                 <p className="text-[10px] text-emerald-500 font-bold uppercase tracking-[0.2em] mt-1">
                   Verification & Credentials Management
                 </p>
               </div>
-              <button onClick={closeModal} className="p-2 rounded-xl hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-all">
+              <button
+                onClick={closeModal}
+                className="p-2 rounded-xl hover:bg-rose-500/10 text-slate-400 hover:text-rose-500 transition-all"
+              >
                 <X size={24} />
               </button>
             </div>
 
             {/* Modal Body / Form */}
             <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-6 max-h-[70vh] overflow-y-auto">
-
               {/* Full Name */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Full Name</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  Full Name
+                </label>
                 <div className="relative group">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <input
                     type="text"
                     placeholder="e.g. Ramesh Sharma"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all uppercase placeholder:text-slate-700"
                   />
                 </div>
@@ -320,14 +504,18 @@ const Pandits = () => {
 
               {/* Mobile Number */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Contact Number</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  Contact Number
+                </label>
                 <div className="relative group">
                   <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <input
                     type="tel"
                     placeholder="10-digit mobile"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, phone: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all uppercase placeholder:text-slate-700"
                   />
                 </div>
@@ -335,14 +523,18 @@ const Pandits = () => {
 
               {/* Email Address */}
               <div className="space-y-2 md:col-span-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Email Address (Optional)</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  Email Address (Optional)
+                </label>
                 <div className="relative group">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <input
                     type="email"
                     placeholder="example@domain.com"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-700"
                   />
                 </div>
@@ -350,38 +542,55 @@ const Pandits = () => {
 
               {/* Expertise Type */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Pandit Expertise</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  Pandit Expertise
+                </label>
                 <div className="relative group">
                   <Award className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <select
                     value={formData.pandit_type}
-                    onChange={(e) => setFormData({ ...formData, pandit_type: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, pandit_type: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 transition-all appearance-none cursor-pointer uppercase"
                   >
-                    <option value="" className="bg-[#131e32]">Select Classification</option>
-                    <option value="Vedic" className="bg-[#131e32]">Vedic Pandit</option>
-                    <option value="Shastri" className="bg-[#131e32]">Shastri</option>
-                    <option value="Acharya" className="bg-[#131e32]">Acharya</option>
-                    <option value="Karmakandi" className="bg-[#131e32]">Karmakandi</option>
+                    <option value="" className="bg-[#131e32]">
+                      Select Classification
+                    </option>
+                    <option value="Vedic" className="bg-[#131e32]">
+                      Vedic Pandit
+                    </option>
+                    <option value="Shastri" className="bg-[#131e32]">
+                      Shastri
+                    </option>
+                    <option value="Acharya" className="bg-[#131e32]">
+                      Acharya
+                    </option>
+                    <option value="Karmakandi" className="bg-[#131e32]">
+                      Karmakandi
+                    </option>
                   </select>
                 </div>
               </div>
 
               {/* Document URL */}
               <div className="space-y-2">
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">KYC Document URL</label>
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">
+                  KYC Document URL
+                </label>
                 <div className="relative group">
                   <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-emerald-500 transition-colors" />
                   <input
                     type="text"
                     placeholder="G-Drive or S3 Link"
                     value={formData.document_url}
-                    onChange={(e) => setFormData({ ...formData, document_url: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, document_url: e.target.value })
+                    }
                     className="w-full pl-12 pr-4 py-3.5 bg-[#0f172a] border border-slate-700 rounded-2xl text-xs font-bold text-white focus:outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 transition-all placeholder:text-slate-700"
                   />
                 </div>
               </div>
-
             </div>
 
             {/* Action Buttons */}
@@ -407,7 +616,6 @@ const Pandits = () => {
                 )}
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -418,31 +626,57 @@ const Pandits = () => {
           <div className="bg-[#131e32] w-full max-w-2xl rounded-[32px] border border-slate-800 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] animate-in slide-in-from-bottom-4">
             <div className="px-8 py-6 border-b border-slate-800 flex justify-between items-center bg-[#0f172a]/50">
               <div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">Service History</h3>
-                <p className="text-[11px] text-orange-400 font-bold uppercase tracking-widest">{selectedPanditName}</p>
+                <h3 className="text-lg font-black text-white uppercase tracking-tight">
+                  Service History
+                </h3>
+                <p className="text-[11px] text-orange-400 font-bold uppercase tracking-widest">
+                  {selectedPanditName}
+                </p>
               </div>
-              <button onClick={() => setShowHistory(false)} className="p-2 rounded-full hover:bg-slate-800 text-slate-400 transition"><X size={20} /></button>
+              <button
+                onClick={() => setShowHistory(false)}
+                className="p-2 rounded-full hover:bg-slate-800 text-slate-400 transition"
+              >
+                <X size={20} />
+              </button>
             </div>
             <div className="p-4 overflow-y-auto scrollbar-hide flex-1">
               {historyLoading ? (
-                <div className="flex flex-col items-center py-20 gap-3 text-slate-500"><Loader2 className="animate-spin text-orange-500" size={32} /><span className="text-[10px] font-black uppercase tracking-widest">Fetching Logs...</span></div>
+                <div className="flex flex-col items-center py-20 gap-3 text-slate-500">
+                  <Loader2 className="animate-spin text-orange-500" size={32} />
+                  <span className="text-[10px] font-black uppercase tracking-widest">
+                    Fetching Logs...
+                  </span>
+                </div>
               ) : history.length === 0 ? (
-                <div className="text-center py-20 text-slate-600"><p className="text-xs font-bold uppercase tracking-widest">No record found</p></div>
+                <div className="text-center py-20 text-slate-600">
+                  <p className="text-xs font-bold uppercase tracking-widest">
+                    No record found
+                  </p>
+                </div>
               ) : (
                 <table className="w-full text-left">
                   <thead>
                     <tr className="text-[9px] font-black text-slate-500 uppercase tracking-widest border-b border-slate-800/50">
                       <th className="px-4 py-3">Puja</th>
                       <th className="px-4 py-3">Customer</th>
+                      <th className="px-4 py-3">Satus</th>
                       <th className="px-4 py-3 text-right">Revenue</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/30">
                     {history.map((h) => (
                       <tr key={h.id} className="text-xs">
-                        <td className="px-4 py-4 font-bold text-white uppercase">{h.puja_name}</td>
-                        <td className="px-4 py-4 text-slate-400">{h.customer_name}</td>
-                        <td className="px-4 py-4 text-right font-mono text-emerald-400 font-black">₹{h.total_price}</td>
+                        <td className="px-4 py-4 font-bold text-white uppercase">
+                          {h.puja_name}
+                        </td>
+                        <td className="px-4 py-4 text-slate-400">
+                          {h.customer_name}
+                        </td>
+                        <td className="px-4 py-4 text-slate-400">{h.status}</td>
+                        <td className="px-4 py-4 text-right font-mono text-emerald-400 font-black">
+                          ₹{h.total_price}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

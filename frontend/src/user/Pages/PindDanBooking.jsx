@@ -261,10 +261,11 @@ const PindDanBooking = () => {
     );
   };
 
-  const selectedContributionsTotal = contributionList.reduce(
-    (acc, item) => (donations[item.id] ? acc + item.price : acc),
-    0,
-  );
+  const selectedContributionsTotal =
+    contributionList.reduce(
+      (acc, item) => (donations[item.id] ? acc + item.price : acc),
+      0,
+    ) + (donations["Temple Donation"] ? getPrice("Temple Donation") : 0);
 
   if (loading)
     return (

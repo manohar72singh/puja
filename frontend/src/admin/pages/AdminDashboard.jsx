@@ -686,7 +686,7 @@ const AdminDashboard = () => {
                   <GodTile
                     icon="⏳"
                     iconBg="rgba(234,179,8,0.2)"
-                    value={stats.pendingRequests ?? 6}
+                    value={stats.totalPendingBookings ?? 6}
                     label="Pending Requests"
                   />
                   <GodTile

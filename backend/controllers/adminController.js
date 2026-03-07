@@ -104,6 +104,84 @@ export const AdminVerifyOtp = async (req, res) => {
 };
 
 // Admin Dashboard Stats show all activities
+// export const getDashboardStats = async (req, res) => {
+//   try {
+//     const [[stats]] = await db.execute(`
+//       SELECT
+//         (SELECT COUNT(*) FROM puja_requests) as totalBookings,
+
+//         (SELECT COUNT(*) FROM puja_requests
+//          WHERE DATE(created_at) = CURDATE()) as todayBookings,
+
+//         (SELECT COUNT(*) FROM puja_requests
+//          WHERE status='pending') as totalPendingBookings,
+
+//         (SELECT COUNT(*) FROM puja_requests
+//          WHERE status='accepted') as totalAcceptedBookings,
+
+//         (SELECT COUNT(*) FROM puja_requests
+//          WHERE status='declined') as totalCancelledBookings,
+
+//         (SELECT COUNT(*) FROM puja_requests
+//          WHERE status='completed') as totalCompletedBookings,
+
+//         (SELECT COUNT(*) FROM users
+//          WHERE role='user') as totalUsers,
+
+//         (SELECT COUNT(*) FROM users
+//          WHERE role='pandit') as totalPandits,
+
+//         -- Total Revenue
+//         (
+//           SELECT COALESCE(SUM(sp.price), 0)
+//           FROM puja_requests pr
+//           JOIN service_prices sp
+//             ON pr.service_id = sp.service_id
+//           WHERE pr.status='completed'
+//         ) as totalRevenue,
+
+//         -- Today Revenue (Based on completed_at)
+//         (
+//           SELECT COALESCE(SUM(sp.price), 0)
+//           FROM puja_requests pr
+//           JOIN service_prices sp
+//             ON pr.service_id = sp.service_id
+//           WHERE pr.status='completed'
+//           AND DATE(pr.completed_at) = CURDATE()
+//         ) as todayRevenue
+//     `);
+
+//     // Recent Bookings (Last 5)
+//     const [recentBookings] = await db.execute(`
+//       SELECT
+//         pr.id,
+//         pr.bookingId,
+//         pr.status,
+//         pr.created_at,
+//         u.name AS user_name,
+//         u.phone,
+//         s.puja_name,
+//         sp.price
+//       FROM puja_requests pr
+//       JOIN users u ON pr.user_id = u.id
+//       JOIN services s ON pr.service_id = s.id
+//       LEFT JOIN service_prices sp ON pr.service_id = sp.service_id
+//       ORDER BY pr.created_at DESC
+//       LIMIT 10
+//     `);
+
+//     res.json({
+//       success: true,
+//       ...stats,
+//       totalRevenue: stats.totalRevenue || 0,
+//       todayRevenue: stats.todayRevenue || 0,
+//       recentBookings,
+//     });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ success: false });
+//   }
+// };
 export const getDashboardStats = async (req, res) => {
   try {
     const [[stats]] = await db.execute(`
@@ -114,16 +192,16 @@ export const getDashboardStats = async (req, res) => {
          WHERE DATE(created_at) = CURDATE()) as todayBookings,
 
         (SELECT COUNT(*) FROM puja_requests 
-         WHERE status='pending') as totalPendingBookings,
+         WHERE status = 'pending') as totalPendingBookings,
 
         (SELECT COUNT(*) FROM puja_requests 
-         WHERE status='accepted') as totalAcceptedBookings,
+         WHERE status = 'accepted') as totalAcceptedBookings,
 
         (SELECT COUNT(*) FROM puja_requests 
-         WHERE status='declined') as totalCancelledBookings,
+         WHERE status = 'declined') as totalCancelledBookings,
 
         (SELECT COUNT(*) FROM puja_requests 
-         WHERE status='completed') as totalCompletedBookings,
+         WHERE status = 'completed') as totalCompletedBookings,
 
         (SELECT COUNT(*) FROM users 
          WHERE role='user') as totalUsers,
@@ -131,41 +209,36 @@ export const getDashboardStats = async (req, res) => {
         (SELECT COUNT(*) FROM users 
          WHERE role='pandit') as totalPandits,
 
-        -- Total Revenue
+        -- Total Revenue (FROM total_price)
         (
-          SELECT COALESCE(SUM(sp.price), 0)
-          FROM puja_requests pr
-          JOIN service_prices sp 
-            ON pr.service_id = sp.service_id
-          WHERE pr.status='completed'
+          SELECT COALESCE(SUM(total_price),0)
+          FROM puja_requests
+          WHERE status='completed'
         ) as totalRevenue,
 
-        -- Today Revenue (Based on completed_at)
+        -- Today Revenue
         (
-          SELECT COALESCE(SUM(sp.price), 0)
-          FROM puja_requests pr
-          JOIN service_prices sp 
-            ON pr.service_id = sp.service_id
-          WHERE pr.status='completed'
-          AND DATE(pr.completed_at) = CURDATE()
+          SELECT COALESCE(SUM(total_price),0)
+          FROM puja_requests
+          WHERE status='completed'
+          AND DATE(completed_at) = CURDATE()
         ) as todayRevenue
     `);
 
-    // Recent Bookings (Last 5)
+    // Recent Bookings
     const [recentBookings] = await db.execute(`
       SELECT 
         pr.id,
         pr.bookingId,
         pr.status,
         pr.created_at,
+        pr.total_price AS price,
         u.name AS user_name,
         u.phone,
-        s.puja_name,
-        sp.price
+        s.puja_name
       FROM puja_requests pr
       JOIN users u ON pr.user_id = u.id
-      JOIN services s ON pr.service_id = s.id
-      LEFT JOIN service_prices sp ON pr.service_id = sp.service_id
+      LEFT JOIN services s ON pr.service_id = s.id
       ORDER BY pr.created_at DESC
       LIMIT 10
     `);
@@ -449,7 +522,9 @@ export const createPandit = async (req, res) => {
     const { name, email, phone, pandit_type, document_url } = req.body;
 
     if (!name || !phone) {
-      return res.status(400).json({ success: false, message: "Name and phone are required" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Name and phone are required" });
     }
 
     await connection.beginTransaction();
@@ -458,7 +533,7 @@ export const createPandit = async (req, res) => {
     const [userResult] = await connection.query(
       `INSERT INTO users (name, email, phone, role, is_blocked)
        VALUES (?, ?, ?, 'pandit', 0)`,
-      [name, email || null, phone]
+      [name, email || null, phone],
     );
 
     const newUserId = userResult.insertId;
@@ -467,7 +542,7 @@ export const createPandit = async (req, res) => {
     await connection.query(
       `INSERT INTO pandits (user_id, pandit_type, document_url)
        VALUES (?, ?, ?)`,
-      [newUserId, pandit_type || null, document_url || null]
+      [newUserId, pandit_type || null, document_url || null],
     );
 
     await connection.commit();
@@ -544,7 +619,10 @@ export const getAllPandits = async (req, res) => {
       params.push(`%${search}%`, `%${search}%`);
     }
 
-    const [[{ total }]] = await db.query(`SELECT COUNT(*) as total FROM users u ${whereClause}`, params);
+    const [[{ total }]] = await db.query(
+      `SELECT COUNT(*) as total FROM users u ${whereClause}`,
+      params,
+    );
 
     const [rows] = await db.query(
       `SELECT 
@@ -555,7 +633,7 @@ export const getAllPandits = async (req, res) => {
        ${whereClause}
        ORDER BY u.created_at DESC
        LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+      [...params, limit, offset],
     );
 
     res.json({
@@ -609,10 +687,13 @@ export const getSinglePandit = async (req, res) => {
        FROM users u
        LEFT JOIN pandits p ON u.id = p.user_id
        WHERE u.id=? AND u.role='pandit'`,
-      [id]
+      [id],
     );
 
-    if (!pandit) return res.status(404).json({ success: false, message: "Pandit not found" });
+    if (!pandit)
+      return res
+        .status(404)
+        .json({ success: false, message: "Pandit not found" });
 
     res.json({ success: true, pandit });
   } catch (error) {
@@ -656,7 +737,7 @@ export const updatePandit = async (req, res) => {
     // 1. Update basic info in users
     await connection.query(
       `UPDATE users SET name=?, email=?, phone=? WHERE id=? AND role='pandit'`,
-      [name, email, phone, id]
+      [name, email, phone, id],
     );
 
     // 2. Update or Insert extended info in pandits
@@ -666,7 +747,7 @@ export const updatePandit = async (req, res) => {
        ON DUPLICATE KEY UPDATE 
        pandit_type = VALUES(pandit_type), 
        document_url = VALUES(document_url)`,
-      [id, pandit_type, document_url]
+      [id, pandit_type, document_url],
     );
 
     await connection.commit();
@@ -699,17 +780,17 @@ export const getPanditBookingHistory = async (req, res) => {
        LEFT JOIN users u ON pr.user_id = u.id
        WHERE pr.pandit_id = ? 
        ORDER BY pr.preferred_date DESC`,
-      [id]
+      [id],
     );
 
     // Agar koi history nahi milti toh empty array jayega
     res.status(200).json(rows);
   } catch (error) {
     console.error("SQL ERROR:", error.message);
-    res.status(500).json({ 
-      success: false, 
-      message: "Database error", 
-      error: error.message 
+    res.status(500).json({
+      success: false,
+      message: "Database error",
+      error: error.message,
     });
   }
 };
@@ -717,7 +798,6 @@ export const getPanditBookingHistory = async (req, res) => {
 // =====================================
 // 5️⃣ Block / Unblock Pandit
 // =====================================
-
 
 export const togglePanditBlock = async (req, res) => {
   try {
@@ -795,7 +875,7 @@ export const getAllServices = async (req, res) => {
 
     const [countResult] = await db.query(
       `SELECT COUNT(DISTINCT s.id) as total FROM services s LEFT JOIN temples t ON s.id = t.service_id ${whereClause}`,
-      params
+      params,
     );
 
     const [rows] = await db.query(
@@ -806,7 +886,7 @@ export const getAllServices = async (req, res) => {
        LEFT JOIN temples t ON s.id = t.service_id
        ${whereClause}
        ORDER BY s.created_at DESC LIMIT ? OFFSET ?`,
-      [...params, limit, offset]
+      [...params, limit, offset],
     );
 
     const serviceMap = {};
@@ -832,7 +912,12 @@ export const getAllServices = async (req, res) => {
       }
     });
 
-    res.json({ success: true, totalServices: countResult[0].total, totalPages: Math.ceil(countResult[0].total / limit), services: Object.values(serviceMap) });
+    res.json({
+      success: true,
+      totalServices: countResult[0].total,
+      totalPages: Math.ceil(countResult[0].total / limit),
+      services: Object.values(serviceMap),
+    });
   } catch (error) {
     res.status(500).json({ success: false });
   }
@@ -847,16 +932,22 @@ export const getServiceById = async (req, res) => {
        FROM services s
        LEFT JOIN service_prices sp ON s.id = sp.service_id
        LEFT JOIN temples t ON s.id = t.service_id
-       WHERE s.id = ?`, [id]
+       WHERE s.id = ?`,
+      [id],
     );
 
-    if (!rows.length) return res.status(404).json({ success: false, message: "Not found" });
+    if (!rows.length)
+      return res.status(404).json({ success: false, message: "Not found" });
 
     const service = {
       ...rows[0],
-      prices: rows.filter(r => r.price_id).map(r => ({
-        price_id: r.price_id, pricing_type: r.pricing_type, price: r.price
-      }))
+      prices: rows
+        .filter((r) => r.price_id)
+        .map((r) => ({
+          price_id: r.price_id,
+          pricing_type: r.pricing_type,
+          price: r.price,
+        })),
     };
     res.json({ success: true, service });
   } catch (error) {
@@ -868,7 +959,15 @@ export const getServiceById = async (req, res) => {
 export const createService = async (req, res) => {
   const connection = await db.getConnection();
   try {
-    const { puja_name, puja_type, description, about, address, dateOfStart, status } = req.body;
+    const {
+      puja_name,
+      puja_type,
+      description,
+      about,
+      address,
+      dateOfStart,
+      status,
+    } = req.body;
     const prices = JSON.parse(req.body.prices || "[]");
     const image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
@@ -876,16 +975,22 @@ export const createService = async (req, res) => {
 
     const [result] = await connection.query(
       `INSERT INTO services (puja_name, puja_type, description, image_url, status) VALUES (?, ?, ?, ?, ?)`,
-      [puja_name, puja_type, description, image_url, status || 'active']
+      [puja_name, puja_type, description, image_url, status || "active"],
     );
 
     const serviceId = result.insertId;
     for (let p of prices) {
-      await connection.query(`INSERT INTO service_prices (service_id, pricing_type, price) VALUES (?, ?, ?)`, [serviceId, p.pricing_type, p.price]);
+      await connection.query(
+        `INSERT INTO service_prices (service_id, pricing_type, price) VALUES (?, ?, ?)`,
+        [serviceId, p.pricing_type, p.price],
+      );
     }
 
-    if (['temple_pu_ja', 'pind_dan'].includes(puja_type)) {
-      await connection.query(`INSERT INTO temples (service_id, about, address, dateOfStart) VALUES (?, ?, ?, ?)`, [serviceId, about, address, dateOfStart]);
+    if (["temple_pu_ja", "pind_dan"].includes(puja_type)) {
+      await connection.query(
+        `INSERT INTO temples (service_id, about, address, dateOfStart) VALUES (?, ?, ?, ?)`,
+        [serviceId, about, address, dateOfStart],
+      );
     }
 
     await connection.commit();
@@ -893,7 +998,9 @@ export const createService = async (req, res) => {
   } catch (error) {
     await connection.rollback();
     res.status(500).json({ success: false });
-  } finally { connection.release(); }
+  } finally {
+    connection.release();
+  }
 };
 
 //update service
@@ -901,40 +1008,82 @@ export const updateService = async (req, res) => {
   const connection = await db.getConnection();
   try {
     const { id } = req.params;
-    let { puja_name, puja_type, description, prices, status, about, address, dateOfStart } = req.body;
+    let {
+      puja_name,
+      puja_type,
+      description,
+      prices,
+      status,
+      about,
+      address,
+      dateOfStart,
+    } = req.body;
     if (typeof prices === "string") prices = JSON.parse(prices);
 
     await connection.beginTransaction();
     let image_url = req.file ? `/uploads/${req.file.filename}` : null;
 
     // 1. Update Services Table
-    const fields = []; const vals = [];
-    if (puja_name) { fields.push("puja_name=?"); vals.push(puja_name); }
-    if (puja_type) { fields.push("puja_type=?"); vals.push(puja_type); }
-    if (description) { fields.push("description=?"); vals.push(description); }
-    if (status) { fields.push("status=?"); vals.push(status); }
-    if (image_url) { fields.push("image_url=?"); vals.push(image_url); }
+    const fields = [];
+    const vals = [];
+    if (puja_name) {
+      fields.push("puja_name=?");
+      vals.push(puja_name);
+    }
+    if (puja_type) {
+      fields.push("puja_type=?");
+      vals.push(puja_type);
+    }
+    if (description) {
+      fields.push("description=?");
+      vals.push(description);
+    }
+    if (status) {
+      fields.push("status=?");
+      vals.push(status);
+    }
+    if (image_url) {
+      fields.push("image_url=?");
+      vals.push(image_url);
+    }
 
     if (fields.length > 0) {
       vals.push(id);
-      await connection.query(`UPDATE services SET ${fields.join(", ")} WHERE id=?`, vals);
+      await connection.query(
+        `UPDATE services SET ${fields.join(", ")} WHERE id=?`,
+        vals,
+      );
     }
 
     // 2. Update Prices
     if (Array.isArray(prices)) {
-      await connection.query(`DELETE FROM service_prices WHERE service_id=?`, [id]);
+      await connection.query(`DELETE FROM service_prices WHERE service_id=?`, [
+        id,
+      ]);
       for (let p of prices) {
-        await connection.query(`INSERT INTO service_prices (service_id, pricing_type, price) VALUES (?, ?, ?)`, [id, p.pricing_type, p.price]);
+        await connection.query(
+          `INSERT INTO service_prices (service_id, pricing_type, price) VALUES (?, ?, ?)`,
+          [id, p.pricing_type, p.price],
+        );
       }
     }
 
     // 3. Update/Insert Temple Details
-    if (['temple_puja', 'pind_dan'].includes(puja_type)) {
-      const [exists] = await connection.query(`SELECT id FROM temples WHERE service_id=?`, [id]);
+    if (["temple_puja", "pind_dan"].includes(puja_type)) {
+      const [exists] = await connection.query(
+        `SELECT id FROM temples WHERE service_id=?`,
+        [id],
+      );
       if (exists.length > 0) {
-        await connection.query(`UPDATE temples SET about=?, address=?, dateOfStart=? WHERE service_id=?`, [about, address, dateOfStart, id]);
+        await connection.query(
+          `UPDATE temples SET about=?, address=?, dateOfStart=? WHERE service_id=?`,
+          [about, address, dateOfStart, id],
+        );
       } else {
-        await connection.query(`INSERT INTO temples (service_id, about, address, dateOfStart) VALUES (?, ?, ?, ?)`, [id, about, address, dateOfStart]);
+        await connection.query(
+          `INSERT INTO temples (service_id, about, address, dateOfStart) VALUES (?, ?, ?, ?)`,
+          [id, about, address, dateOfStart],
+        );
       }
     } else {
       await connection.query(`DELETE FROM temples WHERE service_id=?`, [id]);
@@ -945,7 +1094,9 @@ export const updateService = async (req, res) => {
   } catch (error) {
     await connection.rollback();
     res.status(500).json({ success: false });
-  } finally { connection.release(); }
+  } finally {
+    connection.release();
+  }
 };
 
 //delete service
