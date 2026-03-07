@@ -152,7 +152,7 @@ const PujaCard = ({ puja, onComplete }) => {
           <span
             className={`text-[16px] font-bold ${puja.status === "completed" ? "text-green-600" : "text-[#1a1208]"}`}
           >
-            {puja.status === "completed" && "✓ "}₹{puja.price || 0}
+            {puja.status === "completed" && "✓ "}₹{puja.total_price || 0}
           </span>
         </div>
       </div>
@@ -200,10 +200,10 @@ const PartnerDashboard = () => {
       console.error("Fetch Error:", e);
     }
   };
+  console.log("my puja", pujas);
   const handleMarkAsComplete = async (id) => {
     if (!window.confirm("Is this puja completed?")) return;
 
-    
     try {
       const res = await axios.put(
         `${API_BASE_URL}/partner/complete-puja/${id}`,
@@ -246,7 +246,7 @@ const PartnerDashboard = () => {
   // Sirf 'completed' status wali pujas ka paisa jodenge
   const totalEarnings = pujas
     .filter((p) => p.status === "completed")
-    .reduce((s, p) => s + (Number(p.price) || 0), 0);
+    .reduce((s, p) => s + (Number(p.total_price) || 0), 0);
 
   // Sirf Pending/Accepted/Confirmed pujas ko 'Upcoming' mein gineinge
   const upcomingCount = pujas.filter(
@@ -411,7 +411,7 @@ const PartnerDashboard = () => {
                           {p.puja_name}
                         </span>
                         <span className="font-bold text-green-600">
-                          ₹{p.price}
+                          ₹{p.total_price}
                         </span>
                       </div>
                     ))

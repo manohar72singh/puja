@@ -31,7 +31,8 @@ import {
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL ;
+const SOCKET_URL =
+  import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_BACKEND_URL;
 
 /* ── Booking Status config ── */
 const STATUS_CFG = {
@@ -200,13 +201,17 @@ const ChatSupportPanel = ({ token }) => {
     socket.on("agent:sessions", (existing) => {
       setSessions(existing);
       const msgs = {};
-      existing.forEach((s) => { msgs[s.sessionId] = s.messages || []; });
+      existing.forEach((s) => {
+        msgs[s.sessionId] = s.messages || [];
+      });
       setMessages(msgs);
     });
 
     socket.on("agent:new-session", (session) => {
       setSessions((prev) =>
-        prev.find((s) => s.sessionId === session.sessionId) ? prev : [session, ...prev]
+        prev.find((s) => s.sessionId === session.sessionId)
+          ? prev
+          : [session, ...prev],
       );
       setMessages((prev) => ({ ...prev, [session.sessionId]: [] }));
       setUnread((prev) => ({ ...prev, [session.sessionId]: true }));
@@ -215,7 +220,7 @@ const ChatSupportPanel = ({ token }) => {
 
     socket.on("agent:session-updated", (session) => {
       setSessions((prev) =>
-        prev.map((s) => (s.sessionId === session.sessionId ? session : s))
+        prev.map((s) => (s.sessionId === session.sessionId ? session : s)),
       );
     });
 
@@ -235,7 +240,9 @@ const ChatSupportPanel = ({ token }) => {
 
     socket.on("session:closed", ({ sessionId }) => {
       setSessions((prev) =>
-        prev.map((s) => (s.sessionId === sessionId ? { ...s, status: "closed" } : s))
+        prev.map((s) =>
+          s.sessionId === sessionId ? { ...s, status: "closed" } : s,
+        ),
       );
     });
 
@@ -261,8 +268,12 @@ const ChatSupportPanel = ({ token }) => {
 
   const sendMessage = useCallback(() => {
     const session = sessions.find((s) => s.sessionId === activeSessionId);
-    if (!inputText.trim() || !activeSessionId || session?.status !== "active") return;
-    socketRef.current.emit("message:send", { sessionId: activeSessionId, text: inputText.trim() });
+    if (!inputText.trim() || !activeSessionId || session?.status !== "active")
+      return;
+    socketRef.current.emit("message:send", {
+      sessionId: activeSessionId,
+      text: inputText.trim(),
+    });
     setInputText("");
     socketRef.current.emit("typing:stop", { sessionId: activeSessionId });
   }, [inputText, activeSessionId, sessions]);
@@ -270,11 +281,15 @@ const ChatSupportPanel = ({ token }) => {
   const handleTyping = (e) => {
     setInputText(e.target.value);
     if (!activeSessionId) return;
-    socketRef.current.emit("typing:start", { sessionId: activeSessionId, senderType: "agent" });
+    socketRef.current.emit("typing:start", {
+      sessionId: activeSessionId,
+      senderType: "agent",
+    });
     clearTimeout(typingTimeoutRef.current);
     typingTimeoutRef.current = setTimeout(
-      () => socketRef.current?.emit("typing:stop", { sessionId: activeSessionId }),
-      1500
+      () =>
+        socketRef.current?.emit("typing:stop", { sessionId: activeSessionId }),
+      1500,
     );
   };
 
@@ -289,15 +304,18 @@ const ChatSupportPanel = ({ token }) => {
 
   const statusBadge = {
     waiting: "bg-amber-400/10 text-amber-400 border-amber-400/25",
-    active:  "bg-emerald-400/10 text-emerald-400 border-emerald-400/25",
-    closed:  "bg-slate-500/10 text-slate-400 border-slate-500/25",
+    active: "bg-emerald-400/10 text-emerald-400 border-emerald-400/25",
+    closed: "bg-slate-500/10 text-slate-400 border-slate-500/25",
   };
-  const statusDot = { waiting: "bg-amber-400", active: "bg-emerald-400", closed: "bg-slate-500" };
+  const statusDot = {
+    waiting: "bg-amber-400",
+    active: "bg-emerald-400",
+    closed: "bg-slate-500",
+  };
   const statusLabel = { waiting: "Wait", active: "Live", closed: "Band" };
 
   return (
     <div className="flex h-[calc(100vh-8rem)] bg-gradient-to-br from-[#0d1829] to-[#080f1c] border border-white/5 rounded-2xl overflow-hidden shadow-2xl relative">
-
       {/* Notification */}
       {notification && (
         <div className="absolute top-4 right-4 z-50 bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-lg border border-blue-500/30">
@@ -307,13 +325,14 @@ const ChatSupportPanel = ({ token }) => {
 
       {/* ── LEFT: Sessions List ── */}
       <div className="w-72 border-r border-white/[0.04] flex flex-col flex-shrink-0">
-
         {/* Header */}
         <div className="px-5 py-4 border-b border-white/[0.04] bg-gradient-to-r from-blue-500/[0.08] to-indigo-500/[0.05]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageCircle size={16} className="text-blue-400" />
-              <span className="text-sm font-bold text-slate-200">Live Chats</span>
+              <span className="text-sm font-bold text-slate-200">
+                Live Chats
+              </span>
             </div>
             <div className="flex items-center gap-1.5">
               <span
@@ -329,13 +348,35 @@ const ChatSupportPanel = ({ token }) => {
           {/* Mini stats */}
           <div className="flex gap-2 mt-3">
             {[
-              { label: "Total", count: sessions.length,                                          color: "text-blue-400",    bg: "bg-blue-500/10 border-blue-500/20"    },
-              { label: "Live",  count: sessions.filter((s) => s.status === "active").length,   color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-              { label: "Wait",  count: waitingCount,                                             color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/20"  },
+              {
+                label: "Total",
+                count: sessions.length,
+                color: "text-blue-400",
+                bg: "bg-blue-500/10 border-blue-500/20",
+              },
+              {
+                label: "Live",
+                count: sessions.filter((s) => s.status === "active").length,
+                color: "text-emerald-400",
+                bg: "bg-emerald-500/10 border-emerald-500/20",
+              },
+              {
+                label: "Wait",
+                count: waitingCount,
+                color: "text-amber-400",
+                bg: "bg-amber-500/10 border-amber-500/20",
+              },
             ].map((s) => (
-              <div key={s.label} className={`flex-1 text-center py-1.5 rounded-lg border ${s.bg}`}>
-                <div className={`font-mono text-base font-bold ${s.color}`}>{s.count}</div>
-                <div className="text-[9px] text-slate-600 uppercase tracking-wider">{s.label}</div>
+              <div
+                key={s.label}
+                className={`flex-1 text-center py-1.5 rounded-lg border ${s.bg}`}
+              >
+                <div className={`font-mono text-base font-bold ${s.color}`}>
+                  {s.count}
+                </div>
+                <div className="text-[9px] text-slate-600 uppercase tracking-wider">
+                  {s.label}
+                </div>
               </div>
             ))}
           </div>
@@ -354,9 +395,10 @@ const ChatSupportPanel = ({ token }) => {
                 key={session.sessionId}
                 onClick={() => selectSession(session.sessionId)}
                 className={`px-4 py-3.5 cursor-pointer border-b border-white/[0.03] transition-all duration-150
-                  ${activeSessionId === session.sessionId
-                    ? "bg-blue-500/[0.08] border-l-2 border-l-blue-500"
-                    : "hover:bg-white/[0.02] border-l-2 border-l-transparent"
+                  ${
+                    activeSessionId === session.sessionId
+                      ? "bg-blue-500/[0.08] border-l-2 border-l-blue-500"
+                      : "hover:bg-white/[0.02] border-l-2 border-l-transparent"
                   }`}
               >
                 <div className="flex items-center justify-between">
@@ -374,13 +416,19 @@ const ChatSupportPanel = ({ token }) => {
                         {session.userName}
                       </p>
                       <p className="text-[10px] text-slate-600">
-                        {new Date(session.startedAt).toLocaleTimeString("en-IN", {
-                          hour: "2-digit", minute: "2-digit",
-                        })}
+                        {new Date(session.startedAt).toLocaleTimeString(
+                          "en-IN",
+                          {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          },
+                        )}
                       </p>
                     </div>
                   </div>
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ml-1 ${statusBadge[session.status] || "bg-slate-700 text-slate-400 border-slate-600"}`}>
+                  <span
+                    className={`text-[9px] font-bold px-2 py-0.5 rounded-full border flex-shrink-0 ml-1 ${statusBadge[session.status] || "bg-slate-700 text-slate-400 border-slate-600"}`}
+                  >
                     {statusLabel[session.status]}
                   </span>
                 </div>
@@ -401,12 +449,24 @@ const ChatSupportPanel = ({ token }) => {
                   {activeSession.userName.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p className="text-sm font-bold text-slate-200">{activeSession.userName}</p>
-                  <p className="text-[10px] text-slate-500">{activeSession.userEmail || activeSession.sessionId}</p>
+                  <p className="text-sm font-bold text-slate-200">
+                    {activeSession.userName}
+                  </p>
+                  <p className="text-[10px] text-slate-500">
+                    {activeSession.userEmail || activeSession.sessionId}
+                  </p>
                 </div>
-                <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ml-2 ${statusBadge[activeSession.status] || ""}`}>
-                  <span className={`w-1.5 h-1.5 rounded-full ${statusDot[activeSession.status]}`} />
-                  {activeSession.status === "active" ? "Live" : activeSession.status === "waiting" ? "Waiting" : "Band"}
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ml-2 ${statusBadge[activeSession.status] || ""}`}
+                >
+                  <span
+                    className={`w-1.5 h-1.5 rounded-full ${statusDot[activeSession.status]}`}
+                  />
+                  {activeSession.status === "active"
+                    ? "Live"
+                    : activeSession.status === "waiting"
+                      ? "Waiting"
+                      : "Band"}
                 </span>
               </div>
 
@@ -457,26 +517,37 @@ const ChatSupportPanel = ({ token }) => {
                     key={msg.id}
                     className={`flex items-end gap-2.5 ${msg.senderType === "agent" ? "flex-row-reverse" : "flex-row"}`}
                   >
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${msg.senderType === "agent" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-300"}`}>
-                      {msg.senderType === "agent" ? <Headphones size={13} /> : msg.senderName.charAt(0).toUpperCase()}
+                    <div
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0 ${msg.senderType === "agent" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-300"}`}
+                    >
+                      {msg.senderType === "agent" ? (
+                        <Headphones size={13} />
+                      ) : (
+                        msg.senderName.charAt(0).toUpperCase()
+                      )}
                     </div>
-                    <div className={`max-w-[65%] flex flex-col ${msg.senderType === "agent" ? "items-end" : "items-start"}`}>
-                      <div className={`px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed break-words
-                        ${msg.senderType === "agent"
-                          ? "bg-gradient-to-br from-blue-600/80 to-indigo-600/80 text-white rounded-br-sm border border-blue-500/30"
-                          : "bg-[#0d1829] border border-white/[0.06] text-slate-200 rounded-bl-sm"
+                    <div
+                      className={`max-w-[65%] flex flex-col ${msg.senderType === "agent" ? "items-end" : "items-start"}`}
+                    >
+                      <div
+                        className={`px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed break-words
+                        ${
+                          msg.senderType === "agent"
+                            ? "bg-gradient-to-br from-blue-600/80 to-indigo-600/80 text-white rounded-br-sm border border-blue-500/30"
+                            : "bg-[#0d1829] border border-white/[0.06] text-slate-200 rounded-bl-sm"
                         }`}
                       >
                         {msg.text}
                       </div>
                       <span className="text-[10px] text-slate-600 mt-1 px-1">
                         {new Date(msg.timestamp).toLocaleTimeString("en-IN", {
-                          hour: "2-digit", minute: "2-digit",
+                          hour: "2-digit",
+                          minute: "2-digit",
                         })}
                       </span>
                     </div>
                   </div>
-                )
+                ),
               )}
 
               {userTyping && (
@@ -486,7 +557,9 @@ const ChatSupportPanel = ({ token }) => {
                       <span
                         key={i}
                         className="w-1.5 h-1.5 bg-slate-500 rounded-full inline-block"
-                        style={{ animation: `ccBounce 1.2s ${i * 0.15}s ease-in-out infinite` }}
+                        style={{
+                          animation: `ccBounce 1.2s ${i * 0.15}s ease-in-out infinite`,
+                        }}
                       />
                     ))}
                   </div>
@@ -514,14 +587,16 @@ const ChatSupportPanel = ({ token }) => {
                   activeSession?.status === "active"
                     ? "Reply likhein... (Enter to send)"
                     : activeSession?.status === "waiting"
-                    ? "Pehle chat accept karein..."
-                    : "Chat band ho gayi"
+                      ? "Pehle chat accept karein..."
+                      : "Chat band ho gayi"
                 }
                 className="flex-1 bg-[#0a1220] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500/30 disabled:opacity-40 transition"
               />
               <button
                 onClick={sendMessage}
-                disabled={activeSession?.status !== "active" || !inputText.trim()}
+                disabled={
+                  activeSession?.status !== "active" || !inputText.trim()
+                }
                 className="flex items-center gap-2 px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-500/30 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_4px_15px_rgba(59,130,246,0.2)]"
               >
                 <Send size={14} /> Bhejo
@@ -534,13 +609,18 @@ const ChatSupportPanel = ({ token }) => {
               <Headphones size={28} className="text-blue-400/50" />
             </div>
             <div className="text-center">
-              <p className="text-slate-400 font-semibold text-sm">Chat Support Panel</p>
-              <p className="text-xs mt-1">Left side se koi session select karein</p>
+              <p className="text-slate-400 font-semibold text-sm">
+                Chat Support Panel
+              </p>
+              <p className="text-xs mt-1">
+                Left side se koi session select karein
+              </p>
             </div>
             {waitingCount > 0 && (
               <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs font-semibold">
                 <Clock size={13} />
-                {waitingCount} user{waitingCount > 1 ? "s" : ""} intezaar mein hain!
+                {waitingCount} user{waitingCount > 1 ? "s" : ""} intezaar mein
+                hain!
               </div>
             )}
           </div>
@@ -600,6 +680,7 @@ const CustomerCareDashboard = () => {
     } finally {
       setLoading(false);
     }
+    console.log("bookings data--", bookings);
   };
 
   const fetchPandits = async () => {
@@ -945,7 +1026,7 @@ const CustomerCareDashboard = () => {
                             </td>
                             <td className="px-5 py-4">
                               <span className="font-mono font-bold text-emerald-400 text-sm">
-                                ₹{b.standard_price}
+                                ₹{b.total_price}
                               </span>
                             </td>
                           </tr>
@@ -1024,7 +1105,7 @@ const CustomerCareDashboard = () => {
                           </td>
                           <td className="px-5 py-4">
                             <span className="font-mono font-bold text-emerald-400 text-sm">
-                              ₹{puja.standard_price}
+                              ₹{puja.total_price}
                             </span>
                           </td>
                           <td className="px-5 py-4">
@@ -1492,7 +1573,6 @@ const CustomerCareDashboard = () => {
 
           {/* ── CHAT SUPPORT — sirf yeh 1 line badli hai ── */}
           {activeTab === "chatsupport" && <ChatSupportPanel token={token} />}
-
         </div>
       </main>
 

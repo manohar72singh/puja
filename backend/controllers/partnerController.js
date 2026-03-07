@@ -6,12 +6,7 @@ import db from "../config/db.js"; // <--- Sabse pehle ye check karein
 
 //     const query = `
 //       SELECT
-//         b.id,
-//         b.address,
-//         b.city,
-//         b.state,
-//         b.preferred_date,
-//         b.preferred_time,
+//         b.*,
 //         s.puja_name,
 //         u.name AS customer_name,
 //         u.phone AS customer_phone,
@@ -41,7 +36,6 @@ import db from "../config/db.js"; // <--- Sabse pehle ye check karein
 //     });
 //   }
 // };
-
 export const getMyAssignedPujas = async (req, res) => {
   try {
     const panditId = req.user.id;
@@ -52,13 +46,10 @@ export const getMyAssignedPujas = async (req, res) => {
         s.puja_name,
         u.name AS customer_name,
         u.phone AS customer_phone,
-        sp.price AS price 
+        b.total_price AS price
       FROM puja_requests b
       LEFT JOIN services s ON b.service_id = s.id
       LEFT JOIN users u ON b.user_id = u.id
-      /* Sirf standard wala price join karne ke liye */
-      LEFT JOIN service_prices sp ON b.service_id = sp.service_id 
-        AND sp.pricing_type = 'standard' 
       WHERE b.pandit_id = ?
       ORDER BY b.preferred_date ASC
     `;
@@ -72,12 +63,14 @@ export const getMyAssignedPujas = async (req, res) => {
     });
   } catch (error) {
     console.error("Pandit Fetch Error:", error.message);
+
     res.status(500).json({
       success: false,
       message: "Server Error",
     });
   }
 };
+
 export const updatePanditProfile = async (req, res) => {
   try {
     const panditId = req.user.id;

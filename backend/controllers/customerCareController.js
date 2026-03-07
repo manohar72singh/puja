@@ -215,11 +215,66 @@ export const customerVerifyOtp = async (req, res) => {
 
 // Customer care ke pass All Booking Show hogi
 
+// export const getAllPujaRequests = async (req, res) => {
+//   try {
+//     const query = `
+//       SELECT
+//         b.id,
+//         b.address,
+//         b.city,
+//         b.state,
+//         b.preferred_date,
+//         b.preferred_time,
+//         b.status,
+//         b.pandit_id,
+
+//         s.puja_name,
+//         s.puja_type,
+
+//         u.name AS user_name,
+//         u.phone AS user_phone,
+
+//         pu.name AS pandit_name,
+
+//         sp.price AS standard_price
+
+//       FROM puja_requests b
+
+//       LEFT JOIN services s ON b.service_id = s.id
+//       LEFT JOIN users u ON b.user_id = u.id
+//       LEFT JOIN users pu ON b.pandit_id = pu.id
+
+//       LEFT JOIN service_prices sp
+//         ON s.id = sp.service_id
+//         AND sp.pricing_type = 'standard'
+
+//       WHERE s.puja_type IN ('home_puja','katha')
+
+//       ORDER BY b.preferred_date ASC
+//     `;
+
+//     const [rows] = await db.query(query);
+
+//     res.status(200).json({
+//       success: true,
+//       count: rows.length,
+//       bookings: rows,
+//     });
+//   } catch (error) {
+//     console.error("Fetch Error:", error.message);
+//     res.status(500).json({
+//       success: false,
+//       message: "Server Error",
+//     });
+//   }
+// };
 export const getAllPujaRequests = async (req, res) => {
   try {
-    const query = `
-      SELECT 
+    // 1️⃣ All bookings
+    const bookingsQuery = `
+      SELECT
         b.id,
+        b.bookingId,
         b.address,
         b.city,
         b.state,
@@ -227,6 +282,10 @@ export const getAllPujaRequests = async (req, res) => {
         b.preferred_time,
         b.status,
         b.pandit_id,
+        b.ticket_type,
+        b.samagrikit,
+        b.devotee_name,
+        b.total_price,
 
         s.puja_name,
         s.puja_type,
@@ -234,9 +293,7 @@ export const getAllPujaRequests = async (req, res) => {
         u.name AS user_name,
         u.phone AS user_phone,
 
-        pu.name AS pandit_name,
-
-        sp.price AS standard_price
+        pu.name AS pandit_name
 
       FROM puja_requests b
 
@@ -244,24 +301,49 @@ export const getAllPujaRequests = async (req, res) => {
       LEFT JOIN users u ON b.user_id = u.id
       LEFT JOIN users pu ON b.pandit_id = pu.id
 
-      LEFT JOIN service_prices sp 
-        ON s.id = sp.service_id 
-        AND sp.pricing_type = 'standard'
-
-      WHERE s.puja_type IN ('home_puja','katha')
-
       ORDER BY b.preferred_date ASC
     `;
 
-    const [rows] = await db.query(query);
+    const [bookings] = await db.query(bookingsQuery);
+
+    // 2️⃣ Total bookings
+    const totalBookings = bookings.length;
+
+    // 3️⃣ Total revenue
+    const totalRevenue = bookings.reduce(
+      (sum, item) => sum + Number(item.total_price || 0),
+      0,
+    );
+
+    // 4️⃣ Total users
+    const [users] = await db.query(`
+      SELECT COUNT(*) AS totalUsers 
+      FROM users 
+      WHERE role = 'user'
+    `);
+
+    const totalUsers = users[0].totalUsers;
+
+    // 5️⃣ Total completed puja
+    const [completed] = await db.query(`
+      SELECT COUNT(*) AS totalCompleted
+      FROM puja_requests
+      WHERE status = 'completed'
+    `);
+
+    const totalCompletedPuja = completed[0].totalCompleted;
 
     res.status(200).json({
       success: true,
-      count: rows.length,
-      bookings: rows,
+      totalBookings,
+      totalRevenue,
+      totalUsers,
+      totalCompletedPuja,
+      bookings,
     });
   } catch (error) {
     console.error("Fetch Error:", error.message);
+
     res.status(500).json({
       success: false,
       message: "Server Error",
