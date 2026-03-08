@@ -270,447 +270,281 @@ function getDasha(moonLon) {
 // type field: 'FULL' | 'PARTIAL' | 'CANCELLED'
 // ══════════════════════════════════════════════════════════════
 function detectDoshas(planets, lagnaRashi, lagnaIdx) {
-  const doshas = [];
 
-  // Helpers — always longitude-based, never raw .house for Moon/Venus refs
-  const lon = n => planets[n]?.longitude ?? 0;
-  const ri  = n => Math.floor((planets[n]?.longitude ?? 0) / 30);  // 0-11
-  const deg = n => planets[n]?.degree ?? ((planets[n]?.longitude ?? 0) % 30);
-  const arc = (a, b) => { const d = Math.abs(lon(a)-lon(b))%360; return d>180?360-d:d; };
-  const hf  = (name, refIdx) => ((ri(name) - refIdx + 12) % 12) + 1;
-  const rashiGap = (riA, riB) => Math.min((riA-riB+12)%12, (riB-riA+12)%12);
+const doshas=[];
 
-  const lagnaRashiIdx = lagnaIdx;
-  const moonRashiIdx  = ri('Moon');
-  const venusRashiIdx = ri('Venus');
-  const rahuRashiIdx  = ri('Rahu');
-  const ketuRashiIdx  = ri('Ketu');
-  const G7 = ['Sun','Moon','Mars','Mercury','Jupiter','Venus','Saturn'];
+const lon=n=>planets[n]?.longitude??0
+const ri=n=>Math.floor(lon(n)/30)
+const deg=n=>planets[n]?.degree??(lon(n)%30)
+const arc=(a,b)=>{const d=Math.abs(lon(a)-lon(b))%360;return d>180?360-d:d}
+const hf=(name,refIdx)=>((ri(name)-refIdx+12)%12)+1
 
-  // ─────────────────────────────────────────────────────────
-  // 1. MANGAL DOSHA
-  // Full    = Mars in [1,2,4,7,8,12] from ALL 3 (Lagna+Moon+Venus)
-  // Partial = Mars in [1,2,4,7,8,12] from 1 or 2 references
-  // ─────────────────────────────────────────────────────────
-  {
-    const MH = [1,2,4,7,8,12];
-    const fl = MH.includes(hf('Mars', lagnaRashiIdx));
-    const fm = MH.includes(hf('Mars', moonRashiIdx));
-    const fv = MH.includes(hf('Mars', venusRashiIdx));
-    const count = [fl,fm,fv].filter(Boolean).length;
+const moonRashiIdx=ri('Moon')
+const venusRashiIdx=ri('Venus')
+const rahuRashiIdx=ri('Rahu')
+const ketuRashiIdx=ri('Ketu')
 
-    if (count > 0) {
-      const triggers = [];
-      if (fl) triggers.push(`H${hf('Mars',lagnaRashiIdx)} from Lagna`);
-      if (fm) triggers.push(`H${hf('Mars',moonRashiIdx)} from Moon`);
-      if (fv) triggers.push(`H${hf('Mars',venusRashiIdx)} from Venus`);
+const lagnaRashiIdx=lagnaIdx
 
-      const cc = [];
-      if (['Aries','Scorpio'].includes(planets.Mars?.rashi)) cc.push('Mars in own sign');
-      if (planets.Mars?.rashi === 'Capricorn') cc.push('Mars exalted');
-      if (['Aries','Scorpio'].includes(lagnaRashi)) cc.push(`Mars rules ${lagnaRashi} Lagna`);
-      if (arc('Jupiter','Mars') < 8) cc.push('Jupiter conjunct Mars');
+// ------------------------------------------------
+// 1 MANGAL DOSHA
+// ------------------------------------------------
 
-      const isFull = count === 3;
-      doshas.push({
-        name         : 'Mangal Dosha (Kuja Dosha)',
-        present      : cc.length === 0,
-        type         : cc.length > 0 ? 'CANCELLED' : isFull ? 'FULL' : 'PARTIAL',
-        severity     : cc.length > 0 ? 'CANCELLED' : isFull ? 'HIGH' : count===2 ? 'MODERATE' : 'LOW',
-        partialNote  : (!isFull && cc.length===0) ? `Partial — Mars manglik from ${count}/3 references only` : null,
-        trigger      : `Mars in ${triggers.join(' | ')} — ${count}/3 references`,
-        cancellations: cc,
-        classicRef   : 'BPHS Ch.18 — Vivaha Adhyaya',
-        impact       : cc.length>0 ? 'Cancelled'
-          : isFull ? 'Strong — significant marital impact'
-          : `Partial (${count}/3) — mild marital impact`,
-        remedy: cc.length>0 ? ['No remedy needed'] : [
-          'Mangal Puja every Tuesday',
-          'Chant "Om Kram Kreem Kraum Sah Bhaumaya Namah" 108x daily',
-          'Donate red lentils on Tuesday',
-          ...(isFull ? ['Kumbh Vivah or Vishnu Vivah before marriage'] : []),
-        ],
-      });
-    }
-  }
+{
+const MH=[1,2,4,7,8,12]
 
-  // ─────────────────────────────────────────────────────────
-  // 2. KAAL SARP DOSHA
-  // Full    = All 7 planets inside arc (count=7)
-  // Partial = 5 or 6 planets inside arc
-  // NOTE: Uses LONGITUDE (0-360), NOT degree(0-30) — critical fix
-  // ─────────────────────────────────────────────────────────
-  {
-    const rahuLon = lon('Rahu');
-    const ketuLon = lon('Ketu');
-    const rahuDeg = deg('Rahu');
-    const ketuDeg = deg('Ketu');
+const fl=MH.includes(hf('Mars',lagnaRashiIdx))
+const fm=MH.includes(hf('Mars',moonRashiIdx))
+const fv=MH.includes(hf('Mars',venusRashiIdx))
 
-    const insideRK = name => {
-      const pRi=ri(name), pDg=deg(name), pLon=lon(name);
-      if (pRi===rahuRashiIdx) return pDg < rahuDeg;
-      if (pRi===ketuRashiIdx) return pDg > ketuDeg;
-      const arcLen=(ketuLon-rahuLon+360)%360, dist=(pLon-rahuLon+360)%360;
-      return dist>0 && dist<arcLen;
-    };
-    const insideKR = name => {
-      const pRi=ri(name), pDg=deg(name), pLon=lon(name);
-      if (pRi===ketuRashiIdx) return pDg < ketuDeg;
-      if (pRi===rahuRashiIdx) return pDg > rahuDeg;
-      const arcLen=(rahuLon-ketuLon+360)%360, dist=(pLon-ketuLon+360)%360;
-      return dist>0 && dist<arcLen;
-    };
+const count=[fl,fm,fv].filter(Boolean).length
 
-    const cRK = G7.filter(p=>insideRK(p)).length;
-    const cKR = G7.filter(p=>insideKR(p)).length;
-    const maxC = Math.max(cRK, cKR);
-    const dir  = cRK>=cKR ? 'Rahu→Ketu' : 'Ketu→Rahu';
-    const outside = G7.filter(p => cRK>=cKR ? !insideRK(p) : !insideKR(p));
+if(count>0){
 
-    if (maxC >= 5) {
-      const isFull = maxC === 7;
-      const rahuH  = hf('Rahu', lagnaRashiIdx);
-      const KSD_NAMES = {
-        1:'Anant',2:'Kulik',3:'Vasuki',4:'Shankhpal',5:'Padma',6:'Mahapadma',
-        7:'Takshak',8:'Karkotak',9:'Shankhchud',10:'Ghatak',11:'Vishdhar',12:'Sheshnag'
-      };
-      const cc = [];
-      if ([1,4,5,7,9,10].includes(hf('Jupiter',lagnaRashiIdx))) cc.push('Jupiter in Kendra/Trikona');
-      if (planets.Jupiter?.strength==='EXALTED') cc.push('Jupiter exalted');
-      if ([3,6,11].includes(rahuH)) cc.push('Rahu in upachaya house');
+const isFull=count===3
 
-      doshas.push({
-        name         : `Kaal Sarp Dosha — ${KSD_NAMES[rahuH]||''} KSD`,
-        present      : true,
-        type         : isFull ? 'FULL' : 'PARTIAL',
-        severity     : cc.length>0?'MODERATE': isFull?'HIGH': maxC===6?'MODERATE':'LOW',
-        partialNote  : !isFull ? `Partial KSD — ${maxC}/7 planets inside ${dir} arc. Outside: ${outside.join(', ')}` : null,
-        trigger      : isFull
-          ? `All 7 planets in ${dir} arc | Rahu H${rahuH} (${planets.Rahu?.rashi})`
-          : `${maxC}/7 planets in ${dir} arc | Outside: ${outside.join(', ')}`,
-        cancellations: cc,
-        classicRef   : 'Kaal Sarp Yoga — Traditional Jyotish',
-        impact       : isFull
-          ? 'Full KSD — strong karmic struggles, sudden reversals'
-          : `Partial KSD (${maxC}/7) — periodic obstacles, moderate Rahu-Ketu influence`,
-        remedy: [
-          'Kaal Sarp Shanti Puja at Trimbakeshwar (Nashik)',
-          'Mahamrityunjaya Mantra 108x daily',
-          'Nag Panchami worship every year',
-          ...(!isFull ? ['Rahu-Ketu Shanti Puja sufficient for partial KSD'] : []),
-        ],
-      });
-    }
-  }
+doshas.push({
 
-  // ─────────────────────────────────────────────────────────
-  // 3. PITRA DOSHA
-  // Full    = Sun same rashi as Rahu/Ketu
-  // Partial = Rahu/Ketu in 9th OR 9th lord with Rahu/Ketu
-  // ─────────────────────────────────────────────────────────
-  {
-    const sunWithRahu = ri('Sun')===rahuRashiIdx;
-    const sunWithKetu = ri('Sun')===ketuRashiIdx;
-    const rahuIn9=hf('Rahu',lagnaRashiIdx)===9, ketuIn9=hf('Ketu',lagnaRashiIdx)===9;
-    const sunIn9=hf('Sun',lagnaRashiIdx)===9, satIn9=hf('Saturn',lagnaRashiIdx)===9;
-    const ninthRashi=RASHIS[(lagnaRashiIdx+8)%12], ninthLord=RASHI_LORDS[ninthRashi];
-    const nlWithRahu=ri(ninthLord)===rahuRashiIdx, nlWithKetu=ri(ninthLord)===ketuRashiIdx;
+name:'Mangal Dosha',
 
-    const isFull    = sunWithRahu || sunWithKetu;
-    const isPartial = !isFull && (rahuIn9||ketuIn9||nlWithRahu||nlWithKetu||(sunIn9&&satIn9));
+present:true,
 
-    if (isFull || isPartial) {
-      const triggers=[];
-      if (sunWithRahu) triggers.push(`Sun+Rahu same sign (${planets.Sun?.rashi})`);
-      if (sunWithKetu) triggers.push(`Sun+Ketu same sign (${planets.Sun?.rashi})`);
-      if (rahuIn9) triggers.push('Rahu in 9th house');
-      if (ketuIn9) triggers.push('Ketu in 9th house');
-      if (nlWithRahu) triggers.push(`9th lord ${ninthLord} with Rahu`);
-      if (nlWithKetu) triggers.push(`9th lord ${ninthLord} with Ketu`);
-      if (sunIn9&&satIn9) triggers.push('Sun+Saturn both in 9th');
+type:isFull?'FULL':'PARTIAL',
 
-      doshas.push({
-        name         : 'Pitra Dosha',
-        present      : true,
-        type         : isFull ? 'FULL' : 'PARTIAL',
-        severity     : isFull ? 'HIGH' : 'MODERATE',
-        partialNote  : isPartial ? 'Partial — 9th house affliction only, no direct Sun-Rahu/Ketu conjunction' : null,
-        trigger      : triggers.join(' | '),
-        cancellations: planets.Sun?.strength==='EXALTED'?['Sun exalted — reduced']:[],
-        classicRef   : 'Pitru Rina — Dharma Sindhu, Garuda Purana',
-        impact       : isFull ? 'Strong ancestral karma — major obstacles' : 'Mild ancestral karma — periodic obstacles',
-        remedy: [
-          'Pind Daan at Gaya/Varanasi on Amavasya',
-          'Tarpan (sesame+water) every Amavasya',
-          'Feed crows every Saturday and Amavasya',
-          'Shraddha rituals during Pitru Paksha annually',
-        ],
-      });
-    }
-  }
+severity:isFull?'HIGH':count===2?'MODERATE':'LOW',
 
-  // ─────────────────────────────────────────────────────────
-  // 4. SHANI SADE SATI
-  // Full    = Saturn in Moon's rashi (peak)
-  // Partial = Saturn in 12th or 2nd from Moon (rising/setting)
-  // ─────────────────────────────────────────────────────────
-  {
-    const satRi=ri('Saturn'), moonRi=ri('Moon');
-    const peak=satRi===moonRi;
-    const rising=satRi===(moonRi-1+12)%12;
-    const setting=satRi===(moonRi+1)%12;
+trigger:`Mars from ${count}/3 references`
 
-    if (peak||rising||setting) {
-      const phase=peak?'2nd Phase — Peak':rising?'1st Phase — Rising':'3rd Phase — Setting';
-      const cc=[];
-      if (planets.Saturn?.strength==='EXALTED') cc.push('Saturn exalted — much reduced');
-      if (planets.Saturn?.strength==='OWN_SIGN') cc.push('Saturn own sign — moderate only');
+})
 
-      doshas.push({
-        name         : `Shani Sade Sati (${phase})`,
-        present      : true,
-        type         : peak ? 'FULL' : 'PARTIAL',
-        severity     : peak?'HIGH':'MODERATE',
-        partialNote  : !peak ? `Partial — ${phase}. Less intense than peak phase.` : null,
-        trigger      : `Saturn in ${planets.Saturn?.rashi} — ${phase} from Moon in ${planets.Moon?.rashi}`,
-        cancellations: cc,
-        classicRef   : 'Shani Sade Sati — Brihat Samhita',
-        impact       : peak ? 'Peak — maximum Saturn pressure on Moon sign'
-          : `${phase} — Saturn approaching/leaving, moderate pressure`,
-        remedy: [
-          'Shani Puja every Saturday',
-          'Til oil lamp at Peepal tree Saturday evening',
-          'Donate black sesame + mustard oil on Saturday',
-          'Chant "Om Sham Shanicharaya Namah" 108x daily',
-        ],
-      });
-    }
-  }
+}
 
-  // ─────────────────────────────────────────────────────────
-  // 5. GURU CHANDAL YOGA
-  // Full    = Jupiter same rashi as Rahu/Ketu
-  // Partial = Jupiter in adjacent rashi to Rahu/Ketu
-  // ─────────────────────────────────────────────────────────
-  {
-    const jupRi=ri('Jupiter');
-    const exactRahu=jupRi===rahuRashiIdx, exactKetu=jupRi===ketuRashiIdx;
-    const nearRahu=rashiGap(jupRi,rahuRashiIdx)===1;
-    const nearKetu=rashiGap(jupRi,ketuRashiIdx)===1;
-    const isFull=exactRahu||exactKetu;
-    const isPartial=!isFull&&(nearRahu||nearKetu);
+}
 
-    if (isFull||isPartial) {
-      const cc=[];
-      if (planets.Jupiter?.strength==='EXALTED') cc.push('Jupiter exalted — greatly reduced');
-      if (planets.Jupiter?.strength==='OWN_SIGN') cc.push('Jupiter own sign — partial cancellation');
-      if ([1,4,5,7,9,10].includes(hf('Jupiter',lagnaRashiIdx))) cc.push('Jupiter in Kendra/Trikona');
+// ------------------------------------------------
+// 2 PITRA DOSHA
+// ------------------------------------------------
 
-      doshas.push({
-        name         : 'Guru Chandal Yoga',
-        present      : cc.length===0,
-        type         : cc.length>0?'CANCELLED':isFull?'FULL':'PARTIAL',
-        severity     : cc.length>0?'CANCELLED':isFull?'MODERATE':'LOW',
-        partialNote  : (isPartial&&cc.length===0) ? `Partial — Jupiter in adjacent sign to ${nearRahu?'Rahu':'Ketu'}` : null,
-        trigger      : isFull
-          ? `Jupiter+${exactRahu?'Rahu':'Ketu'} same sign (${planets.Jupiter?.rashi})`
-          : `Jupiter (${planets.Jupiter?.rashi}) adjacent to ${nearRahu?'Rahu ('+planets.Rahu?.rashi+')':'Ketu ('+planets.Ketu?.rashi+')'}`,
-        cancellations: cc,
-        classicRef   : 'Chandal Yoga — Phaladeepika Ch.6',
-        impact       : isFull?'Ethical confusion, wrong guidance':'Mild — occasional confusion regarding teachers/guidance',
-        remedy: cc.length>0?['Regular Jupiter worship sufficient']:[
-          'Guru Puja every Thursday',
-          'Chant "Om Graam Greem Graum Sah Gurave Namah" 108x',
-          'Donate yellow items on Thursday',
-        ],
-      });
-    }
-  }
+{
+const sunRahu=arc('Sun','Rahu')<12
+const sunKetu=arc('Sun','Ketu')<12
 
-  // ─────────────────────────────────────────────────────────
-  // 6. VISH YOGA
-  // Full    = Moon same rashi as Saturn
-  // Partial = Moon and Saturn in adjacent rashis
-  // ─────────────────────────────────────────────────────────
-  {
-    const mRi=ri('Moon'), sRi=ri('Saturn');
-    const isFull=mRi===sRi;
-    const isPartial=!isFull&&rashiGap(mRi,sRi)===1;
+const rahu9=hf('Rahu',lagnaRashiIdx)===9
+const ketu9=hf('Ketu',lagnaRashiIdx)===9
 
-    if (isFull||isPartial) {
-      const d=arc('Moon','Saturn');
-      const cc=[];
-      if (planets.Moon?.strength==='EXALTED') cc.push('Moon exalted — reduced');
-      if (ri('Jupiter')===mRi) cc.push('Jupiter with Moon — Gaja Kesari cancels');
+const isFull=sunRahu||sunKetu
+const isPartial=!isFull&&(rahu9||ketu9)
 
-      doshas.push({
-        name         : 'Vish Yoga (Moon-Saturn)',
-        present      : cc.length===0,
-        type         : cc.length>0?'CANCELLED':isFull?'FULL':'PARTIAL',
-        severity     : cc.length>0?'CANCELLED':isFull?(d<10?'HIGH':'MODERATE'):'LOW',
-        partialNote  : (isPartial&&cc.length===0) ? `Partial — Moon (${planets.Moon?.rashi}) and Saturn (${planets.Saturn?.rashi}) in adjacent signs` : null,
-        trigger      : isFull
-          ? `Moon+Saturn same sign (${planets.Moon?.rashi}), ${d.toFixed(1)}° apart`
-          : `Moon (${planets.Moon?.rashi}) and Saturn (${planets.Saturn?.rashi}) — adjacent signs`,
-        cancellations: cc,
-        classicRef   : 'Vish Yoga — Brihat Jataka, BPHS',
-        impact       : isFull?'Emotional heaviness, depression':'Mild Saturn pressure on Moon — occasional pessimism',
-        remedy: ['Mahamrityunjaya Mantra 108x daily','Offer raw milk to Shiva on Monday','Fast on Mondays'],
-      });
-    }
-  }
+if(isFull||isPartial){
 
-  // ─────────────────────────────────────────────────────────
-  // 7. ANGARAK YOGA
-  // Full    = Mars same rashi as Rahu
-  // Partial = Mars in adjacent rashi to Rahu
-  // ─────────────────────────────────────────────────────────
-  {
-    const marsRi=ri('Mars');
-    const isFull=marsRi===rahuRashiIdx;
-    const isPartial=!isFull&&rashiGap(marsRi,rahuRashiIdx)===1;
+doshas.push({
 
-    if (isFull||isPartial) {
-      doshas.push({
-        name         : 'Angarak Yoga (Mars-Rahu)',
-        present      : true,
-        type         : isFull?'FULL':'PARTIAL',
-        severity     : isFull?'HIGH':'LOW',
-        partialNote  : isPartial ? `Partial — Mars (${planets.Mars?.rashi}) adjacent to Rahu (${planets.Rahu?.rashi})` : null,
-        trigger      : isFull
-          ? `Mars+Rahu same sign (${planets.Mars?.rashi}), ${arc('Mars','Rahu').toFixed(1)}° apart`
-          : `Mars (${planets.Mars?.rashi}) adjacent to Rahu (${planets.Rahu?.rashi})`,
-        cancellations: planets.Mars?.strength==='EXALTED'?['Mars exalted — reduced']:[],
-        classicRef   : 'Angarak Yoga — Lal Kitab',
-        impact       : isFull?'Explosive anger, accidents, blood disorders':'Mild — impulsive tendencies, minor accidents',
-        remedy: ['Hanuman Chalisa daily','Fast on Tuesdays','Chant "Om Kram Kreem Kraum Sah Bhaumaya Namah" 108x'],
-      });
-    }
-  }
+name:'Pitra Dosha',
 
-  // ─────────────────────────────────────────────────────────
-  // 8. SHAPIT YOGA
-  // Full    = Saturn same rashi as Rahu
-  // Partial = Saturn in adjacent rashi to Rahu
-  // ─────────────────────────────────────────────────────────
-  {
-    const satRi2=ri('Saturn');
-    const isFull=satRi2===rahuRashiIdx;
-    const isPartial=!isFull&&rashiGap(satRi2,rahuRashiIdx)===1;
+present:true,
 
-    if (isFull||isPartial) {
-      doshas.push({
-        name         : 'Shapit Yoga (Saturn-Rahu)',
-        present      : true,
-        type         : isFull?'FULL':'PARTIAL',
-        severity     : isFull?(arc('Saturn','Rahu')<10?'HIGH':'MODERATE'):'LOW',
-        partialNote  : isPartial ? `Partial — Saturn (${planets.Saturn?.rashi}) adjacent to Rahu (${planets.Rahu?.rashi})` : null,
-        trigger      : isFull
-          ? `Saturn+Rahu same sign (${planets.Saturn?.rashi}), ${arc('Saturn','Rahu').toFixed(1)}° apart`
-          : `Saturn (${planets.Saturn?.rashi}) adjacent to Rahu (${planets.Rahu?.rashi})`,
-        cancellations: planets.Saturn?.strength==='EXALTED'?['Saturn exalted — reduced']:[],
-        classicRef   : 'Shrapit Yoga — Lal Kitab',
-        impact       : isFull?'Cursed karma, repeated failures':'Mild karmic pressure — occasional setbacks',
-        remedy: ['Shani-Rahu Shanti Puja on Saturday','Donate black sesame + mustard oil Saturday','Feed crows and dogs Saturday'],
-      });
-    }
-  }
+type:isFull?'FULL':'PARTIAL',
 
-  // ─────────────────────────────────────────────────────────
-  // 9. GRAHAN DOSHA (Surya + Chandra)
-  // Full    = Sun/Moon same rashi as Rahu/Ketu
-  // Partial = Sun/Moon in adjacent rashi to Rahu/Ketu
-  // ─────────────────────────────────────────────────────────
-  {
-    // Surya Grahan
-    const sunRi2=ri('Sun');
-    const sunFull=sunRi2===rahuRashiIdx||sunRi2===ketuRashiIdx;
-    const sunPartial=!sunFull&&(rashiGap(sunRi2,rahuRashiIdx)===1||rashiGap(sunRi2,ketuRashiIdx)===1);
+severity:isFull?'HIGH':'MODERATE',
 
-    if (sunFull||sunPartial) {
-      const nearN=rashiGap(sunRi2,rahuRashiIdx)<=rashiGap(sunRi2,ketuRashiIdx)?'Rahu':'Ketu';
-      const withW=sunRi2===rahuRashiIdx?'Rahu':sunRi2===ketuRashiIdx?'Ketu':nearN;
-      const d=arc('Sun',withW);
-      doshas.push({
-        name         : 'Surya Grahan Dosha',
-        present      : true,
-        type         : sunFull?'FULL':'PARTIAL',
-        severity     : sunFull?(d<10?'HIGH':'MODERATE'):'LOW',
-        partialNote  : sunPartial?`Partial — Sun (${planets.Sun?.rashi}) adjacent to ${withW} (${planets[withW]?.rashi})`:null,
-        trigger      : sunFull
-          ? `Sun+${withW} same sign (${planets.Sun?.rashi}), ${d.toFixed(1)}° apart`
-          : `Sun (${planets.Sun?.rashi}) adjacent to ${withW} (${planets[withW]?.rashi})`,
-        cancellations: planets.Sun?.strength==='EXALTED'?['Sun exalted — reduced']:[],
-        classicRef   : 'Surya Grahan Yoga — Jataka Parijata',
-        impact       : sunFull?'Father conflicts, govt obstacles, ego issues':'Mild — occasional authority friction',
-        remedy: ['Surya Arghya at sunrise daily','Aditya Hridayam on Sundays','Donate wheat+jaggery on Sunday'],
-      });
-    }
+trigger:isFull?'Sun with Rahu/Ketu':'Rahu or Ketu in 9th house'
 
-    // Chandra Grahan
-    const moonRi3=ri('Moon');
-    const moonFull=moonRi3===rahuRashiIdx||moonRi3===ketuRashiIdx;
-    const moonPartial=!moonFull&&(rashiGap(moonRi3,rahuRashiIdx)===1||rashiGap(moonRi3,ketuRashiIdx)===1);
+})
 
-    if (moonFull||moonPartial) {
-      const nearN=rashiGap(moonRi3,rahuRashiIdx)<=rashiGap(moonRi3,ketuRashiIdx)?'Rahu':'Ketu';
-      const withW=moonRi3===rahuRashiIdx?'Rahu':moonRi3===ketuRashiIdx?'Ketu':nearN;
-      const d=arc('Moon',withW);
-      doshas.push({
-        name         : 'Chandra Grahan Dosha',
-        present      : true,
-        type         : moonFull?'FULL':'PARTIAL',
-        severity     : moonFull?(d<10?'HIGH':'MODERATE'):'LOW',
-        partialNote  : moonPartial?`Partial — Moon (${planets.Moon?.rashi}) adjacent to ${withW} (${planets[withW]?.rashi})`:null,
-        trigger      : moonFull
-          ? `Moon+${withW} same sign (${planets.Moon?.rashi}), ${d.toFixed(1)}° apart`
-          : `Moon (${planets.Moon?.rashi}) adjacent to ${withW} (${planets[withW]?.rashi})`,
-        cancellations: planets.Moon?.strength==='EXALTED'?['Moon exalted — reduced']:[],
-        classicRef   : 'Chandra Grahan Yoga — BPHS',
-        impact       : moonFull?'Mental instability, anxiety, mother health':'Mild — occasional emotional disturbance',
-        remedy: ['Chant "Om Som Somaya Namah" 108x on Monday','Fast on Mondays','Wear pearl in silver'],
-      });
-    }
-  }
+}
 
-  // ─────────────────────────────────────────────────────────
-  // 10. KEMDRUM YOGA
-  // Full    = Moon completely isolated (no adj, no conj, no kendra)
-  // Partial = Moon has kendra support but no adjacent planets
-  // ─────────────────────────────────────────────────────────
-  {
-    const mRi2=ri('Moon');
-    const G6=['Sun','Mars','Mercury','Jupiter','Venus','Saturn'];
-    const adjR=[(mRi2-1+12)%12,(mRi2+1)%12];
-    const kenR=[mRi2,(mRi2+3)%12,(mRi2+6)%12,(mRi2+9)%12];
+}
 
-    const hasAdj  =G6.some(p=>adjR.includes(ri(p)));
-    const hasConj =G6.some(p=>ri(p)===mRi2);
-    const hasKend =G6.some(p=>kenR.includes(ri(p)));
+// ------------------------------------------------
+// 3 SHANI SADE SATI
+// ------------------------------------------------
 
-    if (!hasAdj&&!hasConj&&!hasKend) {
-      doshas.push({
-        name:'Kemdrum Yoga', present:true, type:'FULL', severity:'MODERATE', partialNote:null,
-        trigger:`Moon isolated in ${planets.Moon?.rashi} — no planets in adjacent or kendra rashis`,
-        cancellations:[], classicRef:'Kemdrum Yoga — BPHS Ch.23, Phaladeepika',
-        impact:'Emotional isolation, mental instability, lack of support',
-        remedy:['Chandra Puja on Mondays','Wear pearl (moti) in silver on Monday','Spend time near water'],
-      });
-    } else if (!hasAdj&&!hasConj&&hasKend) {
-      const kendraSupport=G6.filter(p=>kenR.includes(ri(p)));
-      doshas.push({
-        name:'Kemdrum Yoga', present:true, type:'PARTIAL', severity:'LOW',
-        partialNote:`Partial — no adjacent planets, but ${kendraSupport.join('/')} in kendra gives partial support`,
-        trigger:`Moon (${planets.Moon?.rashi}) — no adjacent planets, kendra support from ${kendraSupport.join('/')}`,
-        cancellations:[`${kendraSupport.join('/')} in kendra — partial cancellation`],
-        classicRef:'Kemdrum Yoga — BPHS Ch.23',
-        impact:'Mild emotional instability — some lonely periods',
-        remedy:['Chandra Puja on Mondays','Wear pearl in silver on Monday'],
-      });
-    }
-  }
+{
+const satRi=ri('Saturn')
+const moonRi=ri('Moon')
 
-  return doshas;
+const peak=satRi===moonRi
+const rising=satRi===(moonRi-1+12)%12
+const setting=satRi===(moonRi+1)%12
+
+if(peak||rising||setting){
+
+const phase=peak?'Peak':rising?'Rising':'Setting'
+
+doshas.push({
+
+name:`Shani Sade Sati (${phase})`,
+
+present:true,
+
+type:peak?'FULL':'PARTIAL',
+
+severity:peak?'HIGH':'MODERATE',
+
+trigger:`Saturn relative to Moon sign`
+
+})
+
+}
+
+}
+
+// ------------------------------------------------
+// 4 GURU CHANDAL YOGA
+// ------------------------------------------------
+
+{
+const guruRahu=arc('Jupiter','Rahu')<8
+const guruKetu=arc('Jupiter','Ketu')<8
+
+if(guruRahu||guruKetu){
+
+doshas.push({
+
+name:'Guru Chandal Yoga',
+
+present:true,
+
+type:'FULL',
+
+severity:'MODERATE',
+
+trigger:'Jupiter conjunct Rahu/Ketu'
+
+})
+
+}
+
+}
+
+// ------------------------------------------------
+// 5 SHAPIT YOGA
+// ------------------------------------------------
+
+{
+const satRahu=arc('Saturn','Rahu')<8
+
+if(satRahu){
+
+doshas.push({
+
+name:'Shapit Yoga',
+
+present:true,
+
+type:'FULL',
+
+severity:'HIGH',
+
+trigger:'Saturn conjunct Rahu'
+
+})
+
+}
+
+}
+
+// ------------------------------------------------
+// 6 GRAHAN DOSHA
+// ------------------------------------------------
+
+{
+const sunRahu=arc('Sun','Rahu')<8
+const sunKetu=arc('Sun','Ketu')<8
+
+if(sunRahu||sunKetu){
+
+doshas.push({
+
+name:'Surya Grahan Dosha',
+
+present:true,
+
+type:'FULL',
+
+severity:'HIGH',
+
+trigger:'Sun conjunct Rahu/Ketu'
+
+})
+
+}
+
+const moonRahu=arc('Moon','Rahu')<8
+const moonKetu=arc('Moon','Ketu')<8
+
+if(moonRahu||moonKetu){
+
+doshas.push({
+
+name:'Chandra Grahan Dosha',
+
+present:true,
+
+type:'FULL',
+
+severity:'HIGH',
+
+trigger:'Moon conjunct Rahu/Ketu'
+
+})
+
+}
+
+}
+
+// ------------------------------------------------
+// 7 VISH YOGA
+// ------------------------------------------------
+
+{
+if(ri('Moon')===ri('Saturn')){
+
+doshas.push({
+
+name:'Vish Yoga',
+
+present:true,
+
+type:'FULL',
+
+severity:'MODERATE',
+
+trigger:'Moon with Saturn'
+
+})
+
+}
+
+}
+
+// ------------------------------------------------
+// 8 ANGARAK YOGA
+// ------------------------------------------------
+
+{
+if(arc('Mars','Rahu')<8){
+
+doshas.push({
+
+name:'Angarak Yoga',
+
+present:true,
+
+type:'FULL',
+
+severity:'HIGH',
+
+trigger:'Mars conjunct Rahu'
+
+})
+
+}
+
+}
+
+return doshas
+
 }
 
 export function debugSweph() {
