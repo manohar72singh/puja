@@ -54,6 +54,8 @@ import Chatwidget from "./user/Pages/Chatwidget";
 import NameCorrection from "./user/Pages/Namecorrection";
 import NotFound from "./user/Components/NotFound";
 
+import AIPanditBot from "./user/Pages/AIPanditBot";
+
 function App() {
   const location = useLocation();
 
@@ -82,6 +84,7 @@ function App() {
           <Route path="/" element={<Home />} />
 
           <Route path="/chat" element={<Chatwidget />} />
+          <Route path="/aiPandit" element={<AIPanditBot/>}/>
           <Route path="/kundli" element={<KundliPortal />} />
           <Route path="/nameCorrection" element={<NameCorrection />} />
 

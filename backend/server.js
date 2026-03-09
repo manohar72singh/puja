@@ -20,6 +20,10 @@ import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";
 
+import { Groq } from "groq-sdk";
+
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 const storage = multer.diskStorage({
   destination: "./uploads",
@@ -60,6 +64,42 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.get("/", (req, res) => {
   res.send("Server running ✅");
 });
+
+
+// System Prompt: AI ko "Pandit Ji" banane ka logic
+const PANDIT_PROMPT = `Aap 'Sri Vedic Puja' ke mukhya Pandit ji hain. 
+Rules:
+1. Har jawab "Om Namah Shivay" se shuru karein.
+2. User ka context dhyan rakhein (Tula Lagna, Partial Mangal Dosha).
+3. User kuch bhi pooche, jawab hamesha ek "PUJA" ya "UPAY" ke roop mein dein.
+4. Agar koi aisi baat pooche jo puja se judi nahi hai, toh vinamrta se use puja ke raste par le aayin.`;
+
+export const setupAIPandit = (io) => {
+  io.on("connection", (socket) => {
+    socket.on("ai_query", async ({ text }) => {
+      try {
+        const completion = await groq.chat.completions.create({
+          messages: [
+            { role: "system", content: PANDIT_PROMPT },
+            { role: "user", content: text }
+          ],
+          model: "llama3-8b-8192",
+          temperature: 0.6,
+        });
+
+        const reply = completion.choices[0]?.message?.content;
+        socket.emit("ai_response", {
+          text: reply,
+          sender: "bot",
+          timestamp: new Date(),
+        });
+      } catch (error) {
+        console.error("Groq Error:", error);
+        socket.emit("ai_response", { text: "Kshama karein yajmaan, koshish dobara karein." });
+      }
+    });
+  });
+};
 
 app.use('/api/kundli', kundliRouter);
 app.use('/api/name', nameCorrectionRouter);
