@@ -680,8 +680,8 @@ const AdminDashboard = () => {
                   <GodTile
                     icon="🕉"
                     iconBg="rgba(139,92,246,0.2)"
-                    value={stats.activePujas ?? 9}
-                    label="Active Pujas"
+                    value={stats.totalBookings ?? 0}
+                    label="Total Booking"
                   />
                   <GodTile
                     icon="⏳"

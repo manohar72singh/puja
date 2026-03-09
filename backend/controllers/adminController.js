@@ -104,84 +104,7 @@ export const AdminVerifyOtp = async (req, res) => {
 };
 
 // Admin Dashboard Stats show all activities
-// export const getDashboardStats = async (req, res) => {
-//   try {
-//     const [[stats]] = await db.execute(`
-//       SELECT
-//         (SELECT COUNT(*) FROM puja_requests) as totalBookings,
 
-//         (SELECT COUNT(*) FROM puja_requests
-//          WHERE DATE(created_at) = CURDATE()) as todayBookings,
-
-//         (SELECT COUNT(*) FROM puja_requests
-//          WHERE status='pending') as totalPendingBookings,
-
-//         (SELECT COUNT(*) FROM puja_requests
-//          WHERE status='accepted') as totalAcceptedBookings,
-
-//         (SELECT COUNT(*) FROM puja_requests
-//          WHERE status='declined') as totalCancelledBookings,
-
-//         (SELECT COUNT(*) FROM puja_requests
-//          WHERE status='completed') as totalCompletedBookings,
-
-//         (SELECT COUNT(*) FROM users
-//          WHERE role='user') as totalUsers,
-
-//         (SELECT COUNT(*) FROM users
-//          WHERE role='pandit') as totalPandits,
-
-//         -- Total Revenue
-//         (
-//           SELECT COALESCE(SUM(sp.price), 0)
-//           FROM puja_requests pr
-//           JOIN service_prices sp
-//             ON pr.service_id = sp.service_id
-//           WHERE pr.status='completed'
-//         ) as totalRevenue,
-
-//         -- Today Revenue (Based on completed_at)
-//         (
-//           SELECT COALESCE(SUM(sp.price), 0)
-//           FROM puja_requests pr
-//           JOIN service_prices sp
-//             ON pr.service_id = sp.service_id
-//           WHERE pr.status='completed'
-//           AND DATE(pr.completed_at) = CURDATE()
-//         ) as todayRevenue
-//     `);
-
-//     // Recent Bookings (Last 5)
-//     const [recentBookings] = await db.execute(`
-//       SELECT
-//         pr.id,
-//         pr.bookingId,
-//         pr.status,
-//         pr.created_at,
-//         u.name AS user_name,
-//         u.phone,
-//         s.puja_name,
-//         sp.price
-//       FROM puja_requests pr
-//       JOIN users u ON pr.user_id = u.id
-//       JOIN services s ON pr.service_id = s.id
-//       LEFT JOIN service_prices sp ON pr.service_id = sp.service_id
-//       ORDER BY pr.created_at DESC
-//       LIMIT 10
-//     `);
-
-//     res.json({
-//       success: true,
-//       ...stats,
-//       totalRevenue: stats.totalRevenue || 0,
-//       todayRevenue: stats.todayRevenue || 0,
-//       recentBookings,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 export const getDashboardStats = async (req, res) => {
   try {
     const [[stats]] = await db.execute(`
@@ -227,21 +150,31 @@ export const getDashboardStats = async (req, res) => {
 
     // Recent Bookings
     const [recentBookings] = await db.execute(`
-      SELECT 
-        pr.id,
-        pr.bookingId,
-        pr.status,
-        pr.created_at,
-        pr.total_price AS price,
-        u.name AS user_name,
-        u.phone,
-        s.puja_name
-      FROM puja_requests pr
-      JOIN users u ON pr.user_id = u.id
-      LEFT JOIN services s ON pr.service_id = s.id
-      ORDER BY pr.created_at DESC
-      LIMIT 10
-    `);
+    SELECT 
+    pr.id,
+    pr.bookingId,
+    pr.status,
+    pr.created_at,
+    pr.total_price AS price,
+
+    u.name AS user_name,
+    u.phone,
+
+    s.puja_name,
+
+    p.name AS pandit_name,
+    p.phone AS pandit_phone
+
+  FROM puja_requests pr
+
+  JOIN users u ON pr.user_id = u.id
+  LEFT JOIN services s ON pr.service_id = s.id
+
+  LEFT JOIN users p ON pr.pandit_id = p.id
+
+  ORDER BY pr.created_at DESC
+  LIMIT 10
+`);
 
     res.json({
       success: true,
@@ -489,32 +422,6 @@ export const filtarUsers = async (req, res) => {
 // =====================================
 // 1️⃣ Create Pandit
 // =====================================
-// export const createPandit = async (req, res) => {
-//   try {
-//     const { name, gotra, email, phone } = req.body;
-
-//     if (!name || !phone) {
-//       return res.status(400).json({
-//         success: false,
-//         message: "Name and phone are required",
-//       });
-//     }
-
-//     await db.query(
-//       `INSERT INTO users (name, gotra, email, phone, role, is_blocked)
-//        VALUES (?, ?, ?, ?, 'pandit', 0)`,
-//       [name, gotra || null, email || null, phone],
-//     );
-
-//     res.json({
-//       success: true,
-//       message: "Pandit created successfully",
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 
 export const createPandit = async (req, res) => {
   const connection = await db.getConnection();
@@ -559,51 +466,7 @@ export const createPandit = async (req, res) => {
 // =====================================
 // 2️⃣ Get All Pandits (Pagination + Search)
 // =====================================
-// export const getAllPandits = async (req, res) => {
-//   try {
-//     const page = Number(req.query.page) || 1;
-//     const limit = Number(req.query.limit) || 10;
-//     const search = req.query.search || "";
-//     const offset = (page - 1) * limit;
 
-//     let whereClause = `WHERE role='pandit'`;
-//     const params = [];
-
-//     if (search) {
-//       whereClause += ` AND (name LIKE ? OR phone LIKE ?)`;
-//       params.push(`%${search}%`, `%${search}%`);
-//     }
-
-//     // Total Count
-//     const [[{ total }]] = await db.query(
-//       `SELECT COUNT(*) as total FROM users ${whereClause}`,
-//       params,
-//     );
-
-//     const totalPages = Math.ceil(total / limit);
-
-//     // Fetch Pandits
-//     const [rows] = await db.query(
-//       `SELECT id, name, gotra, email, phone, is_blocked, created_at
-//        FROM users
-//        ${whereClause}
-//        ORDER BY created_at DESC
-//        LIMIT ? OFFSET ?`,
-//       [...params, limit, offset],
-//     );
-
-//     res.json({
-//       success: true,
-//       pandits: rows,
-//       currentPage: page,
-//       totalPages,
-//       total,
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 export const getAllPandits = async (req, res) => {
   try {
     const page = Number(req.query.page) || 1;
@@ -651,30 +514,6 @@ export const getAllPandits = async (req, res) => {
 // =====================================
 // 3️⃣ Get Single Pandit
 // =====================================
-// export const getSinglePandit = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-
-//     const [[pandit]] = await db.query(
-//       `SELECT id, name, gotra, email, phone, is_blocked, created_at
-//        FROM users
-//        WHERE id=? AND role='pandit'`,
-//       [id],
-//     );
-
-//     if (!pandit) {
-//       return res.status(404).json({
-//         success: false,
-//         message: "Pandit not found",
-//       });
-//     }
-
-//     res.json({ success: true, pandit });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 
 export const getSinglePandit = async (req, res) => {
   try {
@@ -705,27 +544,7 @@ export const getSinglePandit = async (req, res) => {
 // =====================================
 // 4️⃣ Update Pandit
 // =====================================
-// export const updatePandit = async (req, res) => {
-//   try {
-//     const { id } = req.params;
-//     const { name, gotra, email, phone } = req.body;
 
-//     await db.query(
-//       `UPDATE users
-//        SET name=?, gotra=?, email=?, phone=?
-//        WHERE id=? AND role='pandit'`,
-//       [name, gotra, email, phone, id],
-//     );
-
-//     res.json({
-//       success: true,
-//       message: "Pandit updated successfully",
-//     });
-//   } catch (error) {
-//     console.error(error);
-//     res.status(500).json({ success: false });
-//   }
-// };
 export const updatePandit = async (req, res) => {
   const connection = await db.getConnection();
   try {
@@ -1145,14 +964,15 @@ export const getAllBookings = async (req, res) => {
       params.push(`%${search}%`);
     }
 
-    // 1️⃣ Total count for pagination
+    // Total count
     const [[{ total }]] = await db.query(
       `SELECT COUNT(*) as total FROM puja_requests pr ${whereClause}`,
       params,
     );
+
     const totalPages = Math.ceil(total / limit);
 
-    // 2️⃣ Fetch actual bookings with joins
+    // Actual bookings
     const [rows] = await db.query(
       `
       SELECT 
@@ -1161,21 +981,16 @@ export const getAllBookings = async (req, res) => {
         pr.status,
         pr.preferred_date,
         pr.preferred_time,
+        pr.total_price AS price,
         u.name AS user_name,
         u.phone AS user_phone,
         s.puja_name,
         s.puja_type,
-        COALESCE(p.name, 'Not Assigned') AS pandit_name,
-        sp.price
+        COALESCE(p.name, 'Not Assigned') AS pandit_name
       FROM puja_requests pr
       LEFT JOIN users u ON pr.user_id = u.id
       LEFT JOIN services s ON pr.service_id = s.id
       LEFT JOIN users p ON pr.pandit_id = p.id
-      LEFT JOIN (
-         SELECT service_id, MIN(price) as price
-         FROM service_prices
-         GROUP BY service_id
-      ) sp ON pr.service_id = sp.service_id
       ${whereClause}
       ORDER BY pr.created_at DESC
       LIMIT ? OFFSET ?
@@ -1188,13 +1003,13 @@ export const getAllBookings = async (req, res) => {
       bookings: rows,
       currentPage: page,
       totalPages,
+      totalBookings: rows.length,
     });
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
-
 // get single booking details for admin dashboard
 export const getBookingById = async (req, res) => {
   try {
@@ -1204,21 +1019,18 @@ export const getBookingById = async (req, res) => {
       `
       SELECT 
         pr.*,
+
         u.name AS user_name,
         u.email,
         u.phone,
         s.puja_name,
         s.puja_type,
-        p.name AS pandit_name,
-        sp.price
+        p.name AS pandit_name
       FROM puja_requests pr
       LEFT JOIN users u ON pr.user_id = u.id
       LEFT JOIN services s ON pr.service_id = s.id
       LEFT JOIN users p ON pr.pandit_id = p.id
-      LEFT JOIN service_prices sp 
-        ON pr.service_id = sp.service_id
-        AND pr.ticket_type = sp.pricing_type
-      WHERE pr.id=?
+      WHERE pr.bookingId = ?
     `,
       [id],
     );
@@ -1246,8 +1058,7 @@ export const getTodayBookings = async (req, res) => {
       SELECT 
         pr.*,
         u.name AS user_name,
-        s.puja_name,
-        sp.price
+        s.puja_name
       FROM puja_requests pr
       LEFT JOIN users u ON pr.user_id = u.id
       LEFT JOIN services s ON pr.service_id = s.id

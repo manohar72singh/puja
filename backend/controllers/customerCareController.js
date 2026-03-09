@@ -215,59 +215,6 @@ export const customerVerifyOtp = async (req, res) => {
 
 // Customer care ke pass All Booking Show hogi
 
-// export const getAllPujaRequests = async (req, res) => {
-//   try {
-//     const query = `
-//       SELECT
-//         b.id,
-//         b.address,
-//         b.city,
-//         b.state,
-//         b.preferred_date,
-//         b.preferred_time,
-//         b.status,
-//         b.pandit_id,
-
-//         s.puja_name,
-//         s.puja_type,
-
-//         u.name AS user_name,
-//         u.phone AS user_phone,
-
-//         pu.name AS pandit_name,
-
-//         sp.price AS standard_price
-
-//       FROM puja_requests b
-
-//       LEFT JOIN services s ON b.service_id = s.id
-//       LEFT JOIN users u ON b.user_id = u.id
-//       LEFT JOIN users pu ON b.pandit_id = pu.id
-
-//       LEFT JOIN service_prices sp
-//         ON s.id = sp.service_id
-//         AND sp.pricing_type = 'standard'
-
-//       WHERE s.puja_type IN ('home_puja','katha')
-
-//       ORDER BY b.preferred_date ASC
-//     `;
-
-//     const [rows] = await db.query(query);
-
-//     res.status(200).json({
-//       success: true,
-//       count: rows.length,
-//       bookings: rows,
-//     });
-//   } catch (error) {
-//     console.error("Fetch Error:", error.message);
-//     res.status(500).json({
-//       success: false,
-//       message: "Server Error",
-//     });
-//   }
-// };
 export const getAllPujaRequests = async (req, res) => {
   try {
     // 1️⃣ All bookings

@@ -123,7 +123,7 @@ const PujaCard = ({ puja, onComplete }) => {
         </span>
         <span className="flex items-center gap-2">
           <MapPin size={16} className="text-orange-400" />
-          {puja.city || puja.address}
+          {[puja.address, puja.city, puja.state].filter(Boolean).join(", ")}
         </span>
       </div>
 
@@ -134,10 +134,6 @@ const PujaCard = ({ puja, onComplete }) => {
             className="flex items-center gap-2 text-[14px] font-bold text-orange-500 hover:text-orange-600 transition"
           >
             <Navigation size={15} /> Navigate
-          </button>
-          <span className="text-[#d9cfc2]">·</span>
-          <button className="flex items-center gap-2 text-[14px] font-bold text-orange-500 hover:text-orange-600 transition">
-            <ShoppingBag size={15} /> Samagri
           </button>
         </div>
         <div className="flex items-center gap-3">
@@ -152,7 +148,7 @@ const PujaCard = ({ puja, onComplete }) => {
           <span
             className={`text-[16px] font-bold ${puja.status === "completed" ? "text-green-600" : "text-[#1a1208]"}`}
           >
-            {puja.status === "completed" && "✓ "}₹{puja.total_price || 0}
+            {puja.status === "completed" && "✓ "}₹{puja.price || 0}
           </span>
         </div>
       </div>
@@ -200,7 +196,7 @@ const PartnerDashboard = () => {
       console.error("Fetch Error:", e);
     }
   };
-  console.log("my puja", pujas);
+  // console.log("my puja", pujas);
   const handleMarkAsComplete = async (id) => {
     if (!window.confirm("Is this puja completed?")) return;
 
@@ -246,7 +242,7 @@ const PartnerDashboard = () => {
   // Sirf 'completed' status wali pujas ka paisa jodenge
   const totalEarnings = pujas
     .filter((p) => p.status === "completed")
-    .reduce((s, p) => s + (Number(p.total_price) || 0), 0);
+    .reduce((s, p) => s + (Number(p.price) || 0), 0);
 
   // Sirf Pending/Accepted/Confirmed pujas ko 'Upcoming' mein gineinge
   const upcomingCount = pujas.filter(
@@ -377,44 +373,75 @@ const PartnerDashboard = () => {
                 />
               ))
             ))}
-
           {activeTab === "earnings" && (
             <div className="space-y-4">
-              <div className="bg-[#FDFAF4] border border-[#EDE8DC] rounded-2xl p-8 flex flex-col items-center shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-orange-50 flex items-center justify-center mb-4">
-                  <IndianRupee size={32} className="text-orange-400" />
-                </div>
-                <p className="text-[12px] font-bold uppercase tracking-widest text-[#a89880]">
-                  Total Earnings
+              {/* Hero Earnings Card */}
+              <div
+                className="rounded-2xl p-6 shadow-lg relative overflow-hidden"
+                style={{
+                  background:
+                    "linear-gradient(135deg, #F97316 0%, #FBBF24 100%)",
+                }}
+              >
+                <p className="text-[13px] font-bold text-white/80 uppercase tracking-widest">
+                  Total Earnings ()
                 </p>
-                <p className="text-5xl font-bold text-[#1a1208] mt-2">
+                <p className="text-5xl font-bold text-white mt-2">
                   ₹{totalEarnings.toLocaleString("en-IN")}
                 </p>
+                <div className="flex items-center gap-4 mt-4">
+                  <span className="flex items-center gap-1.5 text-white/90 text-[13px] font-semibold">
+                    <CheckCircle size={14} />
+                    {pujas.filter((p) => p.status === "completed").length} Pujas
+                    done
+                  </span>
+                  <span className="flex items-center gap-1 text-white/90 text-[13px] font-semibold">
+                    <Star size={13} fill="white" />
+                    {profile?.rating || "4.9"}
+                  </span>
+                </div>
               </div>
-              <div className="bg-[#FDFAF4] border border-[#EDE8DC] rounded-2xl p-5 shadow-sm space-y-3">
-                <p className="text-[12px] font-bold uppercase text-[#a89880] mb-2">
-                  History (Completed Only)
+
+              {/* Completed Pujas List */}
+              <div className="bg-[#FDFAF4] border border-[#EDE8DC] rounded-2xl p-5 shadow-sm">
+                <p className="text-[13px] font-bold uppercase tracking-widest text-[#a89880] mb-3">
+                  Completed Pujas
                 </p>
                 {pujas.filter((p) => p.status === "completed").length === 0 ? (
                   <p className="text-center text-[#a89880] py-4">
                     No completed earnings yet
                   </p>
                 ) : (
-                  pujas
-                    .filter((p) => p.status === "completed")
-                    .map((p) => (
-                      <div
-                        key={p.id}
-                        className="flex justify-between items-center text-[15px] border-b border-[#EDE8DC] last:border-0 pb-2 last:pb-0"
-                      >
-                        <span className="text-[#4b3a2f] font-medium">
-                          {p.puja_name}
-                        </span>
-                        <span className="font-bold text-green-600">
-                          ₹{p.total_price}
-                        </span>
-                      </div>
-                    ))
+                  <div className="space-y-3">
+                    {pujas
+                      .filter((p) => p.status === "completed")
+                      .map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex justify-between items-center border border-[#EDE8DC] rounded-xl px-4 py-3 bg-white"
+                        >
+                          <div className="flex items-center gap-3">
+                            <div className="w-8 h-8 rounded-full bg-green-50 border border-green-200 flex items-center justify-center flex-shrink-0">
+                              <CheckCircle
+                                size={15}
+                                className="text-green-500"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-[14px] font-bold text-[#1a1208]">
+                                {p.puja_name}
+                              </p>
+                              <p className="text-[12px] text-[#a89880]">
+                                {fmtDate(p.preferred_date)}
+                              </p>
+                            </div>
+                          </div>
+                          <span className="font-bold text-[15px] text-green-600">
+                            ₹{Number(p.price).toLocaleString("en-IN")}
+                          </span>
+                        </div>
+                      ))}
+                  </div>
                 )}
               </div>
             </div>
