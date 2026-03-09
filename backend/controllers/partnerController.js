@@ -10,13 +10,10 @@ import db from "../config/db.js"; // <--- Sabse pehle ye check karein
 //         s.puja_name,
 //         u.name AS customer_name,
 //         u.phone AS customer_phone,
-//         sp.price AS price
+//         b.total_price AS price
 //       FROM puja_requests b
 //       LEFT JOIN services s ON b.service_id = s.id
 //       LEFT JOIN users u ON b.user_id = u.id
-//       /* Sirf standard wala price join karne ke liye */
-//       LEFT JOIN service_prices sp ON b.service_id = sp.service_id
-//         AND sp.pricing_type = 'standard'
 //       WHERE b.pandit_id = ?
 //       ORDER BY b.preferred_date ASC
 //     `;
@@ -30,6 +27,7 @@ import db from "../config/db.js"; // <--- Sabse pehle ye check karein
 //     });
 //   } catch (error) {
 //     console.error("Pandit Fetch Error:", error.message);
+
 //     res.status(500).json({
 //       success: false,
 //       message: "Server Error",
@@ -42,11 +40,20 @@ export const getMyAssignedPujas = async (req, res) => {
 
     const query = `
       SELECT 
-        b.*, 
+        b.id,
+        b.bookingId,
+        b.preferred_date,
+        b.preferred_time,
+        b.status,
+        b.address,
+        b.city,
+        b.state,
+         b.samagrikit,
+        b.total_price AS price,
         s.puja_name,
+        s.puja_type,
         u.name AS customer_name,
-        u.phone AS customer_phone,
-        b.total_price AS price
+        u.phone AS customer_phone
       FROM puja_requests b
       LEFT JOIN services s ON b.service_id = s.id
       LEFT JOIN users u ON b.user_id = u.id
@@ -70,7 +77,6 @@ export const getMyAssignedPujas = async (req, res) => {
     });
   }
 };
-
 export const updatePanditProfile = async (req, res) => {
   try {
     const panditId = req.user.id;
