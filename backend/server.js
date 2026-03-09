@@ -58,7 +58,7 @@ app.use(express.urlencoded({ extended: true }));
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
 
 // 2. Health check
 app.get("/", (req, res) => {
@@ -105,24 +105,24 @@ app.use('/api/kundli', kundliRouter);
 app.use('/api/name', nameCorrectionRouter);
 
 // get mandir
-app.use("/mandir", mandirRouter);
+app.use("/api/mandir", mandirRouter);
 
 // 3. Routes
-app.use("/user", authRouter);
-app.use("/puja", servicesRouter);
-app.use("/partner", partnerRouter);
+app.use("/api/user", authRouter);
+app.use("/api/puja", servicesRouter);
+app.use("/api/partner", partnerRouter);
 
 // admin routes
-app.use("/admin", adminRouter);
+app.use("/api/admin", adminRouter);
 
 // customer care routes
-app.use("/customerCare", customerCare);
+app.use("/api/customerCare", customerCare);
 
 // chat routes
 app.use("/api/chat", chatRouter);
 
 // contribution
-app.use("/contributions", contribution);
+app.use("/api/contributions", contribution);
 
 // 4. DATABASE CONNECTION + SERVER START
 const startServer = async () => {

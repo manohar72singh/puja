@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const API_URL = `${API_BASE_URL}/api/kundli/generate`;
+const API_URL = `${API_BASE_URL}/kundli/generate`;
 
 const PLANET_SYMBOLS = {
   Sun:"☀️", Moon:"🌙", Mars:"♂️", Mercury:"☿",

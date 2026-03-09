@@ -1,7 +1,7 @@
 import React, { useState, useRef } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const API_URL = `${API_BASE_URL}/api/name/analyze`;
+const API_URL = `${API_BASE_URL}/name/analyze`;
 
 // ── Styling helpers ───────────────────────────────────────────
 const STRENGTH_STYLE = {
