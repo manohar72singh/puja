@@ -51,7 +51,7 @@ import AdminLogin from "./admin/pages/AdminLogin";
 import KundliPortal from "./user/Pages/KundliPortal";
 
 import Chatwidget from "./user/Pages/Chatwidget";
-import NameCorrection from "./user/Pages/Namecorrection";
+import NameCorrection from "./user/Pages/NameCorrection";
 import NotFound from "./user/Components/NotFound";
 
 import AIPanditBot from "./user/Pages/AIPanditBot";

@@ -82,6 +82,7 @@ export default function ChatWidget() {
         });
 
         socket.on("connect_error", (err) => {
+            console.log(err)
             setError("Connection failed. Dobara try karein.");
             setStatus("idle");
         });
