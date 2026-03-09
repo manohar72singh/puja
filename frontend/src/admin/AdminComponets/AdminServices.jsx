@@ -46,13 +46,15 @@ const AdminServices = () => {
 
   return (
     <div className="min-h-screen">
-      <div className="flex justify-between items-center mb-6">
+
+      {/* ── Header ── */}
+      <div className="flex flex-wrap gap-3 justify-between items-center mb-6">
         <div>
           <h1 className="text-xl font-black text-white tracking-tight">Product & CMS</h1>
           <p className="text-[12px] text-slate-500">Manage spiritual services and temple data</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 flex-wrap">
           <select
             value={category}
             onChange={(e) => { setCategory(e.target.value); setPage(1); }}
@@ -69,12 +71,15 @@ const AdminServices = () => {
             onClick={() => { setEditData(null); setOpenModal(true); }}
             className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 px-5 py-2.5 rounded-xl text-xs font-bold text-white shadow-lg shadow-orange-900/20 transition-all active:scale-95"
           >
-            <Plus size={16} /> Add Service
+            <Plus size={16} />
+            <span className="hidden xs:inline">Add Service</span>
+            <span className="xs:hidden">Add</span>
           </button>
         </div>
       </div>
 
-      <div className="bg-[#131e32] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl">
+      {/* ── Table — Desktop/Tablet ── */}
+      <div className="bg-[#131e32] rounded-2xl overflow-hidden border border-slate-800 shadow-2xl hidden md:block">
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-[#0f172a] border-b border-slate-800 text-slate-500 uppercase tracking-widest text-[10px]">
@@ -122,9 +127,9 @@ const AdminServices = () => {
 
                   <td className="px-6 py-4 text-center">
                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg border font-bold text-[10px] uppercase ${
-                      service.status === 'active' 
-                      ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20" 
-                      : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                      service.status === 'active'
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                        : "bg-rose-500/10 text-rose-400 border-rose-500/20"
                     }`}>
                       {service.status === 'active' ? <CheckCircle2 size={10} /> : <XCircle size={10} />}
                       {service.status || 'active'}
@@ -159,7 +164,69 @@ const AdminServices = () => {
           </tbody>
         </table>
       </div>
-      {/* Pagination component here */}
+
+      {/* ── Card List — Mobile only ── */}
+      <div className="md:hidden flex flex-col gap-3">
+        {services.length === 0 ? (
+          <div className="py-20 text-center text-slate-600 bg-[#131e32] rounded-2xl border border-slate-800">
+            <LayoutGrid size={40} className="mx-auto mb-3 opacity-20" />
+            <p className="text-sm">No services found in this category</p>
+          </div>
+        ) : (
+          services.map((service) => (
+            <div key={service.id} className="bg-[#131e32] rounded-2xl border border-slate-800 p-4 flex flex-col gap-3">
+              {/* Top row */}
+              <div className="flex justify-between items-start gap-2">
+                <div className="flex-1">
+                  <p className="font-bold text-slate-200 text-sm">{service.puja_name}</p>
+                  {["temple_puja", "pind_dan"].includes(service.puja_type) ? (
+                    <div className="flex items-center gap-1 text-[10px] text-orange-400/70 mt-1">
+                      <MapPin size={11} />
+                      <span className="truncate max-w-[180px]">{service.address || "No Address Set"}</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-1 text-[10px] text-sky-400/70 mt-1">
+                      <Home size={11} />
+                      <span>Pandit Visit Service</span>
+                    </div>
+                  )}
+                </div>
+                {/* Action buttons always visible on mobile */}
+                <div className="flex gap-2 flex-shrink-0">
+                  <button onClick={() => { setEditData(service); setOpenModal(true); }} className="p-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all">
+                    <Pencil size={14} />
+                  </button>
+                  <button onClick={() => handleDelete(service.id)} className="p-2 rounded-xl bg-rose-500/10 text-rose-400 hover:bg-rose-500 hover:text-white transition-all">
+                    <Trash2 size={14} />
+                  </button>
+                </div>
+              </div>
+
+              {/* Badges row */}
+              <div className="flex flex-wrap gap-2 items-center">
+                <span className={`px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-tighter ${typeColor(service.puja_type)}`}>
+                  {service.puja_type.replace('_', ' ')}
+                </span>
+                <div className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border font-bold text-[10px] uppercase ${
+                  service.status === 'active'
+                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                    : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                }`}>
+                  {service.status === 'active' ? <CheckCircle2 size={9} /> : <XCircle size={9} />}
+                  {service.status || 'active'}
+                </div>
+                {service.prices?.length > 0 && (
+                  <span className="text-emerald-400 font-mono text-[11px] font-bold ml-auto">
+                    ₹{service.prices[0].price}
+                    <span className="text-[9px] text-slate-500 font-sans uppercase ml-1">({service.prices[0].pricing_type})</span>
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
       {openModal && <ServiceModal close={() => setOpenModal(false)} editData={editData} refresh={fetchServices} />}
     </div>
   );
