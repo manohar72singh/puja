@@ -155,87 +155,259 @@ function AnalysisText({ text }) {
   );
 }
 
-// ── Time Picker ───────────────────────────────────────────────
 function TimePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
-  const [ampm, setAmpm] = useState('AM');
-  const [hrs,  setHrs]  = useState('12');
-  const [mins, setMins] = useState('00');
+  const [mode, setMode] = useState("hours"); // "hours" | "minutes"
+  const [ampm, setAmpm] = useState("AM");
+  const [hrs, setHrs] = useState(12);
+  const [mins, setMins] = useState(0);
   const ref = useRef(null);
 
   useEffect(() => {
     if (!value) return;
-    const [h, m] = value.split(':').map(Number);
-    setAmpm(h >= 12 ? 'PM' : 'AM');
-    setHrs(String(h===0?12:h>12?h-12:h).padStart(2,'0'));
-    setMins(String(m).padStart(2,'0'));
+    const [h, m] = value.split(":").map(Number);
+    setAmpm(h >= 12 ? "PM" : "AM");
+    setHrs(h === 0 ? 12 : h > 12 ? h - 12 : h);
+    setMins(m);
   }, []);
 
   useEffect(() => {
-    const fn = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
+    const fn = (e) => {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    };
+    document.addEventListener("mousedown", fn);
+    return () => document.removeEventListener("mousedown", fn);
   }, []);
 
   const emit = (h, m, ap) => {
-    let hr24 = parseInt(h);
-    if (ap==='AM' && hr24===12) hr24=0;
-    if (ap==='PM' && hr24!==12) hr24+=12;
-    onChange(String(hr24).padStart(2,'0')+':'+String(m).padStart(2,'0'));
+    let hr24 = h;
+    if (ap === "AM" && hr24 === 12) hr24 = 0;
+    if (ap === "PM" && hr24 !== 12) hr24 += 12;
+    onChange(String(hr24).padStart(2, "0") + ":" + String(m).padStart(2, "0"));
   };
 
-  const HOURS = Array.from({length:12},(_,i)=>String(i+1).padStart(2,'0'));
-  const MINS  = Array.from({length:60},(_,i)=>String(i).padStart(2,'0'));
-  const display = value ? `${hrs}:${mins} ${ampm}` : 'Select time...';
+  const SIZE = 220;
+  const CENTER = SIZE / 2;
+  const HOUR_R = 80;
+  const MIN_R = 80;
+
+  const hourNumbers = Array.from({ length: 12 }, (_, i) => i + 1);
+  const minNumbers = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55];
+
+  const getPos = (index, total, radius) => {
+    const angle = ((index / total) * 2 * Math.PI) - Math.PI / 2;
+    return {
+      x: CENTER + radius * Math.cos(angle),
+      y: CENTER + radius * Math.sin(angle),
+    };
+  };
+
+  const getHandAngle = () => {
+    if (mode === "hours") return ((hrs % 12) / 12) * 360 - 90;
+    return (mins / 60) * 360 - 90;
+  };
+
+  const handAngle = getHandAngle();
+  const handLength = mode === "hours" ? HOUR_R - 14 : MIN_R - 14;
+  const handRad = (handAngle * Math.PI) / 180;
+  const handX = CENTER + handLength * Math.cos(handRad);
+  const handY = CENTER + handLength * Math.sin(handRad);
+
+  const handleClockClick = (e) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left - CENTER;
+    const y = e.clientY - rect.top - CENTER;
+    const angle = Math.atan2(y, x) * (180 / Math.PI) + 90;
+    const normalized = ((angle % 360) + 360) % 360;
+
+    if (mode === "hours") {
+      const h = Math.round(normalized / 30) % 12 || 12;
+      setHrs(h);
+      emit(h, mins, ampm);
+      setTimeout(() => setMode("minutes"), 200);
+    } else {
+      const m = Math.round(normalized / 6) % 60;
+      setMins(m);
+      emit(hrs, m, ampm);
+      setOpen(false);
+      setMode("hours");
+    }
+  };
+
+  const hh = String(hrs).padStart(2, "0");
+  const mm = String(mins).padStart(2, "0");
+  const display = value ? `${hh}:${mm} ${ampm}` : "Select time...";
 
   return (
     <div ref={ref} className="relative">
-      <button type="button" onClick={()=>setOpen(o=>!o)}
+      {/* Trigger */}
+      <button
+        type="button"
+        onClick={() => { setOpen((o) => !o); setMode("hours"); }}
         className={`w-full bg-black/30 border rounded-xl px-4 py-3 text-left flex items-center justify-between transition-colors
-          ${open?'border-amber-500':'border-amber-800/40 hover:border-amber-600/50'}
-          ${value?'text-amber-100':'text-amber-800'}`}>
-        <span className="flex items-center gap-2 text-sm"><span className="text-amber-600">🕐</span>{display}</span>
-        <span className="text-amber-700/50 text-xs">{open?'▲':'▼'}</span>
+          ${open ? "border-amber-500" : "border-amber-800/40 hover:border-amber-600/50"}
+          ${value ? "text-amber-100" : "text-amber-800"}`}
+      >
+        <span className="flex items-center gap-2 text-sm">
+          <span className="text-amber-600">🕐</span>{display}
+        </span>
+        <span className="text-amber-700/50 text-xs">{open ? "▲" : "▼"}</span>
       </button>
+
       {open && (
-        <div className="absolute z-50 mt-1 w-full bg-amber-950 border border-amber-700/50 rounded-2xl shadow-2xl overflow-hidden">
-          <div className="flex border-b border-amber-800/40">
-            {['AM','PM'].map(ap=>(
-              <button key={ap} type="button" onClick={()=>{setAmpm(ap);emit(hrs,mins,ap);}}
-                className={`flex-1 py-2.5 text-sm font-bold transition-all ${ampm===ap?'bg-amber-600 text-white':'text-amber-500/60 hover:bg-amber-800/30'}`}>
-                {ap==='AM'?'🌅 AM':'🌆 PM'}
+        <div className="absolute z-50 mt-1 w-64 bg-amber-950 border border-amber-700/50 rounded-2xl shadow-2xl overflow-hidden">
+
+          {/* Time Display + AM/PM */}
+          <div className="flex items-center justify-between px-4 pt-4 pb-2">
+            <div className="flex items-baseline gap-1">
+              <button
+                type="button"
+                onClick={() => setMode("hours")}
+                className={`text-3xl font-bold tabular-nums transition-colors ${mode === "hours" ? "text-amber-300" : "text-amber-700 hover:text-amber-500"}`}
+              >
+                {hh}
               </button>
-            ))}
+              <span className="text-amber-600 text-2xl font-bold">:</span>
+              <button
+                type="button"
+                onClick={() => setMode("minutes")}
+                className={`text-3xl font-bold tabular-nums transition-colors ${mode === "minutes" ? "text-amber-300" : "text-amber-700 hover:text-amber-500"}`}
+              >
+                {mm}
+              </button>
+            </div>
+            <div className="flex flex-col gap-1">
+              {["AM", "PM"].map((ap) => (
+                <button
+                  key={ap}
+                  type="button"
+                  onClick={() => { setAmpm(ap); emit(hrs, mins, ap); }}
+                  className={`px-2.5 py-0.5 rounded-lg text-xs font-bold transition-all
+                    ${ampm === ap ? "bg-amber-600 text-white" : "text-amber-700 hover:bg-amber-800/40"}`}
+                >
+                  {ap}
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="flex">
-            {[['Hour',HOURS,hrs,setHrs,true],['Min',MINS,mins,setMins,false]].map(([label,arr,val,setter,isHour])=>(
-              <div key={label} className={isHour?'flex-1 border-r border-amber-800/30':'flex-1'}>
-                <p className="text-amber-700/50 text-xs text-center py-1.5 border-b border-amber-800/30 uppercase tracking-wider">{label}</p>
-                <div className="overflow-y-auto" style={{maxHeight:'200px'}}>
-                  {arr.map(v=>(
-                    <button key={v} type="button"
-                      onClick={()=>{setter(v);isHour?emit(v,mins,ampm):(emit(hrs,v,ampm),setOpen(false));}}
-                      className={`w-full py-2 text-sm text-center transition-all ${val===v?'bg-amber-600/40 text-amber-300 font-bold':'text-amber-500/70 hover:bg-amber-800/30'}`}>
-                      {v}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ))}
+
+          {/* Mode Label */}
+          <p className="text-center text-amber-700/50 text-xs uppercase tracking-widest mb-1">
+            {mode === "hours" ? "Select Hour" : "Select Minute"}
+          </p>
+
+          {/* Clock Face */}
+          <div className="flex justify-center pb-3">
+            <svg
+              width={SIZE}
+              height={SIZE}
+              onClick={handleClockClick}
+              className="cursor-pointer"
+              style={{ userSelect: "none" }}
+            >
+              {/* Clock background */}
+              <circle cx={CENTER} cy={CENTER} r={CENTER - 4} fill="rgba(0,0,0,0.4)" stroke="rgba(180,120,30,0.2)" strokeWidth="1.5" />
+
+              {/* Tick marks */}
+              {Array.from({ length: 60 }, (_, i) => {
+                const angle = (i / 60) * 2 * Math.PI - Math.PI / 2;
+                const isMajor = i % 5 === 0;
+                const r1 = CENTER - 8;
+                const r2 = isMajor ? CENTER - 16 : CENTER - 12;
+                return (
+                  <line
+                    key={i}
+                    x1={CENTER + r1 * Math.cos(angle)}
+                    y1={CENTER + r1 * Math.sin(angle)}
+                    x2={CENTER + r2 * Math.cos(angle)}
+                    y2={CENTER + r2 * Math.sin(angle)}
+                    stroke={isMajor ? "rgba(180,120,30,0.5)" : "rgba(180,120,30,0.2)"}
+                    strokeWidth={isMajor ? 1.5 : 1}
+                  />
+                );
+              })}
+
+              {/* Hand */}
+              <line
+                x1={CENTER} y1={CENTER}
+                x2={handX} y2={handY}
+                stroke="#d97706"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+              {/* Hand circle at tip */}
+              <circle cx={handX} cy={handY} r="6" fill="#d97706" />
+              {/* Center dot */}
+              <circle cx={CENTER} cy={CENTER} r="4" fill="#d97706" />
+
+              {/* Hour Numbers */}
+              {mode === "hours" && hourNumbers.map((n, i) => {
+                const pos = getPos(i + 1, 12, HOUR_R);
+                const isSelected = hrs === n;
+                return (
+                  <g key={n}>
+                    {isSelected && <circle cx={pos.x} cy={pos.y} r="14" fill="rgba(217,119,6,0.3)" />}
+                    <text
+                      x={pos.x} y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="13"
+                      fontWeight={isSelected ? "bold" : "normal"}
+                      fill={isSelected ? "#fde68a" : "rgba(251,191,36,0.7)"}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      {n}
+                    </text>
+                  </g>
+                );
+              })}
+
+              {/* Minute Numbers */}
+              {mode === "minutes" && minNumbers.map((n, i) => {
+                const pos = getPos(i, 12, MIN_R);
+                const isSelected = mins === n;
+                return (
+                  <g key={n}>
+                    {isSelected && <circle cx={pos.x} cy={pos.y} r="14" fill="rgba(217,119,6,0.3)" />}
+                    <text
+                      x={pos.x} y={pos.y}
+                      textAnchor="middle"
+                      dominantBaseline="central"
+                      fontSize="11"
+                      fontWeight={isSelected ? "bold" : "normal"}
+                      fill={isSelected ? "#fde68a" : "rgba(251,191,36,0.7)"}
+                      style={{ pointerEvents: "none" }}
+                    >
+                      {String(n).padStart(2, "0")}
+                    </text>
+                  </g>
+                );
+              })}
+            </svg>
           </div>
+
+          {/* Quick Presets */}
           <div className="border-t border-amber-800/30 p-2">
             <p className="text-amber-700/40 text-xs mb-1.5 uppercase tracking-wider px-1">Quick</p>
             <div className="flex flex-wrap gap-1">
-              {[{l:'Midnight',h:'12',m:'00',ap:'AM'},{l:'Sunrise',h:'06',m:'00',ap:'AM'},
-                {l:'Noon',h:'12',m:'00',ap:'PM'},{l:'Sunset',h:'06',m:'00',ap:'PM'}].map(q=>(
-                <button key={q.l} type="button"
-                  onClick={()=>{setHrs(q.h);setMins(q.m);setAmpm(q.ap);emit(q.h,q.m,q.ap);setOpen(false);}}
-                  className="px-2.5 py-1 text-xs rounded-lg bg-amber-900/40 text-amber-400 hover:bg-amber-700/40 border border-amber-800/30">
+              {[
+                { l: "Midnight", h: 12, m: 0, ap: "AM" },
+                { l: "Sunrise",  h: 6,  m: 0, ap: "AM" },
+                { l: "Noon",     h: 12, m: 0, ap: "PM" },
+                { l: "Sunset",   h: 6,  m: 0, ap: "PM" },
+              ].map((q) => (
+                <button
+                  key={q.l}
+                  type="button"
+                  onClick={() => { setHrs(q.h); setMins(q.m); setAmpm(q.ap); emit(q.h, q.m, q.ap); setOpen(false); setMode("hours"); }}
+                  className="px-2.5 py-1 text-xs rounded-lg bg-amber-900/40 text-amber-400 hover:bg-amber-700/40 border border-amber-800/30"
+                >
                   {q.l}
                 </button>
               ))}
             </div>
           </div>
+
         </div>
       )}
     </div>
