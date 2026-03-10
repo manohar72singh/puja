@@ -110,7 +110,7 @@ export default function AnalyticsDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[#080d14] text-white font-sans p-4 sm:p-6 lg:p-8">
+    <div className="min-h-screen text-white font-sans">
       {/* Header */}
       <div className="mb-8 flex items-center justify-between">
         <div>
