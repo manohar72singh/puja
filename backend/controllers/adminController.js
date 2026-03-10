@@ -976,12 +976,7 @@ export const getAllBookings = async (req, res) => {
     const [rows] = await db.query(
       `
       SELECT 
-        pr.id,
-        pr.bookingId,
-        pr.status,
-        pr.preferred_date,
-        pr.preferred_time,
-        pr.total_price AS price,
+        pr.*,
         u.name AS user_name,
         u.phone AS user_phone,
         s.puja_name,
@@ -1426,5 +1421,133 @@ export const getRevenueByDateRange = async (req, res) => {
     res.json({ success: true, summary, data: rows });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
+  }
+};
+
+//===========Analytics=========
+
+export const getGodViewAnalytics = async (req, res) => {
+  try {
+    // 1. Total Revenue (only completed bookings)
+    const [totalRevenueResult] = await db.query(`
+      SELECT COALESCE(SUM(total_price), 0) AS total_revenue
+      FROM puja_requests
+      WHERE status = 'completed'
+    `);
+
+    // 2. Completed Bookings Count
+    const [completedBookingsResult] = await db.query(`
+      SELECT COUNT(*) AS completed_bookings
+      FROM puja_requests
+      WHERE status = 'completed'
+    `);
+
+    // 3. Active Pandits (distinct pandits who have accepted or completed bookings)
+    const [activePanditsResult] = await db.query(`
+      SELECT COUNT(DISTINCT pandit_id) AS active_pandits
+      FROM puja_requests
+      WHERE status IN ('accepted', 'completed')
+      AND pandit_id IS NOT NULL
+    `);
+
+    // 4. Average Order Value (completed bookings)
+    const [avgOrderResult] = await db.query(`
+      SELECT COALESCE(AVG(total_price), 0) AS avg_order_value
+      FROM puja_requests
+      WHERE status = 'completed'
+    `);
+
+    // 5. Revenue Last 7 Days (day-wise)
+    const [revenueLastWeek] = await db.query(`
+      SELECT
+        DATE(created_at) AS date,
+        COALESCE(SUM(total_price), 0) AS revenue,
+        COUNT(*) AS bookings
+      FROM puja_requests
+      WHERE
+        status = 'completed'
+        AND created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+      GROUP BY DATE(created_at)
+      ORDER BY date ASC
+    `);
+
+    // Fill missing days with 0 (last 7 days complete)
+    const last7Days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split("T")[0];
+      const found = revenueLastWeek.find((r) => {
+        const rd = new Date(r.date).toISOString().split("T")[0];
+        return rd === dateStr;
+      });
+      last7Days.push({
+        date: dateStr,
+        revenue: found ? Number(found.revenue) : 0,
+        bookings: found ? Number(found.bookings) : 0,
+      });
+    }
+
+    // 6. Top 5 Performing Pujas (most booked services)
+    const [topPujas] = await db.query(`
+      SELECT
+        s.id AS service_id,
+        s.puja_name,
+        s.puja_type,
+        COUNT(pr.id) AS total_bookings
+      FROM puja_requests pr
+      JOIN services s ON pr.service_id = s.id
+      GROUP BY s.id, s.puja_name, s.puja_type
+      ORDER BY total_bookings DESC
+      LIMIT 5
+    `);
+
+    // 7. Most Active Cities (from puja_requests.city)
+    const [activeCities] = await db.query(`
+      SELECT
+        city,
+        COUNT(*) AS total_bookings
+      FROM puja_requests
+      WHERE city IS NOT NULL AND city != ''
+      GROUP BY city
+      ORDER BY total_bookings DESC
+      LIMIT 5
+    `);
+
+    // Final Response
+    return res.status(200).json({
+      success: true,
+      data: {
+        stats: {
+          total_revenue: Number(totalRevenueResult[0].total_revenue),
+          completed_bookings: Number(
+            completedBookingsResult[0].completed_bookings,
+          ),
+          active_pandits: Number(activePanditsResult[0].active_pandits),
+          avg_order_value: Math.round(
+            Number(avgOrderResult[0].avg_order_value),
+          ),
+        },
+        revenue_last_7_days: last7Days,
+        top_pujas: topPujas.map((p, index) => ({
+          rank: index + 1,
+          service_id: p.service_id,
+          puja_name: p.puja_name,
+          puja_type: p.puja_type,
+          total_bookings: Number(p.total_bookings),
+        })),
+        most_active_cities: activeCities.map((c) => ({
+          city: c.city,
+          total_bookings: Number(c.total_bookings),
+        })),
+      },
+    });
+  } catch (error) {
+    console.error("Analytics Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Analytics data fetch karne mein error aaya",
+      error: error.message,
+    });
   }
 };

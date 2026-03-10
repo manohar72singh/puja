@@ -35,7 +35,8 @@ import {
   updatePandit,
   updateService,
   updateUser,
-  getPanditBookingHistory
+  getPanditBookingHistory,
+  getGodViewAnalytics,
 } from "../controllers/adminController.js";
 import { verifyToken } from "../middleware/auth.js";
 import { upload } from "../middleware/multerMiddleware.js";
@@ -63,8 +64,20 @@ router.delete("/users/:id", verifyToken, adminOnly, deleteUser);
 
 router.get("/services", verifyToken, adminOnly, getAllServices);
 router.get("/services/:id", verifyToken, adminOnly, getServiceById);
-router.post("/services",verifyToken,adminOnly,upload.single("image"),createService,);
-router.put("/services/:id",verifyToken,adminOnly,upload.single("image"),updateService,);
+router.post(
+  "/services",
+  verifyToken,
+  adminOnly,
+  upload.single("image"),
+  createService,
+);
+router.put(
+  "/services/:id",
+  verifyToken,
+  adminOnly,
+  upload.single("image"),
+  updateService,
+);
 router.delete("/services/:id", verifyToken, adminOnly, deleteService);
 
 // booking management routes for admin can be added here
@@ -81,7 +94,12 @@ router.put("/pandits/:id", verifyToken, adminOnly, updatePandit);
 router.delete("/pandits/:id", verifyToken, adminOnly, deletePandit);
 router.put("/pandits/block/:id", verifyToken, adminOnly, togglePanditBlock);
 
-router.get("/pandits/history/:id", verifyToken, adminOnly, getPanditBookingHistory);
+router.get(
+  "/pandits/history/:id",
+  verifyToken,
+  adminOnly,
+  getPanditBookingHistory,
+);
 // router.put("/pandits/assign/:bookingId", assignPanditToBooking);
 // financial routes
 
@@ -106,4 +124,7 @@ router.get("/pandit-earnings", verifyToken, adminOnly, getPanditEarnings);
 
 // ── Custom Date Range Report
 router.get("/date-range", verifyToken, adminOnly, getRevenueByDateRange); // ?from=2026-02-01&to=2026-03-03
+
+//----------Analytics Routes
+router.get("/analytics", verifyToken, adminOnly, getGodViewAnalytics);
 export default router;
