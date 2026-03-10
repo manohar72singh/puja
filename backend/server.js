@@ -21,6 +21,7 @@ import { fileURLToPath } from "url";
 import multer from "multer";
 
 import { Groq } from "groq-sdk";
+import { generatePDF } from './controllers/pdfReport.js';
 
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -100,6 +101,17 @@ export const setupAIPandit = (io) => {
     });
   });
 };
+
+app.post('/api/name/pdf-report', async (req, res) => {
+  const pdf      = await generatePDF(req.body);
+  const safeName = (req.body.name || 'Report').replace(/\s+/g, '_');
+  res.set({
+    'Content-Type':        'application/pdf',
+    'Content-Disposition': `attachment; filename="${safeName}_Numerology_Report.pdf"`,
+    'Content-Length':      pdf.length,
+  });
+  res.send(pdf);
+});
 
 app.use('/api/kundli', kundliRouter);
 app.use('/api/name', nameCorrectionRouter);

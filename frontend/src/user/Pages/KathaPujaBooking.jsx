@@ -18,6 +18,7 @@ import {
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
+const SAMAGRI_PDF_URL = "/pdf/Puja_Samagri_Checklist.pdf";
 
 const KathaPujaBooking = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const KathaPujaBooking = () => {
   const [samagriEnabled, setSamagriEnabled] = useState(
     location.state?.isSamagriSelected !== undefined
       ? location.state.isSamagriSelected
-      : true,
+      : false,
   );
 
   const [activeTab, setActiveTab] = useState("about");
@@ -194,16 +195,24 @@ const KathaPujaBooking = () => {
                             30+ items.
                           </span>
                         </p>
-                        <button className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors">
-                          <Download size={14} /> Download Checklist
-                        </button>
+                        <div className="flex items-center gap-2">
+                          
+                          <a
+                            href={SAMAGRI_PDF_URL}
+                            download="Puja_Samagri_Checklist.pdf"
+                            className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors"
+                          >
+                            <Download size={14} /> Download
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
                 </div>
+
                 <div className="flex flex-col items-end gap-1">
                   <button
-                    onClick={() => setSamagriEnabled(!samagriEnabled)}
+                    // onClick={() => setSamagriEnabled(!samagriEnabled)}
                     className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-200"}`}
                   >
                     <div
@@ -212,7 +221,7 @@ const KathaPujaBooking = () => {
                   </button>
                   <span className="text-[11px] font-bold text-gray-400 mt-1">
                     {samagriEnabled
-                      ? `+₹ ${getPrice("Samagri Kit")}`
+                      ? `+₹${getPrice("Samagri Kit")}`
                       : "Not included"}
                   </span>
                 </div>

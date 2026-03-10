@@ -4,43 +4,48 @@ const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 const API_URL = `${API_BASE_URL}/kundli/generate`;
 
 const PLANET_SYMBOLS = {
-  Sun:"☀️", Moon:"🌙", Mars:"♂️", Mercury:"☿",
-  Jupiter:"♃", Venus:"♀", Saturn:"♄", Rahu:"☊", Ketu:"☋"
+  Sun: "☀️", Moon: "🌙", Mars: "♂️", Mercury: "☿",
+  Jupiter: "♃", Venus: "♀", Saturn: "♄", Rahu: "☊", Ketu: "☋"
 };
 const SHORT = {
-  Sun:'Su', Moon:'Mo', Mars:'Ma', Mercury:'Me',
-  Jupiter:'Ju', Venus:'Ve', Saturn:'Sa', Rahu:'Ra', Ketu:'Ke'
+  Sun: 'Su', Moon: 'Mo', Mars: 'Ma', Mercury: 'Me',
+  Jupiter: 'Ju', Venus: 'Ve', Saturn: 'Sa', Rahu: 'Ra', Ketu: 'Ke'
 };
 const PLANET_COLOR = {
-  EXALTED:'#4ade80', OWN_SIGN:'#60a5fa', DEBILITATED:'#f87171', NEUTRAL:'#fcd34d'
+  EXALTED:    "#7B0000",  // dark red
+  OWN:        "#4A0E0E",  // very dark maroon
+  FRIENDLY:   "#2D1B00",  // dark brown
+  NEUTRAL:    "#1a0a00",  // very dark brown-black
+  ENEMY:      "#3B0000",  // dark crimson
+  DEBILITATED:"#1a1a00",  // dark olive-black
 };
 const STRENGTH_CLS = {
-  EXALTED:'text-green-400 font-bold', OWN_SIGN:'text-blue-400 font-semibold',
-  DEBILITATED:'text-red-400 font-semibold', NEUTRAL:'text-amber-100/50'
+  EXALTED: 'text-green-400 font-bold', OWN_SIGN: 'text-blue-400 font-semibold',
+  DEBILITATED: 'text-red-400 font-semibold', NEUTRAL: 'text-amber-100/50'
 };
 
 // Severity border/bg colors
 const SEVERITY_CLS = {
-  HIGH     : 'bg-red-900/40 border-red-500 text-red-300',
-  MODERATE : 'bg-amber-900/40 border-amber-500 text-amber-300',
-  LOW      : 'bg-blue-900/40 border-blue-600/70 text-blue-300',
+  HIGH: 'bg-red-900/40 border-red-500 text-red-300',
+  MODERATE: 'bg-amber-900/40 border-amber-500 text-amber-300',
+  LOW: 'bg-blue-900/40 border-blue-600/70 text-blue-300',
   CANCELLED: 'bg-gray-900/40 border-gray-600 text-gray-400',
 };
 
 // Full / Partial / Cancelled type badge
 const TYPE_BADGE = {
-  FULL     : { cls:'bg-red-800/70 text-red-200 border border-red-500/60',        icon:'🔴', label:'FULL'      },
-  PARTIAL  : { cls:'bg-yellow-800/50 text-yellow-200 border border-yellow-500/60', icon:'🟡', label:'PARTIAL'  },
-  CANCELLED: { cls:'bg-gray-800/60 text-gray-300 border border-gray-500/50',      icon:'✅', label:'CANCELLED' },
+  FULL: { cls: 'bg-red-800/70 text-red-200 border border-red-500/60', icon: '🔴', label: 'FULL' },
+  PARTIAL: { cls: 'bg-yellow-800/50 text-yellow-200 border border-yellow-500/60', icon: '🟡', label: 'PARTIAL' },
+  CANCELLED: { cls: 'bg-gray-800/60 text-gray-300 border border-gray-500/50', icon: '✅', label: 'CANCELLED' },
 };
 
 const RASHIS_LIST = [
-  'Aries','Taurus','Gemini','Cancer','Leo','Virgo',
-  'Libra','Scorpio','Sagittarius','Capricorn','Aquarius','Pisces'
+  'Aries', 'Taurus', 'Gemini', 'Cancer', 'Leo', 'Virgo',
+  'Libra', 'Scorpio', 'Sagittarius', 'Capricorn', 'Aquarius', 'Pisces'
 ];
 const HINDI_HOUSES = {
-  1:'लग्न',2:'धन',3:'भाई',4:'सुख',5:'पुत्र',6:'रिपु',
-  7:'जाया',8:'मृत्यु',9:'भाग्य',10:'कर्म',11:'लाभ',12:'व्यय'
+  1: 'लग्न', 2: 'धन', 3: 'भाई', 4: 'सुख', 5: 'पुत्र', 6: 'रिपु',
+  7: 'जाया', 8: 'मृत्यु', 9: 'भाग्य', 10: 'कर्म', 11: 'लाभ', 12: 'व्यय'
 };
 
 // ── North Indian Kundli Chart ─────────────────────────────────
@@ -60,18 +65,18 @@ function KundliChart({ planets, lagnaRashi }) {
 
   const getHouseLayout = (h) => {
     const layout = {
-      1 : { rx: M,       ry: M - 70,  px: M,           py: M - 25       },
-      4 : { rx: M - 70,  ry: M + 5,   px: M/2 - 15,    py: M + 10       },
-      7 : { rx: M,       ry: M + 85,  px: M,           py: M + 45       },
-      10: { rx: M + 70,  ry: M + 5,   px: (3*M)/2+15,  py: M + 10       },
-      2 : { rx: M - 110, ry: 40,      px: M/2,         py: 35           },
-      3 : { rx: 30,      ry: M - 140, px: 80,          py: M/2 - 5      },
-      5 : { rx: 20,      ry: M + 140, px: 80,          py: (3*S)/4 + 5  },
-      6 : { rx: M - 120, ry: S - 35,  px: M/2 + 10,    py: S - 80       },
-      8 : { rx: M + 140, ry: S - 35,  px: (3*S)/4 - 10,py: S - 80       },
-      9 : { rx: S - 40,  ry: M + 140, px: S - 85,      py: (3*S)/4 + 5  },
-      11: { rx: S - 40,  ry: M - 140, px: S - 85,      py: M/2 - 5      },
-      12: { rx: M + 140, ry: 40,      px: (3*S)/4 - 10,py: 90           },
+      1:  { rx: M,       ry: M - 50,  px: M,                py: M - 130      },
+      4:  { rx: M - 60,  ry: M + 5,   px: M / 2 - 15,       py: M + 10      },
+      7:  { rx: M,       ry: M + 50,  px: M,                py: M + 100      },
+      10: { rx: M + 50,  ry: M + 5,   px: (3 * M) / 2 + 15, py: M + 10      },
+      2:  { rx: M - 120, ry: 100,      px: M / 2,            py: 60          },
+      3:  { rx: 80,      ry: M - 120, px: 80,               py: M / 2 - 5   },
+      5:  { rx: 100,      ry: M + 130, px: 30,               py: (3*S)/4 + 5 },
+      6:  { rx: M - 125, ry: S - 90,  px: M / 2 + 10,       py: S - 50      },
+      8:  { rx: M + 125, ry: S - 90,  px: (3*S)/4 - 10,     py: S - 80      },
+      9:  { rx: S - 90,  ry: M + 130, px: S - 40,           py: (3*S)/4 + 5 },
+      11: { rx: S - 80,  ry: M - 120, px: S - 35,           py: M / 2 - 5   },
+      12: { rx: M + 120, ry: 100,      px: (3*S)/4 - 10,     py: 30          },
     };
     return layout[h];
   };
@@ -83,29 +88,70 @@ function KundliChart({ planets, lagnaRashi }) {
         <p className="text-amber-600/50 text-xs">Vedic North Indian Style</p>
       </div>
       <div className="relative w-full max-w-[500px] aspect-square">
-        <svg viewBox={`0 0 ${S} ${S}`} className="w-full h-full shadow-2xl rounded-lg"
-          style={{ background:'#0a0500', border:'3px solid #92400e' }}>
-          <rect x="0" y="0" width={S} height={S} fill="none" stroke="#92400e" strokeWidth="3"/>
+        <svg viewBox={`0 0 ${S} ${S}`} className="w-full h-full rounded-lg"
+          style={{ filter: 'drop-shadow(0 8px 32px #92400e55)' }}>
+
+          <defs>
+            <filter id="paper">
+              <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch"/>
+              <feColorMatrix type="saturate" values="0"/>
+              <feBlend in="SourceGraphic" mode="multiply"/>
+            </filter>
+            <radialGradient id="parchment" cx="50%" cy="50%" r="70%">
+              <stop offset="0%"   stopColor="#f5e6c8"/>
+              <stop offset="60%"  stopColor="#e8d5a3"/>
+              <stop offset="100%" stopColor="#c9a96e"/>
+            </radialGradient>
+            <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+              <stop offset="40%"  stopColor="transparent"/>
+              <stop offset="100%" stopColor="#8B4513" stopOpacity="0.35"/>
+            </radialGradient>
+          </defs>
+
+          {/* Parchment background */}
+          <rect x="0" y="0" width={S} height={S} fill="url(#parchment)" rx="4"/>
+          <rect x="0" y="0" width={S} height={S} fill="url(#parchment)" opacity="0.4" filter="url(#paper)"/>
+          <rect x="0" y="0" width={S} height={S} fill="url(#vignette)"/>
+
+          {/* Double border */}
+          <rect x="4"  y="4"  width={S-8}  height={S-8}  fill="none" stroke="#8B2020" strokeWidth="3" rx="2"/>
+
+          {/* Same lines as original */}
           <line x1="0" y1="0" x2={S} y2={S} stroke="#92400e" strokeWidth="2"/>
           <line x1={S} y1="0" x2="0" y2={S} stroke="#92400e" strokeWidth="2"/>
           <line x1={M} y1="0" x2="0" y2={M} stroke="#92400e" strokeWidth="2"/>
           <line x1="0" y1={M} x2={M} y2={S} stroke="#92400e" strokeWidth="2"/>
           <line x1={M} y1={S} x2={S} y2={M} stroke="#92400e" strokeWidth="2"/>
           <line x1={S} y1={M} x2={M} y2="0" stroke="#92400e" strokeWidth="2"/>
+
+          {/* ॐ watermark - center */}
+          <text x={M} y={M + 40} textAnchor="middle" fontSize="110" opacity="0.08"
+            fill="#8B2020" fontFamily="serif">
+            ॐ
+          </text>
+
+          {/* Lagna text - center */}
+          <text x={M} y={M + 5} textAnchor="middle" fontSize="13" opacity="0.5"
+            fill="#5a1a1a" fontFamily="Georgia, serif" fontWeight="bold" letterSpacing="2">
+            Lagna
+          </text>
+
+          {/* House numbers and planets — exactly same as original */}
           {[1,2,3,4,5,6,7,8,9,10,11,12].map(h => {
             const { rx, ry, px, py } = getHouseLayout(h);
             const rashiNum = getRashiNum(h);
             const plist = housePlanets[h] || [];
             return (
               <g key={h}>
-                <text x={rx} y={ry} textAnchor="middle" fill="#f59e0b" fontSize="18" fontWeight="bold" fontFamily="serif">
+                <text x={rx} y={ry} textAnchor="middle"
+                  fill="#8B2020" fontSize="18" fontWeight="bold" fontFamily="serif">
                   {rashiNum}
                 </text>
                 {plist.map((p, i) => (
-                  <text key={i} x={px} y={py + (i * 20)} textAnchor="middle"
+                  <text key={i} x={px} y={py + i * 20} textAnchor="middle"
                     fill={PLANET_COLOR[p.strength] || PLANET_COLOR.NEUTRAL}
                     fontSize="16" fontWeight="bold" fontFamily="sans-serif">
-                    {SHORT[p.name] || p.name.slice(0,2)}{p.retrograde ? '℞' : ''}
+                    {SHORT[p.name] || p.name.slice(0, 2)}
                   </text>
                 ))}
               </g>
@@ -128,18 +174,18 @@ function AnalysisText({ text }) {
     <div className="space-y-1 text-sm leading-relaxed">
       {text.split('\n').map((raw, i) => {
         const l = raw.trim();
-        if (!l) return <div key={i} className="h-2"/>;
-        if (l.startsWith('## '))  return <h2 key={i} className="text-amber-300 font-bold text-lg mt-5 mb-2 border-b border-amber-700/40 pb-1">{l.slice(3)}</h2>;
+        if (!l) return <div key={i} className="h-2" />;
+        if (l.startsWith('## ')) return <h2 key={i} className="text-amber-300 font-bold text-lg mt-5 mb-2 border-b border-amber-700/40 pb-1">{l.slice(3)}</h2>;
         if (l.startsWith('### ')) return <h3 key={i} className="text-amber-400 font-semibold text-base mt-4 mb-1">{l.slice(4)}</h3>;
-        if (l.startsWith('#### '))return <h4 key={i} className="text-amber-500 font-medium mt-3">{l.slice(5)}</h4>;
+        if (l.startsWith('#### ')) return <h4 key={i} className="text-amber-500 font-medium mt-3">{l.slice(5)}</h4>;
         if (/^[-*•]/.test(l)) return (
           <div key={i} className="flex items-start gap-2 ml-4 my-1">
             <span className="text-amber-500 mt-0.5 shrink-0 text-xs">◆</span>
-            <span className="text-amber-100/80">{l.replace(/^[-*•]\s+/,'')}</span>
+            <span className="text-amber-100/80">{l.replace(/^[-*•]\s+/, '')}</span>
           </div>
         );
         if (/^\d+\./.test(l)) {
-          const num=l.match(/^(\d+)/)[1], rest=l.replace(/^\d+\.\s*/,'');
+          const num = l.match(/^(\d+)/)[1], rest = l.replace(/^\d+\.\s*/, '');
           return (
             <div key={i} className="flex items-start gap-3 ml-4 my-1">
               <span className="bg-amber-700/40 text-amber-300 rounded-full w-5 h-5 flex items-center justify-center text-xs shrink-0 font-bold">{num}</span>
@@ -147,14 +193,15 @@ function AnalysisText({ text }) {
             </div>
           );
         }
-        if (l==='---') return <hr key={i} className="border-amber-800/40 my-3"/>;
-        const color = l.includes('GOOD')?'text-green-400':l.includes('CHALLENGING')?'text-red-400':l.includes('MIXED')?'text-amber-400':'';
-        return <p key={i} className={`my-1 ${color||'text-amber-100/75'}`}>{l}</p>;
+        if (l === '---') return <hr key={i} className="border-amber-800/40 my-3" />;
+        const color = l.includes('GOOD') ? 'text-green-400' : l.includes('CHALLENGING') ? 'text-red-400' : l.includes('MIXED') ? 'text-amber-400' : '';
+        return <p key={i} className={`my-1 ${color || 'text-amber-100/75'}`}>{l}</p>;
       })}
     </div>
   );
 }
 
+// ── Time Picker ───────────────────────────────────────────────
 function TimePicker({ value, onChange }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState("hours"); // "hours" | "minutes"
@@ -392,9 +439,9 @@ function TimePicker({ value, onChange }) {
             <div className="flex flex-wrap gap-1">
               {[
                 { l: "Midnight", h: 12, m: 0, ap: "AM" },
-                { l: "Sunrise",  h: 6,  m: 0, ap: "AM" },
-                { l: "Noon",     h: 12, m: 0, ap: "PM" },
-                { l: "Sunset",   h: 6,  m: 0, ap: "PM" },
+                { l: "Sunrise", h: 6, m: 0, ap: "AM" },
+                { l: "Noon", h: 12, m: 0, ap: "PM" },
+                { l: "Sunset", h: 6, m: 0, ap: "PM" },
               ].map((q) => (
                 <button
                   key={q.l}
@@ -416,28 +463,28 @@ function TimePicker({ value, onChange }) {
 
 // ── Location Search ───────────────────────────────────────────
 function LocationSearch({ value, onChange, onSelect }) {
-  const [query,   setQuery]   = useState(value||'');
-  const [sugs,    setSugs]    = useState([]);
+  const [query, setQuery] = useState(value || '');
+  const [sugs, setSugs] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [picked,  setPicked]  = useState(false);
-  const [err,     setErr]     = useState('');
+  const [picked, setPicked] = useState(false);
+  const [err, setErr] = useState('');
   const debRef = useRef(null);
 
   const guessTimezone = lon => {
-    if (lon>=68&&lon<=97)   return 5.5;
-    if (lon>=-8&&lon<=2)    return 0;
-    if (lon>=-80&&lon<=-66) return -5;
-    if (lon>=-125&&lon<=-115) return -8;
-    return Math.round(lon/15*2)/2;
+    if (lon >= 68 && lon <= 97) return 5.5;
+    if (lon >= -8 && lon <= 2) return 0;
+    if (lon >= -80 && lon <= -66) return -5;
+    if (lon >= -125 && lon <= -115) return -8;
+    return Math.round(lon / 15 * 2) / 2;
   };
 
   const search = useCallback(async q => {
-    if (q.length<3) { setSugs([]); return; }
+    if (q.length < 3) { setSugs([]); return; }
     setLoading(true); setErr('');
     try {
       const r = await fetch(
         `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=6&addressdetails=1`,
-        { headers:{'Accept-Language':'en'} }
+        { headers: { 'Accept-Language': 'en' } }
       );
       setSugs(await r.json());
     } catch { setErr('Location search failed. Enter city manually.'); }
@@ -449,13 +496,13 @@ function LocationSearch({ value, onChange, onSelect }) {
     setQuery(v); setPicked(false);
     onChange(v, null, null, null);
     clearTimeout(debRef.current);
-    debRef.current = setTimeout(()=>search(v), 500);
+    debRef.current = setTimeout(() => search(v), 500);
   };
 
   const handleSelect = p => {
-    const lat=parseFloat(p.lat), lon=parseFloat(p.lon);
-    const tz=guessTimezone(lon);
-    const display=p.display_name.split(',').slice(0,3).join(', ');
+    const lat = parseFloat(p.lat), lon = parseFloat(p.lon);
+    const tz = guessTimezone(lon);
+    const display = p.display_name.split(',').slice(0, 3).join(', ');
     setQuery(display); setSugs([]); setPicked(true);
     onSelect(display, lat, lon, tz);
   };
@@ -467,22 +514,22 @@ function LocationSearch({ value, onChange, onSelect }) {
           placeholder="Type city... e.g. Mumbai, Delhi, London"
           className={`w-full bg-black/30 border rounded-xl px-4 py-3 text-amber-100 placeholder-amber-800
             focus:outline-none transition-colors text-sm pr-10
-            ${picked?'border-green-500/60':'border-amber-800/40 focus:border-amber-500'}`}/>
+            ${picked ? 'border-green-500/60' : 'border-amber-800/40 focus:border-amber-500'}`} />
         <div className="absolute right-3 top-3">
-          {loading && <span className="animate-spin inline-block w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full"/>}
+          {loading && <span className="animate-spin inline-block w-4 h-4 border-2 border-amber-400 border-t-transparent rounded-full" />}
           {picked && !loading && <span className="text-green-400 text-lg">✓</span>}
         </div>
       </div>
-      {sugs.length>0 && !picked && (
+      {sugs.length > 0 && !picked && (
         <div className="absolute z-50 w-full mt-1 bg-amber-950 border border-amber-700/50 rounded-xl overflow-hidden shadow-2xl">
-          {sugs.map((p,i)=>{
-            const parts=p.display_name.split(',');
+          {sugs.map((p, i) => {
+            const parts = p.display_name.split(',');
             return (
-              <button key={i} onClick={()=>handleSelect(p)}
+              <button key={i} onClick={() => handleSelect(p)}
                 className="w-full text-left px-4 py-3 hover:bg-amber-800/30 transition-colors border-b border-amber-900/40 last:border-0">
-                <p className="text-amber-200 text-sm font-medium">📍 {parts.slice(0,2).join(',').trim()}</p>
+                <p className="text-amber-200 text-sm font-medium">📍 {parts.slice(0, 2).join(',').trim()}</p>
                 <div className="flex justify-between mt-0.5">
-                  <p className="text-amber-500/60 text-xs">{parts.slice(2,4).join(',').trim()}</p>
+                  <p className="text-amber-500/60 text-xs">{parts.slice(2, 4).join(',').trim()}</p>
                   <p className="text-amber-700/50 text-xs">Lat:{parseFloat(p.lat).toFixed(2)} Lon:{parseFloat(p.lon).toFixed(2)}</p>
                 </div>
               </button>
@@ -492,7 +539,7 @@ function LocationSearch({ value, onChange, onSelect }) {
       )}
       {err && <p className="text-red-400 text-xs mt-1">{err}</p>}
       {picked && <p className="text-green-400/70 text-xs mt-1">✅ Coordinates captured — accurate Lagna guaranteed</p>}
-      {!picked && query.length>2 && <p className="text-amber-600/60 text-xs mt-1">⚠️ Select from dropdown for accurate Lagna</p>}
+      {!picked && query.length > 2 && <p className="text-amber-600/60 text-xs mt-1">⚠️ Select from dropdown for accurate Lagna</p>}
     </div>
   );
 }
@@ -500,12 +547,12 @@ function LocationSearch({ value, onChange, onSelect }) {
 // ── Dosha Card — Full / Partial / Cancelled ───────────────────
 function DoshaCard({ d }) {
   const [open, setOpen] = useState(false);
-  const typeBadge   = TYPE_BADGE[d.type]  || TYPE_BADGE.FULL;
+  const typeBadge = TYPE_BADGE[d.type] || TYPE_BADGE.FULL;
   const severityCls = SEVERITY_CLS[d.severity] || SEVERITY_CLS.LOW;
 
   return (
     <div className={`border rounded-xl p-4 cursor-pointer transition-all ${severityCls}`}
-      onClick={()=>setOpen(o=>!o)}>
+      onClick={() => setOpen(o => !o)}>
 
       {/* ── Header Row ── */}
       <div className="flex items-center justify-between gap-2">
@@ -525,7 +572,7 @@ function DoshaCard({ d }) {
           <span className="hidden sm:inline text-xs font-bold px-2 py-0.5 rounded-full border border-current opacity-60">
             {d.severity}
           </span>
-          <span className="text-sm">{open?'▲':'▼'}</span>
+          <span className="text-sm">{open ? '▲' : '▼'}</span>
         </div>
       </div>
 
@@ -542,7 +589,7 @@ function DoshaCard({ d }) {
           {d.cancellations?.length > 0 && (
             <div className="bg-green-900/30 rounded-lg p-2">
               <p className="text-xs font-bold text-green-400 mb-1">✅ Cancellations / Reductions:</p>
-              {d.cancellations.map((c,i) => <p key={i} className="text-xs text-green-300">• {c}</p>)}
+              {d.cancellations.map((c, i) => <p key={i} className="text-xs text-green-300">• {c}</p>)}
             </div>
           )}
           <div>
@@ -555,7 +602,7 @@ function DoshaCard({ d }) {
           </div>
           <div>
             <p className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2">🙏 Remedies</p>
-            {(d.remedy||[]).map((r,i) => (
+            {(d.remedy || []).map((r, i) => (
               <div key={i} className="flex items-start gap-2 text-sm mb-1">
                 <span className="opacity-50 shrink-0">•</span><span>{r}</span>
               </div>
@@ -571,10 +618,10 @@ function DoshaCard({ d }) {
 function TabBar({ tabs, active, onChange }) {
   return (
     <div className="flex gap-1 bg-black/40 p-1 rounded-xl overflow-x-auto">
-      {tabs.map(t=>(
-        <button key={t.id} onClick={()=>onChange(t.id)}
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => onChange(t.id)}
           className={`shrink-0 py-2 px-3 rounded-lg text-xs md:text-sm font-medium transition-all whitespace-nowrap
-            ${active===t.id?'bg-amber-600 text-white shadow-lg':'text-amber-400/60 hover:text-amber-300 hover:bg-amber-900/30'}`}>
+            ${active === t.id ? 'bg-amber-600 text-white shadow-lg' : 'text-amber-400/60 hover:text-amber-300 hover:bg-amber-900/30'}`}>
           {t.label}
         </button>
       ))}
@@ -585,72 +632,74 @@ function TabBar({ tabs, active, onChange }) {
 // ── Main App ──────────────────────────────────────────────────
 export default function KundliPortal() {
   const [form, setForm] = useState({
-    name:'', dateOfBirth:'', timeOfBirth:'', placeOfBirth:'',
-    gender:'Male', latitude:null, longitude:null, timezoneOffset:5.5
+    name: '', dateOfBirth: '', timeOfBirth: '', placeOfBirth: '',
+    gender: 'Male', latitude: null, longitude: null, timezoneOffset: 5.5
   });
   const [loading, setLoading] = useState(false);
-  const [result,  setResult]  = useState(null);
-  const [error,   setError]   = useState('');
-  const [tab,     setTab]     = useState('planets');
+  const [result, setResult] = useState(null);
+  const [error, setError] = useState('');
+  const [tab, setTab] = useState('planets');
   const resultRef = useRef(null);
 
-  const setF = e => setForm(f=>({...f,[e.target.name]:e.target.value}));
+  const setF = e => setForm(f => ({ ...f, [e.target.name]: e.target.value }));
 
   const generate = async () => {
     setError(''); setResult(null);
-    if (!form.name||!form.dateOfBirth||!form.timeOfBirth||!form.placeOfBirth)
+    if (!form.name || !form.dateOfBirth || !form.timeOfBirth || !form.placeOfBirth)
       return setError('Please fill all fields.');
     setLoading(true);
     try {
       const res = await fetch(API_URL, {
-        method:'POST', headers:{'Content-Type':'application/json'},
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name          : form.name,
-          dateOfBirth   : form.dateOfBirth,
-          timeOfBirth   : form.timeOfBirth,
-          placeOfBirth  : form.placeOfBirth,
-          gender        : form.gender,
-          latitude      : form.latitude  || 20.5937,
-          longitude     : form.longitude || 78.9629,
+          name: form.name,
+          dateOfBirth: form.dateOfBirth,
+          timeOfBirth: form.timeOfBirth,
+          placeOfBirth: form.placeOfBirth,
+          gender: form.gender,
+          latitude: form.latitude || 20.5937,
+          longitude: form.longitude || 78.9629,
           timezoneOffset: form.timezoneOffset || 5.5,
         }),
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.error);
       setResult(data); setTab('planets');
-      setTimeout(()=>resultRef.current?.scrollIntoView({behavior:'smooth'}), 200);
-    } catch(e) {
+      setTimeout(() => resultRef.current?.scrollIntoView({ behavior: 'smooth' }), 200);
+    } catch (e) {
       setError(e.message || 'Server error. Check backend is running on port 5000.');
     } finally { setLoading(false); }
   };
 
   const TABS = [
-    {id:'planets', label:'🪐 Planets'},
-    {id:'doshas',  label:'⚠️ Doshas'},
-    {id:'optionA', label:'📜 Option A'},
-    {id:'optionB', label:'📐 Option B'},
-    {id:'verdict', label:'✅ Verdict'},
-    {id:'raw',     label:'🔍 Raw'},
+    { id: 'planets', label: '🪐 Planets' },
+    { id: 'doshas', label: '⚠️ Doshas' },
+    { id: 'optionA', label: '📜 Option A' },
+    { id: 'optionB', label: '📐 Option B' },
+    { id: 'verdict', label: '✅ Verdict' },
+    { id: 'raw', label: '🔍 Raw' },
   ];
 
   const SOURCE_BADGE = {
-    swisseph: {cl:'bg-green-900/40 text-green-300 border-green-700/40', ic:'🌌', t:'Swiss Ephemeris — 0.001 arcsec accuracy'},
-    moshier : {cl:'bg-blue-900/40 text-blue-300 border-blue-700/40',   ic:'🔭', t:'Swiss Ephemeris Moshier — ~1 arcsec'},
-    mixed   : {cl:'bg-amber-900/40 text-amber-300 border-amber-700/40',ic:'⚡', t:'Swiss Ephe + Math fallback (mixed)'},
-    fallback: {cl:'bg-gray-900/40 text-gray-300 border-gray-700/40',   ic:'📐', t:'Mathematical VSOP87 fallback'},
+    swisseph: { cl: 'bg-green-900/40 text-green-300 border-green-700/40', ic: '🌌', t: 'Swiss Ephemeris — 0.001 arcsec accuracy' },
+    moshier: { cl: 'bg-blue-900/40 text-blue-300 border-blue-700/40', ic: '🔭', t: 'Swiss Ephemeris Moshier — ~1 arcsec' },
+    mixed: { cl: 'bg-amber-900/40 text-amber-300 border-amber-700/40', ic: '⚡', t: 'Swiss Ephe + Math fallback (mixed)' },
+    fallback: { cl: 'bg-gray-900/40 text-gray-300 border-gray-700/40', ic: '📐', t: 'Mathematical VSOP87 fallback' },
   };
 
   return (
     <div className="min-h-screen text-white"
-      style={{background:'radial-gradient(ellipse at 15% 10%, #3d1500 0%, #1a0800 50%, #080400 100%)'}}>
+      style={{ background: 'radial-gradient(ellipse at 15% 10%, #3d1500 0%, #1a0800 50%, #080400 100%)' }}>
 
       {/* Stars */}
       <div className="fixed inset-0 pointer-events-none overflow-hidden">
-        {[...Array(80)].map((_,i)=>(
+        {[...Array(80)].map((_, i) => (
           <div key={i} className="absolute rounded-full bg-amber-100"
-            style={{width:`${Math.random()*2+1}px`,height:`${Math.random()*2+1}px`,
-              top:`${Math.random()*100}%`,left:`${Math.random()*100}%`,
-              opacity:Math.random()*0.35+0.05}}/>
+            style={{
+              width: `${Math.random() * 2 + 1}px`, height: `${Math.random() * 2 + 1}px`,
+              top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`,
+              opacity: Math.random() * 0.35 + 0.05
+            }} />
         ))}
       </div>
 
@@ -660,14 +709,14 @@ export default function KundliPortal() {
         <div className="text-center mb-10">
           <div className="text-5xl mb-3">🛕</div>
           <h1 className="text-4xl md:text-5xl font-bold mb-2"
-            style={{background:'linear-gradient(135deg,#fcd34d,#f59e0b,#d97706)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>
+            style={{ background: 'linear-gradient(135deg,#fcd34d,#f59e0b,#d97706)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
             Kundli Nirman
           </h1>
           <p className="text-amber-500/60 text-sm tracking-widest uppercase mt-1">
             Vedic Birth Chart · Swiss Ephemeris · AI Dual Analysis
           </p>
           <div className="flex justify-center gap-2 mt-3 flex-wrap">
-            {['🌌 Swiss Ephemeris','📿 Lahiri Ayanamsa','🏠 Whole Sign Houses','🤖 Groq AI'].map(t=>(
+            {['🌌 Swiss Ephemeris', '📿 Lahiri Ayanamsa', '🏠 Whole Sign Houses', '🤖 Groq AI'].map(t => (
               <span key={t} className="text-xs bg-amber-900/30 border border-amber-800/40 text-amber-500/70 px-3 py-1 rounded-full">{t}</span>
             ))}
           </div>
@@ -681,7 +730,7 @@ export default function KundliPortal() {
               <label className="text-amber-400/70 text-xs uppercase tracking-wider mb-1.5 block">Full Name</label>
               <input name="name" value={form.name} onChange={setF}
                 placeholder="e.g. Ramesh Kumar Sharma"
-                className="w-full bg-black/30 border border-amber-800/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-800 focus:outline-none focus:border-amber-500 transition-colors text-sm"/>
+                className="w-full bg-black/30 border border-amber-800/40 rounded-xl px-4 py-3 text-amber-100 placeholder-amber-800 focus:outline-none focus:border-amber-500 transition-colors text-sm" />
             </div>
             <div>
               <label className="text-amber-400/70 text-xs uppercase tracking-wider mb-1.5 block">Gender</label>
@@ -693,14 +742,14 @@ export default function KundliPortal() {
             <div>
               <label className="text-amber-400/70 text-xs uppercase tracking-wider mb-1.5 block">Date of Birth</label>
               <input type="date" name="dateOfBirth" value={form.dateOfBirth} onChange={setF}
-                className="w-full bg-black/30 border border-amber-800/40 rounded-xl px-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 text-sm"/>
+                className="w-full bg-black/30 border border-amber-800/40 rounded-xl px-4 py-3 text-amber-100 focus:outline-none focus:border-amber-500 text-sm" />
             </div>
             <div>
               <label className="text-amber-400/70 text-xs uppercase tracking-wider mb-1.5 block">
                 Time of Birth
                 {form.timeOfBirth && <span className="ml-2 text-green-400/60 normal-case text-xs">✓ {form.timeOfBirth}</span>}
               </label>
-              <TimePicker value={form.timeOfBirth} onChange={v=>setForm(f=>({...f,timeOfBirth:v}))}/>
+              <TimePicker value={form.timeOfBirth} onChange={v => setForm(f => ({ ...f, timeOfBirth: v }))} />
             </div>
             <div className="md:col-span-2">
               <label className="text-amber-400/70 text-xs uppercase tracking-wider mb-1.5 block">
@@ -711,8 +760,8 @@ export default function KundliPortal() {
               </label>
               <LocationSearch
                 value={form.placeOfBirth}
-                onChange={v=>setForm(f=>({...f,placeOfBirth:v}))}
-                onSelect={(d,lat,lon,tz)=>setForm(f=>({...f,placeOfBirth:d,latitude:lat,longitude:lon,timezoneOffset:tz}))}
+                onChange={v => setForm(f => ({ ...f, placeOfBirth: v }))}
+                onSelect={(d, lat, lon, tz) => setForm(f => ({ ...f, placeOfBirth: d, latitude: lat, longitude: lon, timezoneOffset: tz }))}
               />
             </div>
           </div>
@@ -725,13 +774,15 @@ export default function KundliPortal() {
 
           <button onClick={generate} disabled={loading}
             className="mt-6 w-full py-4 rounded-xl font-bold text-base tracking-wide transition-all disabled:opacity-50"
-            style={{background:'linear-gradient(135deg,#d97706,#b45309,#92400e)',
-              boxShadow:loading?'none':'0 0 30px rgba(217,119,6,0.35)'}}>
+            style={{
+              background: 'linear-gradient(135deg,#d97706,#b45309,#92400e)',
+              boxShadow: loading ? 'none' : '0 0 30px rgba(217,119,6,0.35)'
+            }}>
             {loading
               ? <span className="flex items-center justify-center gap-3">
-                  <span className="animate-spin inline-block w-5 h-5 border-2 border-amber-300 border-t-transparent rounded-full"/>
-                  Swiss Ephemeris calculating + AI analyzing…
-                </span>
+                <span className="animate-spin inline-block w-5 h-5 border-2 border-amber-300 border-t-transparent rounded-full" />
+                Swiss Ephemeris calculating + AI analyzing…
+              </span>
               : '🛕 Generate Kundli (Swiss Ephemeris + AI)'}
           </button>
         </div>
@@ -757,11 +808,11 @@ export default function KundliPortal() {
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                 {[
-                  {l:'Lagna',     v:result.kundli.lagnaRashi},
-                  {l:'Moon Sign', v:result.kundli.planets.Moon.rashi},
-                  {l:'Nakshatra', v:result.kundli.nakshatra},
-                  {l:'Mahadasha', v:`${result.kundli.mahadasha.planet} (${result.kundli.mahadasha.yearsRemaining} yrs)`},
-                ].map(({l,v})=>(
+                  { l: 'Lagna', v: result.kundli.lagnaRashi },
+                  { l: 'Moon Sign', v: result.kundli.planets.Moon.rashi },
+                  { l: 'Nakshatra', v: result.kundli.nakshatra },
+                  { l: 'Mahadasha', v: `${result.kundli.mahadasha.planet} (${result.kundli.mahadasha.yearsRemaining} yrs)` },
+                ].map(({ l, v }) => (
                   <div key={l} className="bg-black/25 rounded-xl p-3 text-center">
                     <p className="text-amber-600/70 text-xs uppercase tracking-wider mb-1">{l}</p>
                     <p className="text-amber-200 font-semibold text-sm">{v}</p>
@@ -789,21 +840,21 @@ export default function KundliPortal() {
                 <span>🌐 Ayanamsa: {result.kundli.ayanamsa}°</span>
                 <span>⏱ TZ: UTC+{result.kundli.nativeInfo.timezoneOffset}</span>
                 {/* Updated dosha count — shows Full + Partial separately */}
-                <span>🔴 Full: {result.kundli.fullDoshaCount ?? result.kundli.doshas?.filter(d=>d.type==='FULL'&&d.present).length ?? 0}</span>
-                <span>🟡 Partial: {result.kundli.partialDoshaCount ?? result.kundli.doshas?.filter(d=>d.type==='PARTIAL'&&d.present).length ?? 0}</span>
+                <span>🔴 Full: {result.kundli.fullDoshaCount ?? result.kundli.doshas?.filter(d => d.type === 'FULL' && d.present).length ?? 0}</span>
+                <span>🟡 Partial: {result.kundli.partialDoshaCount ?? result.kundli.doshas?.filter(d => d.type === 'PARTIAL' && d.present).length ?? 0}</span>
               </div>
             </div>
 
             {/* Tab Content */}
             <div className="bg-amber-950/25 border border-amber-800/30 rounded-2xl p-5 md:p-6 shadow-xl">
-              <TabBar tabs={TABS} active={tab} onChange={setTab}/>
+              <TabBar tabs={TABS} active={tab} onChange={setTab} />
 
               <div className="mt-6">
 
                 {/* ── Planets Tab ── */}
                 {tab === 'planets' && (
                   <div className="space-y-6">
-                    <KundliChart planets={result.kundli.planets} lagnaRashi={result.kundli.lagnaRashi}/>
+                    <KundliChart planets={result.kundli.planets} lagnaRashi={result.kundli.lagnaRashi} />
                     <div>
                       <h3 className="text-amber-300 font-semibold mb-3">🪐 Planetary Positions</h3>
                       <div className="overflow-x-auto rounded-xl border border-amber-800/40">
@@ -819,16 +870,16 @@ export default function KundliPortal() {
                             </tr>
                           </thead>
                           <tbody>
-                            {Object.entries(result.kundli.planets).map(([name,p],i)=>(
-                              <tr key={name} className={`border-t border-amber-900/30 hover:bg-amber-800/10 ${i%2===0?'bg-black/10':''}`}>
+                            {Object.entries(result.kundli.planets).map(([name, p], i) => (
+                              <tr key={name} className={`border-t border-amber-900/30 hover:bg-amber-800/10 ${i % 2 === 0 ? 'bg-black/10' : ''}`}>
                                 <td className="px-4 py-2.5 font-medium text-amber-200">
-                                  <span className="mr-2">{PLANET_SYMBOLS[name]||'⭐'}</span>{name}
+                                  <span className="mr-2">{PLANET_SYMBOLS[name] || '⭐'}</span>{name}
                                 </td>
                                 <td className="px-4 py-2.5 text-amber-100/80">{p.rashi}</td>
                                 <td className="px-4 py-2.5 text-amber-100/80">{p.degree}°</td>
                                 <td className="px-4 py-2.5 text-amber-100/80">H{p.house}</td>
-                                <td className={`px-4 py-2.5 text-xs ${STRENGTH_CLS[p.strength]||STRENGTH_CLS.NEUTRAL}`}>
-                                  {p.strength==='EXALTED'?'⬆ Exalted':p.strength==='OWN_SIGN'?'🏠 Own':p.strength==='DEBILITATED'?'⬇ Debil':'— Neutral'}
+                                <td className={`px-4 py-2.5 text-xs ${STRENGTH_CLS[p.strength] || STRENGTH_CLS.NEUTRAL}`}>
+                                  {p.strength === 'EXALTED' ? '⬆ Exalted' : p.strength === 'OWN_SIGN' ? '🏠 Own' : p.strength === 'DEBILITATED' ? '⬇ Debil' : '— Neutral'}
                                 </td>
                                 <td className="px-4 py-2.5 text-xs text-amber-700/60">
                                   {p.retrograde && <span className="text-orange-400">℞ Retro</span>}
@@ -849,13 +900,13 @@ export default function KundliPortal() {
                     <div className="flex flex-wrap items-center gap-2 mb-5">
                       <h3 className="text-amber-300 font-semibold text-base mr-auto">⚠️ Dosha Analysis</h3>
                       <span className="text-xs px-2.5 py-1 rounded-full bg-red-900/50 border border-red-600/60 text-red-300 font-bold">
-                        🔴 Full: {result.kundli.doshas.filter(d=>d.present&&d.type==='FULL').length}
+                        🔴 Full: {result.kundli.doshas.filter(d => d.present && d.type === 'FULL').length}
                       </span>
                       <span className="text-xs px-2.5 py-1 rounded-full bg-yellow-900/50 border border-yellow-600/60 text-yellow-300 font-bold">
-                        🟡 Partial: {result.kundli.doshas.filter(d=>d.present&&d.type==='PARTIAL').length}
+                        🟡 Partial: {result.kundli.doshas.filter(d => d.present && d.type === 'PARTIAL').length}
                       </span>
                       <span className="text-xs px-2.5 py-1 rounded-full bg-gray-900/50 border border-gray-600/60 text-gray-400 font-bold">
-                        ✅ Cancelled: {result.kundli.doshas.filter(d=>d.type==='CANCELLED').length}
+                        ✅ Cancelled: {result.kundli.doshas.filter(d => d.type === 'CANCELLED').length}
                       </span>
                     </div>
 
@@ -869,46 +920,46 @@ export default function KundliPortal() {
                       <div className="space-y-5">
 
                         {/* Full Doshas */}
-                        {result.kundli.doshas.filter(d=>d.present&&d.type==='FULL').length > 0 && (
+                        {result.kundli.doshas.filter(d => d.present && d.type === 'FULL').length > 0 && (
                           <div>
                             <p className="text-red-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-red-500 inline-block"/>
+                              <span className="w-2 h-2 rounded-full bg-red-500 inline-block" />
                               Full Doshas — Primary Afflictions
                             </p>
                             <div className="space-y-3">
                               {result.kundli.doshas
-                                .filter(d=>d.present&&d.type==='FULL')
-                                .map((d,i)=><DoshaCard key={i} d={d}/>)}
+                                .filter(d => d.present && d.type === 'FULL')
+                                .map((d, i) => <DoshaCard key={i} d={d} />)}
                             </div>
                           </div>
                         )}
 
                         {/* Partial Doshas */}
-                        {result.kundli.doshas.filter(d=>d.present&&d.type==='PARTIAL').length > 0 && (
+                        {result.kundli.doshas.filter(d => d.present && d.type === 'PARTIAL').length > 0 && (
                           <div>
                             <p className="text-yellow-400 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block"/>
+                              <span className="w-2 h-2 rounded-full bg-yellow-400 inline-block" />
                               Partial Doshas — Mild Influence
                             </p>
                             <div className="space-y-3">
                               {result.kundli.doshas
-                                .filter(d=>d.present&&d.type==='PARTIAL')
-                                .map((d,i)=><DoshaCard key={i} d={d}/>)}
+                                .filter(d => d.present && d.type === 'PARTIAL')
+                                .map((d, i) => <DoshaCard key={i} d={d} />)}
                             </div>
                           </div>
                         )}
 
                         {/* Cancelled Doshas */}
-                        {result.kundli.doshas.filter(d=>d.type==='CANCELLED').length > 0 && (
+                        {result.kundli.doshas.filter(d => d.type === 'CANCELLED').length > 0 && (
                           <div>
                             <p className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-2 flex items-center gap-2">
-                              <span className="w-2 h-2 rounded-full bg-gray-500 inline-block"/>
+                              <span className="w-2 h-2 rounded-full bg-gray-500 inline-block" />
                               Cancelled Doshas — Neutralised
                             </p>
                             <div className="space-y-3">
                               {result.kundli.doshas
-                                .filter(d=>d.type==='CANCELLED')
-                                .map((d,i)=><DoshaCard key={i} d={d}/>)}
+                                .filter(d => d.type === 'CANCELLED')
+                                .map((d, i) => <DoshaCard key={i} d={d} />)}
                             </div>
                           </div>
                         )}
@@ -926,7 +977,7 @@ export default function KundliPortal() {
                       <h3 className="text-amber-300 font-semibold">Parashari System — BPHS / North Indian</h3>
                     </div>
                     <div className="bg-black/20 rounded-xl p-5 border border-amber-900/30">
-                      <AnalysisText text={result.analysis?.optionA}/>
+                      <AnalysisText text={result.analysis?.optionA} />
                     </div>
                   </div>
                 )}
@@ -939,7 +990,7 @@ export default function KundliPortal() {
                       <h3 className="text-amber-300 font-semibold">KP / Jaimini System — South Indian</h3>
                     </div>
                     <div className="bg-black/20 rounded-xl p-5 border border-orange-900/30">
-                      <AnalysisText text={result.analysis?.optionB}/>
+                      <AnalysisText text={result.analysis?.optionB} />
                     </div>
                   </div>
                 )}
@@ -952,7 +1003,7 @@ export default function KundliPortal() {
                       <h3 className="text-amber-300 font-semibold">Final Cross-Verified Verdict</h3>
                     </div>
                     <div className="bg-gradient-to-br from-amber-950/40 to-black/40 border border-amber-700/30 rounded-xl p-5">
-                      <AnalysisText text={result.analysis?.finalVerdict}/>
+                      <AnalysisText text={result.analysis?.finalVerdict} />
                     </div>
                     <p className="text-amber-800/50 text-xs text-right mt-3">
                       {result.meta?.model} · {result.meta?.tokensUsed} tokens

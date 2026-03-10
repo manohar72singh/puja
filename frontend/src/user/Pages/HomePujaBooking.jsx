@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   ChevronRight,
   ChevronLeft,
-  Star,
+  Eye,
   HelpCircle,
   Info,
   Box,
@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 
 import { useNavigate, useParams, useLocation } from "react-router-dom";
+const SAMAGRI_PDF_URL = "/pdf/Puja_Samagri_Checklist.pdf";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
 
@@ -28,10 +29,14 @@ const HomePujaBooking = () => {
   const { id } = useParams();
   const location = useLocation();
 
+  const handleDownloadChecklist = () => {
+    window.open(SAMAGRI_PDF_URL, "_blank");
+  };
+
   const [samagriEnabled, setSamagriEnabled] = useState(
     location.state?.isSamagriSelected !== undefined
       ? location.state.isSamagriSelected
-      : true,
+      : false,
   );
 
   const [activeTab, setActiveTab] = useState("about");
@@ -154,11 +159,10 @@ const HomePujaBooking = () => {
                   <button
                     key={tab}
                     onClick={() => scrollToSection(tab)}
-                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${
-                      activeTab === tab
-                        ? "text-orange-600 bg-orange-50/50"
-                        : "text-gray-400"
-                    }`}
+                    className={`flex-1 px-6 py-4 text-[13px] font-black uppercase tracking-[0.15em] transition-all relative whitespace-nowrap ${activeTab === tab
+                      ? "text-orange-600 bg-orange-50/50"
+                      : "text-gray-400"
+                      }`}
                   >
                     {tab}
                     {activeTab === tab && (
@@ -199,9 +203,16 @@ const HomePujaBooking = () => {
                             30+ items.
                           </span>
                         </p>
-                        <button className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors">
-                          <Download size={14} /> Download Checklist
-                        </button>
+                        <div className="flex items-center gap-2">
+                          
+                          <a
+                            href={SAMAGRI_PDF_URL}
+                            download="Puja_Samagri_Checklist.pdf"
+                            className="flex items-center gap-2 px-3 py-1.5 border border-orange-200 rounded-lg text-[12px] font-bold text-gray-700 hover:bg-orange-50 transition-colors"
+                          >
+                            <Download size={14} /> Download
+                          </a>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -209,7 +220,7 @@ const HomePujaBooking = () => {
 
                 <div className="flex flex-col items-end gap-1">
                   <button
-                    onClick={() => setSamagriEnabled(!samagriEnabled)}
+                    // onClick={() => setSamagriEnabled(!samagriEnabled)}
                     className={`w-14 h-7 flex items-center rounded-full px-1 transition-colors ${samagriEnabled ? "bg-orange-500 shadow-inner" : "bg-gray-200"}`}
                   >
                     <div
@@ -451,7 +462,7 @@ const HomePujaBooking = () => {
           </button>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
