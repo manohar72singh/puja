@@ -67,7 +67,6 @@ const Bookings = () => {
     };
     fetchData();
   }, [page, statusFilter, search]);
-  console.log("bookings--", bookings);
   const handleSearch = (e) => {
     e.preventDefault();
     setPage(1);

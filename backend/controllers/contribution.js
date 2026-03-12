@@ -2,7 +2,6 @@ import db from "../config/db.js";
 
 export const getContributionsByService = async (req, res) => {
   try {
-    // console.log("inside");
 
     const { serviceId } = req.params;
 
@@ -26,7 +25,6 @@ export const getContributionsByService = async (req, res) => {
 
     const [contributions] = await db.execute(query);
 
-    // console.log(contributions);
 
     res.json({ success: true, data: contributions });
   } catch (error) {

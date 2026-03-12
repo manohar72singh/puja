@@ -11,18 +11,19 @@ import customerCare from "./routes/customerCareRouter.js";
 import mandirRouter from "./routes/mandirRouter.js";
 import kundliRouter from './routes/kundliRouter.js';
 import { debugSweph } from './controllers/kundliController.js';
-import nameCorrectionRouter from "./controllers/nameCorrectionController.js"
-import chatRouter from "./routes/chatRouter.js"
+import nameCorrectionRouter from "./controllers/nameCorrectionController.js";
+import chatRouter from "./routes/chatRouter.js";
 import initChatSocket from "./socket/chatSocket.js";
 import contribution from "./routes/contributionRouter.js";
 import pool from "./config/db.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import multer from "multer";
-
 import { Groq } from "groq-sdk";
 import { generatePDF } from './controllers/pdfReport.js';
 
+// Load Environment Variables
+dotenv.config();
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
@@ -35,60 +36,63 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage: storage });
 
-// Load Environment Variables
-dotenv.config();
-
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// HTTP server + Socket.io ke liye
 const server = createServer(app);
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+  },
+  transports: ["polling", "websocket"],
 });
 
-// Chat Socket initialize
-initChatSocket(io);
+// =============================================
+// 🔱 AI PANDIT JI — GROQ + SOCKET.IO
+// =============================================
 
-// 1. Middlewares
-app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+const PANDIT_PROMPT = `Aap 'Sri Vedic Puja Kendra' ke mukhya Pandit Ji hain — ek gyaani, anubhavi, aur divya aatma.
 
-// Fix __dirname for ES module
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+Aapke niyam (inhe hamesha follow karein):
+1. Har jawab "🙏 Om Namah Shivay" se shuru karein.
+2. Chahe koi bhi sawaal ho — rishta, naukri, sehat, paise, ghar — HAMESHA jawab ek PUJA, MANTRA, ya UPAY ke roop mein dein.
+3. Har jawab mein zaroor shamil karein:
+   - Samasya ka Vedic/Jyotish karan
+   - Kaunsi PUJA ya UPAY karein (vistar se)
+   - Kaunsa MANTRA jaapein (kitni baar — 108 ya jo sahi ho)
+   - Kaunsa din/tithi sahi hai
+   - Kya prasad/samagri chahiye
+4. Tone: Shant, divya, aashirvaad dene wali — jaise sachche pandit ji baat karte hain.
+5. Agar koi irrelevant sawaal pooche (jaise coding, politics), toh vinamrta se puja ke path par le aayin.
+6. Jawab HAMESHA Hindi/Hinglish mein dein.
+7. Ant mein hamesha ek chhota sa aashirvaad dein.`;
 
-app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+const setupAIPandit = (io) => {
+  // Alag /pandit namespace — JWT middleware yahan apply nahi hoga
+  const panditNS = io.of("/pandit");
 
-// 2. Health check
-app.get("/", (req, res) => {
-  res.send("Server running ✅");
-});
+  panditNS.on("connection", (socket) => {
 
+    const conversationHistory = [];
 
-// System Prompt: AI ko "Pandit Ji" banane ka logic
-const PANDIT_PROMPT = `Aap 'Sri Vedic Puja' ke mukhya Pandit ji hain. 
-Rules:
-1. Har jawab "Om Namah Shivay" se shuru karein.
-2. User ka context dhyan rakhein (Tula Lagna, Partial Mangal Dosha).
-3. User kuch bhi pooche, jawab hamesha ek "PUJA" ya "UPAY" ke roop mein dein.
-4. Agar koi aisi baat pooche jo puja se judi nahi hai, toh vinamrta se use puja ke raste par le aayin.`;
-
-export const setupAIPandit = (io) => {
-  io.on("connection", (socket) => {
     socket.on("ai_query", async ({ text }) => {
       try {
+        conversationHistory.push({ role: "user", content: text });
+
         const completion = await groq.chat.completions.create({
           messages: [
             { role: "system", content: PANDIT_PROMPT },
-            { role: "user", content: text }
+            ...conversationHistory,
           ],
-          model: "llama3-8b-8192",
-          temperature: 0.6,
+          model: "llama-3.3-70b-versatile",
+          temperature: 0.7,
+          max_tokens: 1024,
         });
 
         const reply = completion.choices[0]?.message?.content;
+        conversationHistory.push({ role: "assistant", content: reply });
+
         socket.emit("ai_response", {
           text: reply,
           sender: "bot",
@@ -96,53 +100,68 @@ export const setupAIPandit = (io) => {
         });
       } catch (error) {
         console.error("Groq Error:", error);
-        socket.emit("ai_response", { text: "Kshama karein yajmaan, koshish dobara karein." });
+        socket.emit("ai_response", {
+          text: "🙏 Kshama karein yajmaan, thodi der mein dobara prayas karein.",
+          sender: "bot",
+        });
       }
+    });
+
+    socket.on("disconnect", () => {
+      console.log("🙏 Yajmaan disconnected:", socket.id);
     });
   });
 };
 
+// =============================================
+
+// ✅ PEHLE Pandit register karo (JWT middleware se pehle)
+setupAIPandit(io);
+
+// BAAD MEIN Chat Socket (JWT middleware yahan lagta hai)
+initChatSocket(io);
+
+// Middlewares
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use("/api/uploads", express.static(path.join(__dirname, "uploads")));
+
+app.get("/", (req, res) => {
+  res.send("Server running ✅");
+});
+
 app.post('/api/name/pdf-report', async (req, res) => {
-  const pdf      = await generatePDF(req.body);
+  const pdf = await generatePDF(req.body);
   const safeName = (req.body.name || 'Report').replace(/\s+/g, '_');
   res.set({
-    'Content-Type':        'application/pdf',
+    'Content-Type': 'application/pdf',
     'Content-Disposition': `attachment; filename="${safeName}_Numerology_Report.pdf"`,
-    'Content-Length':      pdf.length,
+    'Content-Length': pdf.length,
   });
   res.send(pdf);
 });
 
 app.use('/api/kundli', kundliRouter);
 app.use('/api/name', nameCorrectionRouter);
-
-// get mandir
 app.use("/api/mandir", mandirRouter);
-
-// 3. Routes
 app.use("/api/user", authRouter);
 app.use("/api/puja", servicesRouter);
 app.use("/api/partner", partnerRouter);
-
-// admin routes
 app.use("/api/admin", adminRouter);
-
-// customer care routes
 app.use("/api/customerCare", customerCare);
-
-// chat routes
 app.use("/api/chat", chatRouter);
-
-// contribution
 app.use("/api/contributions", contribution);
 
-// 4. DATABASE CONNECTION + SERVER START
 const startServer = async () => {
   try {
     await pool.query("SELECT 1");
     console.log("✅ Database connected successfully");
 
-    // app.listen ki jagah server.listen — Socket.io ke liye zaroori hai
     server.listen(PORT, () => {
       console.log(`🚀 Server running on port ${PORT}`);
       console.log(`💬  Chat Socket ready on port ${PORT}`);

@@ -26,7 +26,6 @@ const HomePujaPaymentDetails = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const location = useLocation();
-  // console.log("props::", useLocation().state);
 
   const [puja, setPuja] = useState(null);
   const [loading, setLoading] = useState(true);

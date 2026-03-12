@@ -196,7 +196,6 @@ const PartnerDashboard = () => {
       console.error("Fetch Error:", e);
     }
   };
-  // console.log("my puja", pujas);
   const handleMarkAsComplete = async (id) => {
     if (!window.confirm("Is this puja completed?")) return;
 
