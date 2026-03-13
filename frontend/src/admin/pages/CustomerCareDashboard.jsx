@@ -264,153 +264,164 @@ const ChatSupportPanel = ({ token }) => {
     </div>
   );
 
+  const inputRef = useRef(null);
+
   /* ── Chat Window panel ── */
-  const ChatWindow = () => (
-    <div className={`
+  const ChatWindow = () => {
+
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, [inputText]);
+
+    return (
+      <div className={`
       flex flex-col flex-1 min-w-0
       bg-gradient-to-br from-[#0d1829] to-[#080f1c]
       border border-white/5 rounded-2xl overflow-hidden
       md:h-[calc(100vh-10rem)]
       ${mobileView === "list" ? "hidden md:flex" : "flex"}
     `}>
-      {activeSession ? (
-        <>
-          {/* Chat Header */}
-          <div className="px-4 md:px-6 py-4 border-b border-white/[0.04] flex items-center justify-between bg-[#05080f]/40 flex-shrink-0 gap-2">
-            <div className="flex items-center gap-2 md:gap-3 min-w-0">
-              {/* Back button — mobile only */}
-              <button onClick={() => setMobileView("list")}
-                className="md:hidden p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex-shrink-0">
-                <ChevronRight size={14} className="rotate-180" />
-              </button>
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-blue-500/20 flex items-center justify-center font-bold text-blue-300 text-[15px] flex-shrink-0">
-                {activeSession.userName.charAt(0).toUpperCase()}
-              </div>
-              <div className="min-w-0">
-                <p className="text-sm font-bold text-slate-200 truncate">{activeSession.userName}</p>
-                <p className="text-[10px] text-slate-500 truncate">{activeSession.userEmail || activeSession.sessionId}</p>
-              </div>
-              <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ml-1 ${statusBadge[activeSession.status] || ""}`}>
-                <span className={`w-1.5 h-1.5 rounded-full ${statusDot[activeSession.status]}`} />
-                {activeSession.status === "active" ? "Live" : activeSession.status === "waiting" ? "Waiting" : "Band"}
-              </span>
-            </div>
-
-            <div className="flex gap-2 flex-shrink-0">
-              {activeSession.status === "waiting" && (
-                <button onClick={() => acceptSession(activeSession.sessionId)}
-                  className="flex items-center gap-1 md:gap-1.5 px-3 py-2 rounded-xl text-[11px] md:text-[12px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">
-                  <CheckCircle size={12} /> Accept
+        {activeSession ? (
+          <>
+            {/* Chat Header */}
+            <div className="px-4 md:px-6 py-4 border-b border-white/[0.04] flex items-center justify-between bg-[#05080f]/40 flex-shrink-0 gap-2">
+              <div className="flex items-center gap-2 md:gap-3 min-w-0">
+                <button onClick={() => setMobileView("list")}
+                  className="md:hidden p-1.5 rounded-lg bg-blue-500/10 border border-blue-500/20 text-blue-400 flex-shrink-0">
+                  <ChevronRight size={14} className="rotate-180" />
                 </button>
-              )}
-              {activeSession.status === "active" && (
-                <button onClick={closeSession}
-                  className="flex items-center gap-1 md:gap-1.5 px-3 py-2 rounded-xl text-[11px] md:text-[12px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition">
-                  <XCircle size={12} /> Band
-                </button>
-              )}
-            </div>
-          </div>
 
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-3 bg-[#060d1a]/30">
-            {activeMessages.length === 0 && (
-              <div className="flex flex-col items-center justify-center flex-1 text-slate-600 gap-3 mt-16">
-                <MessageSquare size={36} className="opacity-30" />
-                <span className="text-xs">Koi message nahi abhi</span>
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500/30 to-indigo-500/30 border border-blue-500/20 flex items-center justify-center font-bold text-blue-300 text-[15px] flex-shrink-0">
+                  {activeSession.userName.charAt(0).toUpperCase()}
+                </div>
+
+                <div className="min-w-0">
+                  <p className="text-sm font-bold text-slate-200 truncate">{activeSession.userName}</p>
+                  <p className="text-[10px] text-slate-500 truncate">{activeSession.userEmail || activeSession.sessionId}</p>
+                </div>
+
+                <span className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ml-1 ${statusBadge[activeSession.status] || ""}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${statusDot[activeSession.status]}`} />
+                  {activeSession.status === "active" ? "Live" : activeSession.status === "waiting" ? "Waiting" : "Band"}
+                </span>
+              </div>
+
+              <div className="flex gap-2 flex-shrink-0">
                 {activeSession.status === "waiting" && (
-                  <span className="text-[11px] text-amber-400/70 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg text-center">
-                    Accept karo chat shuru karne ke liye
-                  </span>
+                  <button onClick={() => acceptSession(activeSession.sessionId)}
+                    className="flex items-center gap-1 md:gap-1.5 px-3 py-2 rounded-xl text-[11px] md:text-[12px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20 transition">
+                    <CheckCircle size={12} /> Accept
+                  </button>
+                )}
+
+                {activeSession.status === "active" && (
+                  <button onClick={closeSession}
+                    className="flex items-center gap-1 md:gap-1.5 px-3 py-2 rounded-xl text-[11px] md:text-[12px] font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20 hover:bg-rose-500/20 transition">
+                    <XCircle size={12} /> End
+                  </button>
                 )}
               </div>
-            )}
-
-            {activeMessages.map((msg) =>
-              msg.type === "system" ? (
-                <div key={msg.id} className="text-center text-[11px] text-blue-400/70 bg-blue-500/[0.06] border border-blue-500/15 px-4 py-1.5 rounded-full mx-auto">
-                  {msg.text}
-                </div>
-              ) : (
-                <div key={msg.id} className={`flex items-end gap-2 md:gap-2.5 ${msg.senderType === "agent" ? "flex-row-reverse" : "flex-row"}`}>
-                  <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0
-                    ${msg.senderType === "agent" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-300"}`}>
-                    {msg.senderType === "agent" ? <Headphones size={13} /> : msg.senderName.charAt(0).toUpperCase()}
-                  </div>
-                  <div className={`max-w-[75%] md:max-w-[65%] flex flex-col ${msg.senderType === "agent" ? "items-end" : "items-start"}`}>
-                    <div className={`px-3 md:px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed break-words
-                      ${msg.senderType === "agent"
-                        ? "bg-gradient-to-br from-blue-600/80 to-indigo-600/80 text-white rounded-br-sm border border-blue-500/30"
-                        : "bg-[#0d1829] border border-white/[0.06] text-slate-200 rounded-bl-sm"}`}>
-                      {msg.text}
-                    </div>
-                    <span className="text-[10px] text-slate-600 mt-1 px-1">
-                      {new Date(msg.timestamp).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })}
-                    </span>
-                  </div>
-                </div>
-              )
-            )}
-
-            {userTyping && (
-              <div className="flex items-center gap-2">
-                <div className="flex gap-1 bg-[#0d1829] border border-white/[0.06] px-3 py-2 rounded-xl">
-                  {[0, 1, 2].map((i) => (
-                    <span key={i} className="w-1.5 h-1.5 bg-slate-500 rounded-full inline-block"
-                      style={{ animation: `ccBounce 1.2s ${i * 0.15}s ease-in-out infinite` }} />
-                  ))}
-                </div>
-                <span className="text-[11px] text-slate-500 italic">{activeSession.userName} likh raha hai...</span>
-              </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          {/* Input */}
-          <div className="px-4 md:px-6 py-3 md:py-4 border-t border-white/[0.04] flex gap-2 md:gap-3 bg-[#05080f]/60 flex-shrink-0">
-            <input
-              value={inputText}
-              onChange={handleTyping}
-              onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } }}
-              disabled={activeSession?.status !== "active"}
-              placeholder={
-                activeSession?.status === "active" ? "Reply likhein..." :
-                  activeSession?.status === "waiting" ? "Pehle accept karein..." : "Chat band ho gayi"
-              }
-              className="flex-1 bg-[#0a1220] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500/30 disabled:opacity-40 transition"
-            />
-            <button onClick={sendMessage}
-              disabled={activeSession?.status !== "active" || !inputText.trim()}
-              className="flex items-center gap-1.5 px-4 md:px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-500/30 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_4px_15px_rgba(59,130,246,0.2)]">
-              <Send size={14} />
-              <span className="hidden sm:inline">Bhejo</span>
-            </button>
-          </div>
-        </>
-      ) : (
-        /* No session selected */
-        <div className="flex-1 flex flex-col items-center justify-center text-slate-600 gap-4 p-6">
-          {/* Back button — mobile */}
-          <button onClick={() => setMobileView("list")} className="md:hidden self-start flex items-center gap-1.5 text-xs text-blue-400 mb-2">
-            <ChevronRight size={14} className="rotate-180" /> Wapas
-          </button>
-          <div className="w-16 h-16 rounded-2xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-            <Headphones size={28} className="text-blue-400/50" />
-          </div>
-          <div className="text-center">
-            <p className="text-slate-400 font-semibold text-sm">Chat Support Panel</p>
-            <p className="text-xs mt-1">Left side se koi session select karein</p>
-          </div>
-          {waitingCount > 0 && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-400 text-xs font-semibold">
-              <Clock size={13} />
-              {waitingCount} user{waitingCount > 1 ? "s" : ""} intezaar mein hain!
             </div>
-          )}
-        </div>
-      )}
-    </div>
-  );
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 flex flex-col gap-3 bg-[#060d1a]/30">
+
+              {activeMessages.length === 0 && (
+                <div className="flex flex-col items-center justify-center flex-1 text-slate-600 gap-3 mt-16">
+                  <MessageSquare size={36} className="opacity-30" />
+                  <span className="text-xs">No message yet.</span>
+
+                  {activeSession.status === "waiting" && (
+                    <span className="text-[11px] text-amber-400/70 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-lg text-center">
+                      Accept to start the chat.
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {activeMessages.map((msg) =>
+                msg.type === "system" ? (
+                  <div key={msg.id} className="text-center text-[11px] text-blue-400/70 bg-blue-500/[0.06] border border-blue-500/15 px-4 py-1.5 rounded-full mx-auto">
+                    {msg.text}
+                  </div>
+                ) : (
+                  <div key={msg.id} className={`flex items-end gap-2 md:gap-2.5 ${msg.senderType === "agent" ? "flex-row-reverse" : "flex-row"}`}>
+                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center font-bold text-[11px] flex-shrink-0
+                    ${msg.senderType === "agent" ? "bg-blue-500/20 border border-blue-500/30 text-blue-300" : "bg-indigo-500/20 border border-indigo-500/30 text-indigo-300"}`}>
+
+                      {msg.senderType === "agent"
+                        ? <Headphones size={13} />
+                        : msg.senderName.charAt(0).toUpperCase()}
+                    </div>
+
+                    <div className={`max-w-[75%] md:max-w-[65%] flex flex-col ${msg.senderType === "agent" ? "items-end" : "items-start"}`}>
+
+                      <div className={`px-3 md:px-4 py-2.5 rounded-2xl text-[13px] leading-relaxed break-words
+                      ${msg.senderType === "agent"
+                          ? "bg-gradient-to-br from-blue-600/80 to-indigo-600/80 text-white rounded-br-sm border border-blue-500/30"
+                          : "bg-[#0d1829] border border-white/[0.06] text-slate-200 rounded-bl-sm"}`}>
+
+                        {msg.text}
+                      </div>
+
+                      <span className="text-[10px] text-slate-600 mt-1 px-1">
+                        {new Date(msg.timestamp).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit"
+                        })}
+                      </span>
+
+                    </div>
+                  </div>
+                )
+              )}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input */}
+            <div className="px-4 md:px-6 py-3 md:py-4 border-t border-white/[0.04] flex gap-2 md:gap-3 bg-[#05080f]/60 flex-shrink-0">
+
+              <input
+                ref={inputRef}
+                value={inputText}
+                onChange={handleTyping}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    sendMessage();
+                  }
+                }}
+                disabled={activeSession?.status !== "active"}
+                placeholder={
+                  activeSession?.status === "active"
+                    ? "Reply likhein..."
+                    : activeSession?.status === "waiting"
+                      ? "Pehle accept karein..."
+                      : "Chat band ho gayi"
+                }
+                className="flex-1 bg-[#0a1220] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500/30 disabled:opacity-40 transition"
+              />
+
+              <button
+                onClick={sendMessage}
+                disabled={activeSession?.status !== "active" || !inputText.trim()}
+                className="flex items-center gap-1.5 px-4 md:px-5 py-2.5 rounded-xl text-[13px] font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 text-white border border-blue-500/30 hover:from-blue-500 hover:to-indigo-500 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-[0_4px_15px_rgba(59,130,246,0.2)]"
+              >
+                <Send size={14} />
+                <span className="hidden sm:inline">Bhejo</span>
+              </button>
+
+            </div>
+          </>
+        ) : null}
+      </div>
+    );
+  };
 
   return (
     <div className="relative">

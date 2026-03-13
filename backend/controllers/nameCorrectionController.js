@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════
-// NAME CORRECTION — Backend Route (with Groq AI)
+// NAME CORRECTION — Backend Route (Gemini Primary + Groq Backup)
 // File: routes/nameCorrection.js
 //
 // Mount in server.js:
@@ -11,9 +11,11 @@
 
 import express from 'express';
 import Groq from 'groq-sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = express.Router();
 const groq   = new Groq({ apiKey: process.env.GROQ_API_KEY });
+const genAI  = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 // ── Chaldean Map ──────────────────────────────────────────────
 const CHALDEAN = {
@@ -160,19 +162,15 @@ function mathSuggestions(name, birthNum, lifePathNum) {
 
   const variations = new Set();
 
-  // 1. Trailing vowel — e.g. Rahul → Rahula, Rahuli
   ['A','I','E'].forEach(v => variations.add(firstName + v + suffix));
 
-  // 2. Double last consonant — e.g. Amit → Amitt
   const last = firstName[firstName.length-1];
   if (!vowels.has(last)) variations.add(firstName + last + suffix);
 
-  // 3. H insertion/removal — e.g. Ankit → Ankith, Ankith → Ankit
   firstName.endsWith('H')
     ? variations.add(firstName.slice(0,-1) + suffix)
     : variations.add(firstName + 'H' + suffix);
 
-  // 4. Swap A↔AA, I↔EE, U↔OO (elongation) — e.g. Rahul → Raahul
   const elongMap = { A:'AA', E:'EE', I:'II', O:'OO', U:'UU' };
   for (let i=0; i<firstName.length; i++) {
     if (elongMap[firstName[i]]) {
@@ -181,7 +179,6 @@ function mathSuggestions(name, birthNum, lifePathNum) {
     }
   }
 
-  // 5. Vowel swap within word — e.g. Rohit → Rahit, Rahul → Rohul
   const altVowel = { A:'E', E:'A', I:'Y', Y:'I', O:'U', U:'O' };
   for (let i=0; i<firstName.length; i++) {
     if (altVowel[firstName[i]]) {
@@ -190,7 +187,6 @@ function mathSuggestions(name, birthNum, lifePathNum) {
     }
   }
 
-  // 6. Insert vowel before last consonant — e.g. Amit → Amiat, Deepak → Deepak → Deepaak
   for (let i=firstName.length-2; i>=1; i--) {
     if (!vowels.has(firstName[i]) && vowels.has(firstName[i-1])) {
       ['A','I'].forEach(v => {
@@ -201,12 +197,10 @@ function mathSuggestions(name, birthNum, lifePathNum) {
     }
   }
 
-  // 7. C↔K, S↔Z, V↔W phonetic swaps — e.g. Vikas → Vikaas, Kavya → Kaviya
   const phoneticMap = { C:'K', K:'C', S:'SH', V:'W', W:'V', SH:'S' };
   let phonetic = firstName;
   let changed  = false;
   for (let i=0; i<firstName.length; i++) {
-    // check 2-char combo first
     const two = firstName.slice(i,i+2);
     if (phoneticMap[two]) {
       phonetic = firstName.slice(0,i) + phoneticMap[two] + firstName.slice(i+2);
@@ -219,17 +213,10 @@ function mathSuggestions(name, birthNum, lifePathNum) {
   }
   if (changed && phonetic !== firstName) variations.add(phonetic + suffix);
 
-  // 8. Drop silent/extra letter — e.g. Pooja → Puja, Deepak → Depak
   for (let i=1; i<firstName.length-1; i++) {
     if (firstName[i] === firstName[i-1]) {
-      // double letter → single
       variations.add(firstName.slice(0,i) + firstName.slice(i+1) + suffix);
     }
-  }
-
-  // 9. Add prefix variation — e.g. Raj → Rajj, just double first consonant cluster
-  if (!vowels.has(firstName[0]) && !vowels.has(firstName[1])) {
-    variations.add(firstName[0] + firstName + suffix); // extra first consonant — skip, too weird
   }
 
   const results = [];
@@ -254,12 +241,12 @@ function mathSuggestions(name, birthNum, lifePathNum) {
 
   return results
     .sort((a,b) => (b.isPowerful?1:0)-(a.isPowerful?1:0) || b.avgCompat-a.avgCompat)
-    .slice(0, 12); // send top 12 to AI for ranking
+    .slice(0, 12);
 }
 
-// ── Groq AI Analysis ──────────────────────────────────────────
-async function getGroqAnalysis({ name, dob, chaldean, pythagorean, birthNum, lifePathNum, mathSugs }) {
-  const prompt = `You are an expert Vedic numerologist specializing in name correction using both Chaldean and Pythagorean systems.
+// ── Shared prompt builder ─────────────────────────────────────
+function buildAnalysisPrompt({ name, dob, chaldean, pythagorean, birthNum, lifePathNum, mathSugs }) {
+  return `You are an expert Vedic numerologist specializing in name correction using both Chaldean and Pythagorean systems.
 
 Analyze this person's name numerology and provide detailed insights:
 
@@ -312,47 +299,84 @@ STRICT RULES for topSuggestions:
 4. Must sound natural when spoken — if weird or unpronounceable, skip it
 5. Pick 3-5 best only. Prefer powerful compound numbers (19,23,27,32,41,46,50) and high DOB compat
 6. whyGood and expectedBenefits: specific and meaningful, 1-2 sentences each`;
+}
 
-  const response = await groq.chat.completions.create({
-    model      : 'llama-3.3-70b-versatile',
-    max_tokens : 1500,
-    temperature: 0.4,
-    messages   : [
-      {
-        role   : 'system',
-        content: 'You are an expert numerologist. Always respond with valid JSON only. No markdown code blocks. No extra text before or after JSON.',
-      },
-      { role:'user', content:prompt },
-    ],
-  });
+// ── JSON cleaner (same for both AI responses) ─────────────────
+function parseAIJson(raw) {
+  const clean = raw
+    .replace(/^```json\s*/i, '')
+    .replace(/^```\s*/,      '')
+    .replace(/\s*```$/,      '')
+    .trim();
+  return JSON.parse(clean);
+}
 
-  const raw  = response.choices[0]?.message?.content?.trim() || '{}';
-  const clean = raw.replace(/^```json\s*/,'').replace(/^```\s*/,'').replace(/\s*```$/,'').trim();
+// ── Default fallback (jab dono AI fail ho jayein) ─────────────
+const AI_FALLBACK = {
+  personalityInsight  : 'Analysis temporarily unavailable.',
+  currentNameAnalysis : 'Please try again.',
+  careerAreas         : ['Business','Leadership'],
+  luckyNumbers        : [1,5,9],
+  luckyColors         : ['Gold','Orange'],
+  luckyDays           : ['Sunday','Tuesday'],
+  challenges          : 'Unavailable',
+  correctionNeeded    : false,
+  correctionReason    : '',
+  topSuggestions      : [],
+  generalAdvice       : '',
+};
 
+// ── AI Analysis: Gemini first, Groq backup ────────────────────
+async function getAIAnalysis(params) {
+  const prompt = buildAnalysisPrompt(params);
+
+  // ── 1. Gemini Primary ──────────────────────────────────────
   try {
-    return JSON.parse(clean);
-  } catch {
-    // Fallback if JSON parse fails
-    return {
-      personalityInsight  : 'Strong personality with natural leadership traits.',
-      currentNameAnalysis : 'Your current name carries moderate vibration. A correction can enhance results.',
-      careerAreas         : ['Business','Finance','Leadership','Technology'],
-      luckyNumbers        : [1, 5, 9],
-      luckyColors         : ['Gold','Orange','Red'],
-      luckyDays           : ['Sunday','Tuesday'],
-      challenges          : 'Patience and consistency are your main areas to work on.',
-      correctionNeeded    : true,
-      correctionReason    : 'A spelling adjustment can better align your name with your birth vibration.',
-      topSuggestions      : [],
-      generalAdvice       : 'Focus on your strengths and use numerology as a guiding tool.',
-    };
+    console.log('🔱 Name Correction: Trying Gemini...');
+    const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const result = await model.generateContent(
+      `You are an expert numerologist. Always respond with valid JSON only. No markdown code blocks. No extra text before or after JSON.\n\n${prompt}`
+    );
+    const raw = result.response.text();
+    if (!raw) throw new Error('Gemini returned empty response');
+    const parsed = parseAIJson(raw);
+    console.log('✅ Name Correction: Gemini response received');
+    return parsed;
+
+  } catch (geminiErr) {
+    console.error('⚠️ Name Correction: Gemini failed —', geminiErr.message);
+
+    // ── 2. Groq Backup ─────────────────────────────────────
+    try {
+      console.log('🔄 Name Correction: Switching to Groq backup...');
+      const response = await groq.chat.completions.create({
+        model      : 'llama-3.3-70b-versatile',
+        max_tokens : 1500,
+        temperature: 0.4,
+        messages   : [
+          {
+            role   : 'system',
+            content: 'You are an expert numerologist. Always respond with valid JSON only. No markdown code blocks. No extra text before or after JSON.',
+          },
+          { role: 'user', content: prompt },
+        ],
+      });
+      const raw    = response.choices[0]?.message?.content?.trim() || '{}';
+      const parsed = parseAIJson(raw);
+      console.log('✅ Name Correction: Groq backup response received');
+      return parsed;
+
+    } catch (groqErr) {
+      console.error('❌ Name Correction: Groq also failed —', groqErr.message);
+      // Dono fail — static fallback
+      return AI_FALLBACK;
+    }
   }
 }
 
 // ── Build final suggestions (AI picks + math data) ───────────
 function buildFinalSuggestions(aiTopSugs, mathSugsMap) {
   return aiTopSugs.map(aiSug => {
-    // Find matching math data
     const mathData = mathSugsMap.get(aiSug.name.toUpperCase().trim()) ||
                      [...mathSugsMap.values()].find(m =>
                        m.name.toUpperCase().trim() === aiSug.name.toUpperCase().trim()
@@ -418,34 +442,16 @@ router.post('/analyze', async (req, res) => {
     const mathSugs    = mathSuggestions(cleanName, bn, lp.root);
     const mathSugsMap = new Map(mathSugs.map(s => [s.name.toUpperCase().trim(), s]));
 
-    // ── Step 3: Groq AI analysis ──
-    let aiResult;
-    try {
-      aiResult = await getGroqAnalysis({
-        name       : cleanName,
-        dob,
-        chaldean,
-        pythagorean,
-        birthNum   : bn,
-        lifePathNum: lp.root,
-        mathSugs,
-      });
-    } catch (aiErr) {
-      console.error('Groq AI error:', aiErr.message);
-      aiResult = {
-        personalityInsight  : 'Analysis temporarily unavailable.',
-        currentNameAnalysis : 'Please try again.',
-        careerAreas         : ['Business','Leadership'],
-        luckyNumbers        : [1,5,9],
-        luckyColors         : ['Gold','Orange'],
-        luckyDays           : ['Sunday','Tuesday'],
-        challenges          : 'Unavailable',
-        correctionNeeded    : false,
-        correctionReason    : '',
-        topSuggestions      : [],
-        generalAdvice       : '',
-      };
-    }
+    // ── Step 3: AI analysis (Gemini → Groq fallback) ──
+    const aiResult = await getAIAnalysis({
+      name       : cleanName,
+      dob,
+      chaldean,
+      pythagorean,
+      birthNum   : bn,
+      lifePathNum: lp.root,
+      mathSugs,
+    });
 
     // ── Step 4: Compatibility ──
     const compat = {
@@ -488,7 +494,6 @@ router.post('/analyze', async (req, res) => {
       pythagorean,
       compat,
       assessment,
-      // AI-powered fields
       ai: {
         personalityInsight : aiResult.personalityInsight,
         currentNameAnalysis: aiResult.currentNameAnalysis,

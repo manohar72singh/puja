@@ -70,10 +70,10 @@ function KundliChart({ planets, lagnaRashi }) {
       7:  { rx: M,       ry: M + 50,  px: M,                py: M + 100      },
       10: { rx: M + 50,  ry: M + 5,   px: (3 * M) / 2 + 15, py: M + 10      },
       2:  { rx: M - 120, ry: 100,      px: M / 2,            py: 60          },
-      3:  { rx: 80,      ry: M - 120, px: 80,               py: M / 2 - 5   },
+      3:  { rx: 80,      ry: M - 120, px: 30,               py: M / 2 - 5   },
       5:  { rx: 100,      ry: M + 130, px: 30,               py: (3*S)/4 + 5 },
       6:  { rx: M - 125, ry: S - 90,  px: M / 2 + 10,       py: S - 50      },
-      8:  { rx: M + 125, ry: S - 90,  px: (3*S)/4 - 10,     py: S - 80      },
+      8:  { rx: M + 125, ry: S - 90,  px: (3*S)/4,     py: S - 60      },
       9:  { rx: S - 90,  ry: M + 130, px: S - 40,           py: (3*S)/4 + 5 },
       11: { rx: S - 80,  ry: M - 120, px: S - 35,           py: M / 2 - 5   },
       12: { rx: M + 120, ry: 100,      px: (3*S)/4 - 10,     py: 30          },
@@ -145,7 +145,7 @@ function KundliChart({ planets, lagnaRashi }) {
               <g key={h}>
                 <text x={rx} y={ry} textAnchor="middle"
                   fill="#8B2020" fontSize="18" fontWeight="bold" fontFamily="serif">
-                  {rashiNum}
+                  {h === 1 ? "1 ASC" : rashiNum}
                 </text>
                 {plist.map((p, i) => (
                   <text key={i} x={px} y={py + i * 20} textAnchor="middle"
