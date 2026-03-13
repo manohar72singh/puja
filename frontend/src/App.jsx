@@ -75,6 +75,8 @@ function App() {
     "/admin/dashboard",
   ].includes(location.pathname);
 
+  const isHomePage = location.pathname === "/";
+
   return (
     <>
       <ScrollToTop />
@@ -180,6 +182,7 @@ function App() {
 
       {!hideFloatingMenu && <RightFloatingMenu />}
       {/* {!hideFloatingMenu && <Chatwidget />} */}
+      {isHomePage && <AIPanditBot />}
     </>
   );
 }

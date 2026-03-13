@@ -1,39 +1,62 @@
 import { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 
-const socket = io(`${import.meta.env.VITE_SOCKET_URL}/pandit`, {
-  transports: ["polling", "websocket"],
-});
-
 export default function AIPanditBot() {
-  const [messages, setMessages] = useState([
-    {
-      text: "🙏 Om Namah Shivay! Main Sri Vedic Puja Kendra ka Pandit Ji hoon.\n\nApni har samasya — ghar, rishta, naukri, swasthya — sab ka samadhan puja se hoga.\n\nBatayein yajmaan, aaj kya kasht hai?",
-      sender: "bot",
-    },
-  ]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
   const [connected, setConnected] = useState(false);
+
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
+  const socketRef = useRef(null);
 
-  useEffect(() => {
-    socket.on("connect", () => setConnected(true));
-    socket.on("disconnect", () => setConnected(false));
-    socket.on("ai_response", (msg) => {
+  // 🔱 Connection Handle karne ka logic (Sirf jab khule tab)
+  const connectSocket = () => {
+    socketRef.current = io(`${import.meta.env.VITE_SOCKET_URL}/pandit`, {
+      transports: ["websocket", "polling"],
+    });
+
+    socketRef.current.on("connect", () => {
+      setConnected(true);
+      // Nayi Chat ka swagat
+      setMessages([{
+        text: "🙏 Om Namah Shivay! Main Sri Vedic Puja Kendra ka Pandit Ji hoon.\n\nBatayein yajmaan, aaj kya kasht hai?",
+        sender: "bot",
+      }]);
+    });
+
+    socketRef.current.on("ai_response", (msg) => {
       setMessages((prev) => [...prev, msg]);
       setIsTyping(false);
     });
-    return () => {
-      socket.off("connect");
-      socket.off("disconnect");
-      socket.off("ai_response");
-    };
-  }, []);
+
+    socketRef.current.on("disconnect", () => setConnected(false));
+  };
+
+  const disconnectSocket = () => {
+    if (socketRef.current) {
+      socketRef.current.disconnect();
+      setMessages([]); // Purani chat clear
+      setConnected(false);
+    }
+  };
+
+  const toggleChat = () => {
+    if (!isOpen) {
+      setIsOpen(true);
+      connectSocket();
+    } else {
+      setIsOpen(false);
+      disconnectSocket();
+    }
+  };
 
   useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (scrollRef.current) {
+      scrollRef.current.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
   }, [messages, isTyping]);
 
   const handleSend = () => {
@@ -41,9 +64,8 @@ export default function AIPanditBot() {
     const userText = input.trim();
     setInput("");
     setMessages((prev) => [...prev, { text: userText, sender: "user" }]);
-    socket.emit("ai_query", { text: userText });
+    socketRef.current.emit("ai_query", { text: userText });
     setIsTyping(true);
-    inputRef.current?.focus();
   };
 
   const formatText = (text) =>
@@ -52,113 +74,108 @@ export default function AIPanditBot() {
     ));
 
   return (
-    <div style={{ fontFamily: "Georgia, serif" }} className="flex items-center justify-center min-h-screen bg-amber-950 p-4">
+    <div className="fixed bottom-8 right-8 z-[9999] pf">
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+Devanagari:wght@400;600;700&display=swap');
         .pf { font-family: 'Noto Serif Devanagari', Georgia, serif; }
-        .scroll-area::-webkit-scrollbar { width: 4px; }
-        .scroll-area::-webkit-scrollbar-thumb { background: #d97706; border-radius: 2px; }
-        .flame { animation: flicker 1.5s ease-in-out infinite alternate; display: inline-block; }
-        @keyframes flicker { 0% { transform: scale(1) rotate(-2deg); } 100% { transform: scale(1.1) rotate(2deg); } }
-        .td { animation: bounce 1.2s infinite; }
-        .td:nth-child(2) { animation-delay: 0.2s; }
-        .td:nth-child(3) { animation-delay: 0.4s; }
-        @keyframes bounce { 0%,80%,100% { transform:translateY(0);opacity:.4; } 40% { transform:translateY(-6px);opacity:1; } }
-        .msg-enter { animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
-        .send-btn:active { transform: scale(0.93); }
-        input:focus { outline: none; box-shadow: 0 0 0 2px #d97706; }
+        .flame-glow { animation: pulse-glow 2s infinite alternate; }
+        @keyframes pulse-glow { 
+          0% { shadow: 0 0 10px #fbbf24; transform: scale(1); } 
+          100% { shadow: 0 0 25px #f59e0b; transform: scale(1.05); } 
+        }
+        .scroll-area::-webkit-scrollbar { width: 3px; }
+        .scroll-area::-webkit-scrollbar-thumb { background: #78350f; border-radius: 10px; }
       `}</style>
 
-      <div className="w-full max-w-md h-[640px] flex flex-col rounded-3xl overflow-hidden shadow-2xl border-4 border-amber-700"
-        style={{ background: "linear-gradient(180deg,#fffbeb,#fef3c7)" }}>
-
-        {/* Header */}
-        <div style={{ background: "linear-gradient(135deg,#92400e,#b45309,#92400e)" }}
-          className="relative px-5 py-4 text-white flex-shrink-0">
-          <div className="flex items-center gap-3">
-            <div className="w-14 h-14 rounded-full bg-amber-100 flex items-center justify-center text-3xl shadow border-2 border-amber-300 flex-shrink-0">🔱</div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <h2 className="pf font-bold text-xl">AI Pandit Ji</h2>
-                <span className="flame text-lg">🪔</span>
-              </div>
-              <p className="text-amber-200 text-xs">Sri Vedic Puja Kendra</p>
-              <div className="flex items-center gap-1.5 mt-1">
-                <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-400 animate-pulse" : "bg-red-400"}`} />
-                <span className={`text-xs ${connected ? "text-green-300" : "text-red-300"}`}>
-                  {connected ? "Upasthit hain" : "Connect ho rahe hain..."}
-                </span>
-              </div>
-            </div>
-            <div className="text-amber-200 text-xs opacity-70 text-right"><div>ॐ</div><div>नमः</div><div>शिवाय</div></div>
+      {/* 🔱 Premium Floating Button (Diya Look) */}
+      {!isOpen && (
+        <button 
+          onClick={toggleChat}
+          className="group relative flex items-center justify-center"
+        >
+          {/* Outer Ring */}
+          <div className="absolute inset-0 bg-amber-500/20 rounded-full animate-ping group-hover:bg-amber-500/30"></div>
+          
+          {/* Main Button */}
+          <div className="relative w-20 h-20 bg-gradient-to-t from-[#78350f] via-[#92400e] to-[#b45309] rounded-full shadow-[0_10px_40px_rgba(120,53,15,0.5)] border-4 border-amber-200 flex flex-col items-center justify-center transition-all group-hover:rotate-12 group-hover:scale-110">
+            <span className="text-3xl filter drop-shadow-md">🔱</span>
+            <span className="text-[10px] font-bold text-amber-100 mt-1 uppercase tracking-tighter">AI Pandit</span>
           </div>
-          <div className="absolute bottom-0 left-0 right-0 h-1"
-            style={{ background: "repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,#92400e 10px,#92400e 20px)" }} />
-        </div>
 
-        {/* Messages */}
-        <div className="scroll-area flex-1 overflow-y-auto px-4 py-4 space-y-4">
-          {messages.map((m, i) => (
-            <div key={i} className={`msg-enter flex ${m.sender === "user" ? "justify-end" : "justify-start"} gap-2`}>
-              {m.sender === "bot" && (
-                <div className="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center text-sm flex-shrink-0 mt-1 shadow">🔱</div>
-              )}
-              <div className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed shadow-md pf ${
-                m.sender === "user" ? "text-white rounded-br-none" : "text-gray-800 rounded-tl-none border border-amber-200"
-              }`} style={m.sender === "user"
-                ? { background: "linear-gradient(135deg,#b45309,#92400e)" }
-                : { background: "linear-gradient(135deg,#fffbeb,#fef9ee)", borderLeft: "3px solid #d97706" }}>
-                {formatText(m.text)}
-              </div>
-              {m.sender === "user" && (
-                <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm flex-shrink-0 mt-1 shadow border border-amber-300">🙏</div>
-              )}
-            </div>
-          ))}
+          {/* Tooltip Label */}
+          <div className="absolute right-24 bg-white/90 backdrop-blur-sm border-l-4 border-amber-600 px-4 py-2 rounded-lg shadow-xl opacity-0 group-hover:opacity-100 transition-all pointer-events-none transform translate-x-4 group-hover:translate-x-0">
+            <p className="text-amber-900 font-bold text-sm whitespace-nowrap">🙏 Kasht batayein yajmaan!</p>
+          </div>
+        </button>
+      )}
 
-          {isTyping && (
-            <div className="flex gap-2 items-start">
-              <div className="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center text-sm flex-shrink-0 shadow">🔱</div>
-              <div className="px-4 py-3 rounded-2xl rounded-tl-none shadow border border-amber-200"
-                style={{ background: "linear-gradient(135deg,#fffbeb,#fef9ee)", borderLeft: "3px solid #d97706" }}>
-                <p className="pf text-amber-700 text-xs italic mb-1">Pandit Ji dhyan laga rahe hain...</p>
-                <div className="flex gap-1.5">{[0,1,2].map(i => <div key={i} className="td w-2 h-2 rounded-full bg-amber-600" />)}</div>
+      {/* 🔱 Main Chat Window */}
+      {isOpen && (
+        <div className="w-[360px] md:w-[420px] h-[600px] flex flex-col rounded-[2.5rem] overflow-hidden shadow-[0_30px_100px_rgba(0,0,0,0.5)] border-[5px] border-amber-900/30 bg-[#fffdf7] animate-in zoom-in-95 duration-300 origin-bottom-right">
+          
+          {/* Header */}
+          <div className="bg-gradient-to-r from-[#78350f] to-[#b45309] px-6 py-5 text-white flex justify-between items-center shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-amber-50 flex items-center justify-center text-2xl shadow-inner shadow-black/20 text-amber-800">🪔</div>
+              <div>
+                <h2 className="font-bold text-xl leading-none">Smart Pandit Ji</h2>
+                <div className="flex items-center gap-1 mt-1">
+                  <div className={`w-2 h-2 rounded-full ${connected ? "bg-green-400" : "bg-red-400"}`}></div>
+                  <span className="text-[10px] uppercase font-bold text-amber-100">Pratyaksh (Live)</span>
+                </div>
               </div>
             </div>
-          )}
-          <div ref={scrollRef} />
-        </div>
-
-        {/* Quick buttons */}
-        <div className="px-4 py-2 flex gap-2 overflow-x-auto flex-shrink-0 border-t border-amber-100" style={{ background: "#fffbeb" }}>
-          {["💼 Naukri", "❤️ Vivah", "🏠 Ghar", "💰 Dhan", "😷 Swasthya"].map((q) => (
-            <button key={q}
-              onClick={() => { setInput(q.split(" ").slice(1).join(" ") + " ki samasya hai"); inputRef.current?.focus(); }}
-              className="flex-shrink-0 px-3 py-1 rounded-full text-xs border border-amber-300 text-amber-800 hover:bg-amber-100 transition-colors pf">
-              {q}
+            <button 
+              onClick={toggleChat}
+              className="w-10 h-10 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
-          ))}
-        </div>
+          </div>
 
-        {/* Input */}
-        <div className="px-4 py-3 flex gap-2 items-center flex-shrink-0 border-t-2 border-amber-200"
-          style={{ background: "linear-gradient(180deg,#fef3c7,#fffbeb)" }}>
-          <input ref={inputRef} type="text" value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="Apni samasya likhein, yajmaan..."
-            className="flex-1 bg-white border-2 border-amber-300 rounded-2xl px-4 py-2.5 text-sm text-gray-700 pf" />
-          <button onClick={handleSend}
-            disabled={isTyping || !input.trim() || !connected}
-            className="send-btn w-11 h-11 rounded-full text-white flex items-center justify-center shadow-lg transition-all flex-shrink-0 disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg,#b45309,#92400e)" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
-            </svg>
-          </button>
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto px-5 py-6 space-y-6 scroll-area bg-[url('https://www.transparenttextures.com/patterns/cream-paper.png')]">
+            {messages.map((m, i) => (
+              <div key={i} className={`flex ${m.sender === "user" ? "justify-end" : "justify-start"} items-end`}>
+                <div className={`max-w-[85%] px-5 py-4 rounded-[1.8rem] text-[15px] leading-relaxed shadow-sm pf ${m.sender === "user"
+                    ? "bg-[#78350f] text-amber-50 rounded-br-none"
+                    : "bg-white text-slate-800 rounded-tl-none border-l-[6px] border-amber-600 shadow-amber-900/5"
+                  }`}>
+                  {formatText(m.text)}
+                </div>
+              </div>
+            ))}
+            {isTyping && (
+               <div className="flex gap-1.5 px-4 py-3 rounded-2xl bg-amber-100/50 w-fit">
+                  <div className="w-2 h-2 rounded-full bg-amber-700 animate-bounce"></div>
+                  <div className="w-2 h-2 rounded-full bg-amber-700 animate-bounce [animation-delay:0.2s]"></div>
+                  <div className="w-2 h-2 rounded-full bg-amber-700 animate-bounce [animation-delay:0.4s]"></div>
+               </div>
+            )}
+            <div ref={scrollRef} />
+          </div>
+
+          {/* Input Bar */}
+          <div className="p-5 bg-white border-t border-amber-100 flex gap-3">
+            <input
+              ref={inputRef}
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder="Apna sawaal likhein..."
+              className="flex-1 bg-amber-50/50 border border-amber-100 rounded-2xl px-5 py-4 focus:outline-none focus:ring-2 focus:ring-amber-600/20 pf"
+            />
+            <button
+              onClick={handleSend}
+              disabled={!connected || isTyping || !input.trim()}
+              className="w-14 h-14 rounded-2xl bg-[#78350f] flex items-center justify-center text-white shadow-lg shadow-amber-900/30 hover:brightness-125 transition-all disabled:opacity-30"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" /></svg>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

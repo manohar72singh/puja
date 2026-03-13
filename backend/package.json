@@ -13,6 +13,7 @@
   "license": "ISC",
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.4",
@@ -22,6 +23,7 @@
     "jwt-decode": "^4.0.0",
     "multer": "^2.0.2",
     "mysql2": "^3.16.1",
+    "node-fetch": "^3.3.2",
     "puppeteer": "^24.38.0",
     "socket.io": "^4.8.3",
     "sweph": "^2.10.0-10"
