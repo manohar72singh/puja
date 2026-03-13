@@ -21,6 +21,17 @@
  *       res.status(500).json({ error: 'PDF generation failed' });
  *     }
  *   });
+ *
+ * ── NEW: 5-Year Forecast ─────────────────────────────────────
+ * Agar aapka AI response mein `ai.fiveYearForecast` array hai toh woh use hoga.
+ * Format expected:
+ *   ai.fiveYearForecast = [
+ *     { year: 2025, title: "Year of Foundation", theme: "...", prediction: "...", luckyMonths: ["March","July"], focus: "Career" },
+ *     ...
+ *   ]
+ *
+ * Agar nahi hai toh numerology-based fallback automatically generate hoga
+ * top suggestion ke root number se.
  */
 
 import puppeteer from 'puppeteer';
@@ -64,6 +75,151 @@ const NUMBER_MEANINGS = {
   33:'Master Number 33 — The Master Teacher. A beacon of healing, compassion, and truth.',
 };
 
+// ── 5-Year Forecast Fallback Data ───────────────────────────
+// Agar AI se forecast nahi aata toh yeh use hoga root number ke basis par
+const FORECAST_THEMES = {
+  1: [
+    { title:'Year of New Beginnings',    theme:'Leadership & Identity',    focus:'Career Launch',    energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Partnerships',      theme:'Collaboration & Growth',   focus:'Relationships',    energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Creative Power',    theme:'Expression & Recognition', focus:'Personal Brand',   energy:'⬆️ Peak',    color:'#16a34a' },
+    { title:'Year of Solid Foundation',  theme:'Stability & Hard Work',    focus:'Finance & Assets', energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of Freedom & Change',  theme:'Expansion & Travel',       focus:'New Horizons',     energy:'⚡ Dynamic', color:'#dc2626' },
+  ],
+  2: [
+    { title:'Year of Harmony',           theme:'Balance & Cooperation',    focus:'Relationships',    energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Creative Flow',     theme:'Expression & Joy',         focus:'Personal Growth',  energy:'⬆️ Rising',  color:'#16a34a' },
+    { title:'Year of Structure',         theme:'Discipline & Planning',    focus:'Career & Finance', energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of Transformation',    theme:'Change & Adventure',       focus:'New Directions',   energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Inner Wisdom',      theme:'Spirituality & Clarity',   focus:'Self Discovery',   energy:'⬆️ Peak',    color:'#d97706' },
+  ],
+  3: [
+    { title:'Year of Expression',        theme:'Communication & Creativity', focus:'Creative Projects', energy:'⬆️ Peak',   color:'#16a34a' },
+    { title:'Year of Foundation',        theme:'Stability & Building',     focus:'Finance & Home',   energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of Freedom',           theme:'Adventure & Change',       focus:'New Experiences',  energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Healing',           theme:'Family & Nurturing',       focus:'Relationships',    energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Mastery',           theme:'Spiritual Growth',         focus:'Inner Wisdom',     energy:'⬆️ Rising',  color:'#d97706' },
+  ],
+  4: [
+    { title:'Year of Building',          theme:'Discipline & Hard Work',   focus:'Career & Finance', energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of Adventure',         theme:'Freedom & Change',         focus:'New Opportunities',energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Love',              theme:'Harmony & Relationships',  focus:'Family & Romance', energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Reflection',        theme:'Spirituality & Wisdom',    focus:'Inner Growth',     energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Achievement',       theme:'Power & Recognition',      focus:'Material Success', energy:'⬆️ Peak',    color:'#16a34a' },
+  ],
+  5: [
+    { title:'Year of Change',            theme:'Freedom & Adventure',      focus:'New Directions',   energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Nurturing',         theme:'Love & Family',            focus:'Relationships',    energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Wisdom',            theme:'Spirituality & Study',     focus:'Inner Journey',    energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Power',             theme:'Ambition & Achievement',   focus:'Career & Wealth',  energy:'⬆️ Peak',    color:'#16a34a' },
+    { title:'Year of Completion',        theme:'Humanitarianism & Service',focus:'Legacy Building',  energy:'🔄 Steady',  color:'#1d4ed8' },
+  ],
+  6: [
+    { title:'Year of Love & Harmony',    theme:'Family & Relationships',   focus:'Home & Romance',   energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Discovery',         theme:'Spirituality & Mystery',   focus:'Inner Exploration',energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Power',             theme:'Achievement & Wealth',     focus:'Career Milestone', energy:'⬆️ Peak',    color:'#16a34a' },
+    { title:'Year of Transformation',    theme:'Completion & Release',     focus:'Letting Go',       energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of New Beginnings',    theme:'Leadership & Fresh Start', focus:'New Identity',     energy:'⚡ Dynamic', color:'#dc2626' },
+  ],
+  7: [
+    { title:'Year of Spiritual Awakening',theme:'Intuition & Wisdom',     focus:'Inner Growth',     energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Material Power',    theme:'Achievement & Wealth',     focus:'Financial Goals',  energy:'⬆️ Peak',    color:'#16a34a' },
+    { title:'Year of Completion',        theme:'Service & Compassion',     focus:'Relationships',    energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of New Cycle',         theme:'Leadership & Independence',focus:'Fresh Beginnings', energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Partnership',       theme:'Collaboration & Balance',  focus:'Love & Business',  energy:'🔄 Balanced', color:'#7c3aed' },
+  ],
+  8: [
+    { title:'Year of Abundance',         theme:'Power & Achievement',      focus:'Career & Wealth',  energy:'⬆️ Peak',    color:'#16a34a' },
+    { title:'Year of Wisdom',            theme:'Completion & Closure',     focus:'Life Lessons',     energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of Rebirth',           theme:'New Beginnings & Courage', focus:'Identity Reset',   energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Partnerships',      theme:'Cooperation & Love',       focus:'Relationships',    energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Growth',            theme:'Creativity & Expansion',   focus:'Personal Brand',   energy:'⬆️ Rising',  color:'#d97706' },
+  ],
+  9: [
+    { title:'Year of Completion',        theme:'Humanitarian Service',     focus:'Legacy & Giving',  energy:'🔄 Steady',  color:'#1d4ed8' },
+    { title:'Year of New Dawn',          theme:'Leadership & Courage',     focus:'New Chapter',      energy:'⚡ Dynamic', color:'#dc2626' },
+    { title:'Year of Partnership',       theme:'Cooperation & Sensitivity',focus:'Love & Business',  energy:'🔄 Balanced', color:'#7c3aed' },
+    { title:'Year of Creativity',        theme:'Expression & Joy',         focus:'Creative Growth',  energy:'⬆️ Rising',  color:'#d97706' },
+    { title:'Year of Mastery',           theme:'Stability & Achievement',  focus:'Career Milestones',energy:'⬆️ Peak',    color:'#16a34a' },
+  ],
+};
+
+const YEAR_PREDICTIONS = {
+  1: [
+    'Naya naam dharan karne ke baad pehla saal aapke liye nayi shuruaat leke aata hai. Career mein leadership opportunities milenge. Financial growth steady rahegi. Ek strong identity establish hogi.',
+    'Doosra saal teamwork aur partnerships ke liye ideal hai. Kisi important vyakti se mulakat ho sakti hai jo aapke future ko shape kare. Business mein collaboration se faayda.',
+    'Teesre saal aapki creativity peak par hogi. Public recognition milne ke zyada chances hain. Side projects aur creative ventures ke liye sahi waqt. Social circle expand hoga.',
+    'Chauthe saal financial planning aur investment pe focus karo. Property ya long-term assets mein invest karne ka acha waqt. Career mein stability aur recognition milegi.',
+    'Paanchwa saal travel, adventure aur naye opportunities leke aata hai. Career change ya promotion possible. International connections banne ke chances. Dynamic energy rahegi.',
+  ],
+  2: [
+    'Naam badlne ke baad pehle saal relationships aur partnerships mein sudhaar aayega. Life partner ya business partner ke saath harmony badegi. Emotional balance milega.',
+    'Doosre saal creative projects mein safalta milegi. Kala, music, ya communication fields mein recognition. Social life vibrant rahegi. New friendships bannenge.',
+    'Teesre saal career mein systematic approach se badi success milegi. Financial discipline se savings badenge. Ghar se related kaam karein — renovation ya purchase possible.',
+    'Chauthe saal life mein exciting changes aayenge. Travel opportunities milenge. Purane routine ko change karne ka sahi time. New skills seekhne ki umang rahegi.',
+    'Paanchwe saal deep introspection aur spiritual growth hogi. Meditation ya yoga se peace milegi. Hidden talents saamne aayenge. Important life decisions ke liye clarity milegi.',
+  ],
+  3: [
+    'Naye naam ke saath pehla saal communication aur creative expression ka hoga. Writing, speaking, ya social media mein recognition milegi. Fun aur joy life mein badega.',
+    'Doosre saal strong foundation banaoge — finances, health, aur career mein stability. Ghar ya zameen khareedne ke liye acha saal. Disciplined efforts se bada reward milega.',
+    'Teesre saal major life changes aur new adventures aayenge. Job change, relocation, ya naya business start karne ka possibility. Exciting but unpredictable energy rahegi.',
+    'Chauthe saal family aur relationships par dhyan do. Ghar mein harmony badegi. Health ke liye special care karein. Dono aur seva se satisfaction milegi.',
+    'Paanchwe saal aatmik gyan aur mastery milegi. Ek important life chapter poora hoga. Agar koi bhi unfinished business hai toh yeh saal resolve karne ka sahi time hai.',
+  ],
+  4: [
+    'Pehle saal mehnat aur discipline se strong career foundation banegi. Real estate ya long-term investments ke liye ideal time. Patience rakhein — slow but steady progress hogi.',
+    'Doosre saal exciting opportunities aur changes aayenge. Purane restrictions khatam honge. Travel ya new city mein shift karne ka possibility. Energy high rahegi.',
+    'Teesre saal love aur relationships mein khushhali aayegi. Marriage ya serious commitment possible. Ghar sunder banane ki ichha hogi. Creative pursuits mein success.',
+    'Chauthe saal introspection aur spiritual growth ka time. Meditation, study, aur self-improvement pe focus karo. Important insights milenge jo future guide karenge.',
+    'Paanchwe saal financial abundance aur career peak experience karoge. Business expansion ya promotion possible. Apne dreams achieve karne ka yeh golden period hai.',
+  ],
+  5: [
+    'Naye naam ke saath pehla saal freedom aur change leke aata hai. Naye opportunities explore karo. Career mein exciting shift possible. Dynamic energy aur confidence badega.',
+    'Doosre saal home, family, aur love relationships pe focus hoga. Ghar banana ya expand karna possible. Relationships mein depth aur commitment aayegi. Nurturing energy.',
+    'Teesre saal wisdom aur spiritual depth milegi. Study, research, ya spiritual practices mein maan lagega. Alone time beneficial rahega. Important life truths samajh aayenge.',
+    'Chauthe saal material success aur power aapke paas aayegi. Career mein leadership role. Financial goals achieve hone ke zyada chances. Ambition ko channel karo correctly.',
+    'Paanchwe saal service aur giving se deep satisfaction milegi. Community work ya charity mein involvement. Relationships mein unconditional love. Ek meaningful chapter complete hoga.',
+  ],
+  6: [
+    'Pehle saal love, family, aur home life flourish karenge. Romantic relationships deep honge. Ghar ko beautiful banane ki ichha. Dono dene aur lene mein balance aayega.',
+    'Doosre saal spiritual awakening aur self-discovery ka period. Inner wisdom strong hogi. Alone time valuable rahega. Hidden truths saamne aayenge. Trust your intuition.',
+    'Teesre saal career peak aur financial abundance. Business ya job mein major achievement. Material goals achieve honge. Power aur influence badega. Hard work pay off hoga.',
+    'Chauthe saal ek important life cycle complete hoga. Release karo jo kaam nahi karta. Forgiveness aur acceptance se peace milegi. Next chapter ke liye ready ho jao.',
+    'Paanchwe saal fresh energy aur new beginnings. Nayi identity ke saath aage badho. Leadership opportunities milenge. Jo peechhe choda uska reward ab milega.',
+  ],
+  7: [
+    'Pehle saal deep spiritual insights aur intuitive wisdom milegi. Meditation powerful rahega. Research ya study mein interest badega. Inner clarity se better decisions loge.',
+    'Doosre saal financial goals achieve karne ka powerful time. Business mein expansion. Career mein recognition aur authority. Material world mein success clearly dikhegi.',
+    'Teesre saal compassion aur service through relationships. Meaningful connections banenge. Family bonds strong honge. Ek purana chapter beautifully close hoga.',
+    'Chauthe saal nayi shuruaat ke liye courageous kadam uthao. New projects, new city, ya new career path explore karo. Leadership naturally aayegi. Bold moves rewarding honge.',
+    'Paanchwe saal cooperation aur partnerships mein success. Business partner ya life partner ke saath deep harmony. Compromise aur balance se sab kuch possible hoga.',
+  ],
+  8: [
+    'Pehle saal career peak aur financial abundance ka golden time hai. Jo bhi invest karoge — time, money, energy — multiplied return milega. Authority aur power badegi.',
+    'Doosre saal important life lessons aur spiritual completion. Purane patterns khatam karo. Wisdom milegi jo agle level ke liye prepare karti hai. Let go of baggage.',
+    'Teesre saal fresh energy ke saath naya chapter shuru karo. Independence aur leadership naturally aayegi. New ventures launch karne ka perfect time. Confidence high hoga.',
+    'Chauthe saal important relationships aur partnerships mein harmony. Business collaborations mein success. Love life mein depth. Balance aur cooperation ke through growth.',
+    'Paanchwe saal creativity aur self-expression peak par hogi. Communication skills se naam banta hai. Joyful energy aur social success. New creative projects launch karo.',
+  ],
+  9: [
+    'Naye naam ke saath pehla saal ek mahatvapurn cycle ka aant aur naya adhyay ka aarambh hai. Service aur giving se satisfaction milegi. Old relationships resolve honge.',
+    'Doosre saal ek naya strong self emerge karega. Independence aur courage se aage badho. New projects aur ventures start karne ka sahi time. Purane doubts khatam honge.',
+    'Teesre saal partnership aur cooperation se growth milegi. Business partner ya life partner ke saath synergy powerful hogi. Communication skills peak par hongi.',
+    'Chauthe saal creativity aur joy life mein zyada aayegi. Creative projects mein recognition. Social connections vibrant honge. Express yourself freely — world sun raha hai.',
+    'Paanchwe saal stability aur solid foundation banana — finances, career, health mein. Disciplined efforts se ek lasting legacy build hogi. Systematic approach se big goals achieve hoge.',
+  ],
+};
+
+const LUCKY_MONTHS = [
+  ['January','March','September'],
+  ['February','June','October'],
+  ['March','July','November'],
+  ['April','August','December'],
+  ['May','September','January'],
+];
+
+const FORECAST_ICONS = ['🌱','🌿','🌳','🏆','🌟'];
+const YEAR_LABELS = ['First Year','Second Year','Third Year','Fourth Year','Fifth Year'];
+
 // ── Utility ──────────────────────────────────────────────────
 const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 
@@ -86,6 +242,7 @@ const strengthColor = s => ({
 
 const today = new Date().toLocaleDateString('en-IN', {day:'2-digit', month:'long', year:'numeric'});
 const reportId = `NC-${Date.now().toString(36).toUpperCase().slice(-8)}`;
+const currentYear = new Date().getFullYear();
 
 // ── Letter boxes ─────────────────────────────────────────────
 function letterBoxes(name, map, accent, bg) {
@@ -142,7 +299,7 @@ function sectionHeading(icon, title, subtitle, accentColor = '#d97706') {
 }
 
 // ── Page chrome ───────────────────────────────────────────────
-const pageHeader = (section, page, name) => `
+const pageHeader = (section, page, name, total = 7) => `
   <div style="display:flex;justify-content:space-between;align-items:center;
     border-bottom:2px solid #f3f4f6;padding-bottom:10px;margin-bottom:22px">
     <div style="display:flex;align-items:center;gap:8px">
@@ -151,16 +308,16 @@ const pageHeader = (section, page, name) => `
     </div>
     <div style="display:flex;align-items:center;gap:12px">
       <span style="font-size:9px;color:#d1d5db">${esc(name)}</span>
-      <span style="font-size:8px;background:#f3f4f6;color:#9ca3af;border-radius:4px;padding:2px 7px;font-weight:600">Page ${page}/6</span>
+      <span style="font-size:8px;background:#f3f4f6;color:#9ca3af;border-radius:4px;padding:2px 7px;font-weight:600">Page ${page}/${total}</span>
     </div>
   </div>`;
 
-const pageFooter = (page, reportId) => `
+const pageFooter = (page, reportId, total = 7) => `
   <div style="margin-top:auto;padding-top:14px;border-top:1px solid #f3f4f6;
     display:flex;justify-content:space-between;align-items:center">
     <span style="font-size:8px;color:#d1d5db">Numerology Name Correction · Premium Report</span>
     <span style="font-size:8px;color:#e5e7eb;font-family:monospace">${reportId}</span>
-    <span style="font-size:8px;color:#d1d5db">Page ${page} of 6</span>
+    <span style="font-size:8px;color:#d1d5db">Page ${page} of ${total}</span>
   </div>`;
 
 // ── Insight card ─────────────────────────────────────────────
@@ -260,19 +417,238 @@ function suggestionCards(suggestions) {
   }).join('');
 }
 
-// ── Vibration meter (visual gauge) ────────────────────────────
-function vibrationMeter(value, label, color) {
-  const pct = Math.min(100, Math.max(0, value));
-  const angle = -135 + (pct / 100) * 270;
+// ── 5-Year Forecast Builder ──────────────────────────────────
+/**
+ * Top suggestion ka naam aur uska root number lekar 5-year forecast HTML banata hai.
+ * Agar `ai.fiveYearForecast` array provide kiya gaya hai (from your AI backend),
+ * toh woh use hoga. Warna numerology-based fallback data use hoga.
+ *
+ * @param {object} topSuggestion - suggestions[0] (highest % wala)
+ * @param {object} data          - full result data
+ * @returns {string}             - HTML string for the forecast section
+ */
+function buildFiveYearForecast(topSuggestion, data) {
+  if (!topSuggestion) return '';
+
+  const sugName    = topSuggestion.name || data.name || '';
+  const rootNum    = parseInt(topSuggestion.chaldean?.root) || parseInt(data.chaldean?.root) || 5;
+  const normRoot   = rootNum > 9 ? (rootNum % 9 || 9) : rootNum;
+  const aiForecast = data.ai?.fiveYearForecast; // optional AI-generated array
+
+  // Use AI data if available and valid
+  const useAI = Array.isArray(aiForecast) && aiForecast.length >= 5;
+
+  const themes    = FORECAST_THEMES[normRoot]    || FORECAST_THEMES[5];
+  const preds     = YEAR_PREDICTIONS[normRoot]   || YEAR_PREDICTIONS[5];
+
+  const years = [0,1,2,3,4].map(i => {
+    if (useAI) {
+      const a = aiForecast[i] || {};
+      return {
+        yearNum:     currentYear + i,
+        label:       YEAR_LABELS[i],
+        icon:        FORECAST_ICONS[i],
+        title:       a.title       || themes[i]?.title       || `Year ${i+1}`,
+        theme:       a.theme       || themes[i]?.theme       || '',
+        focus:       a.focus       || themes[i]?.focus       || '',
+        energy:      a.energy      || themes[i]?.energy      || '🔄 Balanced',
+        color:       themes[i]?.color || '#d97706',
+        prediction:  a.prediction  || preds[i] || '',
+        luckyMonths: Array.isArray(a.luckyMonths) ? a.luckyMonths : LUCKY_MONTHS[i] || [],
+      };
+    } else {
+      return {
+        yearNum:     currentYear + i,
+        label:       YEAR_LABELS[i],
+        icon:        FORECAST_ICONS[i],
+        title:       themes[i]?.title  || `Year ${i+1}`,
+        theme:       themes[i]?.theme  || '',
+        focus:       themes[i]?.focus  || '',
+        energy:      themes[i]?.energy || '🔄 Balanced',
+        color:       themes[i]?.color  || '#d97706',
+        prediction:  preds[i]          || '',
+        luckyMonths: LUCKY_MONTHS[i]   || [],
+      };
+    }
+  });
+
+  // Progress bar for each year (20% each, cumulative)
+  const progressBar = (idx) => {
+    const pct = (idx + 1) * 20;
+    return `
+      <div style="background:#f3f4f6;border-radius:99px;height:4px;margin-top:6px;overflow:hidden">
+        <div style="width:${pct}%;height:100%;
+          background:linear-gradient(90deg,${years[idx].color}88,${years[idx].color});
+          border-radius:99px"></div>
+      </div>`;
+  };
+
   return `
-    <div style="text-align:center;padding:10px">
-      <div style="position:relative;width:80px;height:50px;margin:0 auto 8px;overflow:hidden">
-        <div style="width:80px;height:80px;border-radius:50%;border:6px solid #f3f4f6;
-          border-top-color:${color};border-right-color:${color};
-          transform:rotate(${angle}deg);box-sizing:border-box"></div>
+    <!-- ════════════ PAGE 7: 5-YEAR FORECAST ════════════ -->
+    <div class="page">
+      ${pageHeader('5-Year Forecast', 7, sugName)}
+
+      <!-- Section heading -->
+      <div style="margin-bottom:18px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+          <div style="width:28px;height:28px;border-radius:8px;background:#7c3aed18;
+            display:flex;align-items:center;justify-content:center;font-size:14px">🔭</div>
+          <div class="serif" style="font-size:18px;font-weight:700;color:#111827">
+            5-Year Life Forecast</div>
+        </div>
+        <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:2px;
+          font-weight:600;padding-left:38px">09 — Based on New Name Vibration · ${currentYear}–${currentYear+4}</div>
       </div>
-      <div style="font-size:18px;font-weight:800;color:${color}">${pct}%</div>
-      <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:1px">${esc(label)}</div>
+
+      <!-- Intro banner -->
+      <div style="background:linear-gradient(135deg,#faf5ff,#f3e8ff,#fdf4ff);
+        border:2px solid #d8b4fe;border-radius:14px;padding:14px 18px;
+        margin-bottom:20px;display:flex;align-items:flex-start;gap:14px">
+        <div style="font-size:28px;flex-shrink:0">🌟</div>
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-bottom:5px">
+            Agar aap <span style="background:#e9d5ff;border-radius:4px;padding:1px 8px">${esc(sugName)}</span>
+            naam rakh lete hain toh agli 5 saalon mein kya hoga?
+          </div>
+          <div style="font-size:11px;color:#6b21a8;line-height:1.7">
+            Yeh forecast aapke naye naam ke Chaldean Root Number <b>${rootNum}</b> ke vibrations par
+            based hai. Har saal ki energy, focus area, aur lucky months numerologically calculate kiye
+            gaye hain. Yeh blueprint hai aapki aane wali safalta ka.
+          </div>
+        </div>
+      </div>
+
+      <!-- Year cards — 2 per row for compact layout -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        ${years.slice(0,4).map((yr, i) => `
+          <div style="border:1.5px solid ${yr.color}44;border-radius:14px;
+            background:linear-gradient(135deg,${yr.color}08,${yr.color}03,#fff);
+            padding:14px 16px;position:relative;overflow:hidden;page-break-inside:avoid">
+
+            <!-- Year badge -->
+            <div style="position:absolute;top:10px;right:12px;
+              background:${yr.color};color:#fff;border-radius:99px;
+              font-size:8px;font-weight:800;padding:2px 10px;letter-spacing:.5px">
+              ${yr.yearNum}
+            </div>
+
+            <!-- Icon + label -->
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:8px">
+              <span style="font-size:20px">${yr.icon}</span>
+              <div>
+                <div style="font-size:7px;color:#9ca3af;font-weight:700;text-transform:uppercase;
+                  letter-spacing:1px">${yr.label}</div>
+                <div class="serif" style="font-size:13px;font-weight:800;color:${yr.color};
+                  line-height:1.2;margin-top:1px">${esc(yr.title)}</div>
+              </div>
+            </div>
+
+            <!-- Theme + Focus chips -->
+            <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px">
+              <span style="font-size:8px;background:${yr.color}15;color:${yr.color};
+                border:1px solid ${yr.color}33;border-radius:99px;padding:2px 9px;font-weight:700">
+                🎯 ${esc(yr.focus)}
+              </span>
+              <span style="font-size:8px;background:#f3f4f6;color:#374151;
+                border:1px solid #e5e7eb;border-radius:99px;padding:2px 9px;font-weight:600">
+                ${esc(yr.energy)}
+              </span>
+            </div>
+
+            <!-- Prediction text -->
+            <div style="font-size:10px;color:#374151;line-height:1.7;margin-bottom:9px">
+              ${esc(yr.prediction)}
+            </div>
+
+            <!-- Lucky months -->
+            <div style="border-top:1px solid ${yr.color}22;padding-top:8px">
+              <div style="font-size:7px;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                letter-spacing:.8px;margin-bottom:5px">🍀 Lucky Months</div>
+              <div style="display:flex;gap:4px;flex-wrap:wrap">
+                ${yr.luckyMonths.map(m => `
+                  <span style="font-size:8px;background:#fff;border:1px solid ${yr.color}33;
+                    color:${yr.color};border-radius:6px;padding:2px 8px;font-weight:600">
+                    ${esc(m)}
+                  </span>`).join('')}
+              </div>
+            </div>
+
+            ${progressBar(i)}
+          </div>`).join('')}
+      </div>
+
+      <!-- Year 5 — full width with extra emphasis -->
+      ${(() => {
+        const yr = years[4];
+        return `
+          <div style="border:2px solid ${yr.color}66;border-radius:14px;
+            background:linear-gradient(135deg,${yr.color}12,${yr.color}06,#fff);
+            padding:16px 20px;position:relative;overflow:hidden;page-break-inside:avoid">
+
+            <!-- Ribbon -->
+            <div style="position:absolute;top:0;left:0;right:0;height:3px;
+              background:linear-gradient(90deg,transparent,${yr.color},transparent)"></div>
+
+            <div style="display:flex;align-items:flex-start;gap:16px">
+              <div style="flex-shrink:0;text-align:center">
+                <span style="font-size:28px">${yr.icon}</span>
+                <div style="background:${yr.color};color:#fff;border-radius:8px;
+                  font-size:9px;font-weight:800;padding:3px 10px;margin-top:4px">
+                  ${yr.yearNum}
+                </div>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:7px;color:#9ca3af;font-weight:700;text-transform:uppercase;
+                  letter-spacing:1.5px">${yr.label} — The Culmination</div>
+                <div class="serif" style="font-size:16px;font-weight:800;color:${yr.color};
+                  margin:4px 0 8px">⭐ ${esc(yr.title)}</div>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:9px">
+                  <span style="font-size:8px;background:${yr.color}15;color:${yr.color};
+                    border:1px solid ${yr.color}33;border-radius:99px;padding:2px 10px;font-weight:700">
+                    🎯 ${esc(yr.focus)}
+                  </span>
+                  <span style="font-size:8px;background:#f3f4f6;color:#374151;
+                    border:1px solid #e5e7eb;border-radius:99px;padding:2px 10px;font-weight:600">
+                    ${esc(yr.energy)}
+                  </span>
+                  <span style="font-size:8px;background:#fef3c7;color:#92400e;
+                    border:1px solid #fde68a;border-radius:99px;padding:2px 10px;font-weight:700">
+                    Theme: ${esc(yr.theme)}
+                  </span>
+                </div>
+                <div style="font-size:11px;color:#374151;line-height:1.75;margin-bottom:9px">
+                  ${esc(yr.prediction)}
+                </div>
+                <div style="border-top:1px solid ${yr.color}22;padding-top:8px;
+                  display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                  <div style="font-size:7px;font-weight:700;color:#9ca3af;text-transform:uppercase;
+                    letter-spacing:.8px">🍀 Lucky Months:</div>
+                  ${yr.luckyMonths.map(m => `
+                    <span style="font-size:8px;background:#fff;border:1px solid ${yr.color}44;
+                      color:${yr.color};border-radius:6px;padding:2px 10px;font-weight:600">
+                      ${esc(m)}
+                    </span>`).join('')}
+                </div>
+              </div>
+            </div>
+            ${progressBar(4)}
+          </div>`;
+      })()}
+
+      <!-- Bottom note -->
+      <div style="background:#f9fafb;border-radius:10px;padding:10px 14px;
+        border:1px solid #f3f4f6;margin-top:14px">
+        <div style="font-size:7.5px;color:#9ca3af;line-height:1.8;text-align:justify">
+          <b style="color:#d1d5db">NOTE:</b> Yeh 5-year forecast <b>${esc(sugName)}</b> ke naam vibration
+          aur Chaldean Root Number <b>${rootNum}</b> ke numerological cycles par based hai.
+          Yeh ek spiritual blueprint hai — aapki mehnat, decisions, aur attitude bhi utna hi
+          important hai jitna ki naam ki energy. Best results ke liye naam change ke saath
+          planetary remedies bhi follow karein.
+          · Numerology Name Correction · Premium Report · ${today}
+        </div>
+      </div>
+
+      ${pageFooter(7, reportId)}
     </div>`;
 }
 
@@ -306,19 +682,9 @@ function buildHTML(data) {
   const pythMeaning  = NUMBER_MEANINGS[parseInt(pythagorean.root)] || '';
   const lpMeaning    = NUMBER_MEANINGS[parseInt(dob.lifePath)]   || '';
 
-  // Score circle HTML
-  const scoreCircle = (score, label, color) => `
-    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-      <div style="width:52px;height:52px;border-radius:50%;
-        background:conic-gradient(${color} ${score * 3.6}deg, #f3f4f6 0deg);
-        display:flex;align-items:center;justify-content:center;position:relative">
-        <div style="width:38px;height:38px;border-radius:50%;background:#fff;
-          display:flex;align-items:center;justify-content:center">
-          <span style="font-size:11px;font-weight:800;color:${color}">${score}%</span>
-        </div>
-      </div>
-      <span style="font-size:8px;color:#9ca3af;text-align:center;max-width:60px;line-height:1.3">${esc(label)}</span>
-    </div>`;
+  // Find top suggestion (highest compatScore)
+  const sortedSuggestions = [...suggestions].sort((a, b) => (b.compatScore || 0) - (a.compatScore || 0));
+  const topSuggestion     = sortedSuggestions[0] || null;
 
   return /* html */`<!DOCTYPE html>
 <html lang="en">
@@ -421,7 +787,6 @@ function buildHTML(data) {
     <!-- Grade + Overall row -->
     <div style="display:grid;grid-template-columns:auto 1fr auto;gap:12px;
       align-items:center;margin-bottom:18px">
-      <!-- Grade badge -->
       <div style="width:68px;height:68px;border-radius:16px;
         background:linear-gradient(135deg,${gc},${gc}cc);
         display:flex;flex-direction:column;align-items:center;justify-content:center;
@@ -429,7 +794,6 @@ function buildHTML(data) {
         <div class="serif" style="font-size:30px;font-weight:900;color:#fff;line-height:1">${esc(grade)}</div>
         <div style="font-size:7px;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:1px">Grade</div>
       </div>
-      <!-- Middle info -->
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
         border-radius:12px;padding:14px 18px">
         <div class="serif" style="font-size:15px;font-weight:700;color:#fff;margin-bottom:2px">
@@ -437,7 +801,6 @@ function buildHTML(data) {
         <div style="font-size:10px;color:rgba(255,255,255,.35)">
           Chaldean ${chaldean.root ?? '–'} · Pythagorean ${pythagorean.root ?? '–'} · Life Path ${dob.lifePath ?? '–'}</div>
       </div>
-      <!-- Score ring -->
       <div style="background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);
         border-radius:12px;padding:14px 20px;text-align:center;flex-shrink:0">
         <div class="serif" style="font-size:28px;font-weight:900;color:${oc};line-height:1">
@@ -467,7 +830,7 @@ function buildHTML(data) {
         🤖 AI-Powered Analysis</span>
     </div>
 
-    <!-- Contents list -->
+    <!-- Contents list — updated to 7 pages -->
     <div style="margin-top:auto;padding-top:16px;
       border-top:1px solid rgba(255,255,255,.06)">
       <div style="font-size:7px;color:rgba(255,255,255,.18);letter-spacing:4px;
@@ -480,6 +843,7 @@ function buildHTML(data) {
           ['04','AI Personality Profile'],
           ['05','Challenges, Remedies & Career'],
           ['06','Name Suggestions & Final Advice'],
+          ['07','5-Year Life Forecast'],
         ].map(([n,t]) => `
           <div style="display:flex;align-items:center;gap:10px;padding:6px 8px;
             border-radius:6px;background:rgba(255,255,255,.02)">
@@ -497,7 +861,7 @@ function buildHTML(data) {
       margin:0 44px"></div>
     <div style="display:flex;justify-content:space-between;padding:12px 44px">
       <span style="font-size:8px;color:rgba(255,255,255,.2)">NUMEROLOGY NAME CORRECTION · PREMIUM REPORT</span>
-      <span style="font-size:8px;color:rgba(255,255,255,.2)">${today} · Page 1 of 6</span>
+      <span style="font-size:8px;color:rgba(255,255,255,.2)">${today} · Page 1 of 7</span>
     </div>
     <div style="height:3px;background:linear-gradient(90deg,transparent,#d97706,#fbbf24,#d97706,transparent)"></div>
   </div>
@@ -625,7 +989,6 @@ function buildHTML(data) {
 
   ${sectionHeading('🔢','DOB & Compatibility Analysis','03 — Birth Vibration vs Name Vibration Harmony','#7c3aed')}
 
-  <!-- 4 stat cards -->
   <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px">
     ${[
       ['Birth Number',   dob.birthNumber,   '#d97706', `Day of Birth`, '#fffbeb','#fde68a'],
@@ -653,7 +1016,6 @@ function buildHTML(data) {
       ${esc(lpMeaning)}</div>
   </div>` : ''}
 
-  <!-- Compat bars -->
   <div style="background:#f9fafb;border:1.5px solid #f3f4f6;border-radius:14px;
     padding:18px 20px;margin-bottom:16px">
     <div style="font-size:9px;font-weight:800;color:#374151;text-transform:uppercase;
@@ -705,7 +1067,6 @@ function buildHTML(data) {
 
   ${insightCard('⚡','Challenges Indicated by Your Name', ai.challenges, 'linear-gradient(135deg,#fff7f0,#fef3ee)','#fed7aa','#c2410c')}
 
-  <!-- Planetary remedy card -->
   <div style="background:linear-gradient(135deg,#fefce8,#fef9c3,#fefde8);
     border:2px solid #fde68a;border-radius:16px;padding:20px 22px;margin-bottom:18px;
     box-shadow:0 4px 20px rgba(234,179,8,.1)">
@@ -878,6 +1239,7 @@ function buildHTML(data) {
       ['Compatibility Score', `${overall}%  —  ${assessment.label || ''}`,                oc],
       ['Report Grade',        `${grade}  —  ${gl}`,                                       gc],
       ['Correction Needed',   ai.correctionNeeded ? '⚠️ Yes — Please use suggested spellings' : '✅ No — Name is already optimal', ai.correctionNeeded ? '#dc2626' : '#16a34a'],
+      ['Top Suggested Name',  topSuggestion ? `${topSuggestion.name} (${topSuggestion.compatScore}% Match)` : 'N/A', '#d97706'],
       ['Best Career Areas',   (ai.careerAreas || []).join(', '),                           '#374151'],
       ['Lucky Numbers',       (ai.luckyNumbers || []).join(', '),                          '#d97706'],
       ['Lucky Colors',        (ai.luckyColors  || []).join(', '),                          '#374151'],
@@ -885,6 +1247,7 @@ function buildHTML(data) {
       ['Ruling Planet',       remedy.planet,                                               '#92400e'],
       ['Gemstone',            remedy.gem,                                                  '#6d28d9'],
       ['Mantra',              remedy.mantra,                                               '#7c3aed'],
+      ['5-Year Forecast For', topSuggestion ? `${topSuggestion.name} · See Page 7` : 'N/A', '#059669'],
       ['Report Generated',    today,                                                       '#6b7280'],
       ['Report ID',           reportId,                                                    '#9ca3af'],
     ].map(([l,v],i) => `
@@ -900,6 +1263,21 @@ function buildHTML(data) {
       </div>`).join('')}
   </div>
 
+  <!-- Teaser for next page -->
+  ${topSuggestion ? `
+  <div style="background:linear-gradient(135deg,#faf5ff,#f3e8ff);border:2px solid #c4b5fd;
+    border-radius:12px;padding:12px 18px;display:flex;align-items:center;gap:12px;margin-bottom:12px">
+    <span style="font-size:22px">🔭</span>
+    <div>
+      <div style="font-size:11px;font-weight:800;color:#4c1d95;margin-bottom:3px">
+        5-Year Forecast Included — See Next Page!</div>
+      <div style="font-size:10px;color:#6d28d9;line-height:1.6">
+        Agar aap <b>${esc(topSuggestion.name)}</b> naam rakh lete hain toh agle 5 saalon mein
+        kya hoga? Detailed year-by-year predictions agle page par hain.
+      </div>
+    </div>
+  </div>` : ''}
+
   <!-- Disclaimer -->
   <div style="background:#f9fafb;border-radius:10px;padding:12px 16px;
     border:1px solid #f3f4f6;margin-top:auto">
@@ -914,6 +1292,9 @@ function buildHTML(data) {
 
   ${pageFooter(6, reportId)}
 </div>
+
+
+${buildFiveYearForecast(topSuggestion, data)}
 
 </body></html>`;
 }
