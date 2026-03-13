@@ -11,21 +11,21 @@ import {
 } from "lucide-react";
 
 const API_BASE_URL = import.meta.env.VITE_BACKEND_URL;
-const SOCKET_URL   = import.meta.env.VITE_SOCKET_URL;
+const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 
 /* ── Status configs ── */
 const STATUS_CFG = {
-  pending:   { badge: "bg-amber-400/10 text-amber-400 border border-amber-400/25",   dot: "bg-amber-400"   },
-  accepted:  { badge: "bg-violet-400/10 text-violet-400 border border-violet-400/25", dot: "bg-violet-400"  },
+  pending: { badge: "bg-amber-400/10 text-amber-400 border border-amber-400/25", dot: "bg-amber-400" },
+  accepted: { badge: "bg-violet-400/10 text-violet-400 border border-violet-400/25", dot: "bg-violet-400" },
   completed: { badge: "bg-emerald-400/10 text-emerald-400 border border-emerald-400/25", dot: "bg-emerald-400" },
-  declined:  { badge: "bg-rose-400/10 text-rose-400 border border-rose-400/25",       dot: "bg-rose-400"    },
+  declined: { badge: "bg-rose-400/10 text-rose-400 border border-rose-400/25", dot: "bg-rose-400" },
 };
 const getStatus = (s) => STATUS_CFG[s?.toLowerCase()] || { badge: "bg-slate-700 text-slate-400 border border-slate-600", dot: "bg-slate-500" };
 
 const QUERY_STATUS_CFG = {
-  Open:     { badge: "bg-amber-400/10 text-amber-400 border border-amber-400/25",   dot: "bg-amber-400"   },
+  Open: { badge: "bg-amber-400/10 text-amber-400 border border-amber-400/25", dot: "bg-amber-400" },
   Resolved: { badge: "bg-emerald-400/10 text-emerald-400 border border-emerald-400/25", dot: "bg-emerald-400" },
-  Closed:   { badge: "bg-slate-500/10 text-slate-400 border border-slate-500/25",   dot: "bg-slate-500"   },
+  Closed: { badge: "bg-slate-500/10 text-slate-400 border border-slate-500/25", dot: "bg-slate-500" },
 };
 const getQueryStatus = (s) => QUERY_STATUS_CFG[s] || { badge: "bg-slate-700 text-slate-400 border border-slate-600", dot: "bg-slate-500" };
 
@@ -178,10 +178,10 @@ const ChatSupportPanel = ({ token }) => {
 
   const statusBadge = {
     waiting: "bg-amber-400/10 text-amber-400 border-amber-400/25",
-    active:  "bg-emerald-400/10 text-emerald-400 border-emerald-400/25",
-    closed:  "bg-slate-500/10 text-slate-400 border-slate-500/25",
+    active: "bg-emerald-400/10 text-emerald-400 border-emerald-400/25",
+    closed: "bg-slate-500/10 text-slate-400 border-slate-500/25",
   };
-  const statusDot   = { waiting: "bg-amber-400", active: "bg-emerald-400", closed: "bg-slate-500" };
+  const statusDot = { waiting: "bg-amber-400", active: "bg-emerald-400", closed: "bg-slate-500" };
   const statusLabel = { waiting: "Wait", active: "Live", closed: "Band" };
 
   /* ── Sessions List panel ── */
@@ -209,9 +209,9 @@ const ChatSupportPanel = ({ token }) => {
         {/* Mini stats */}
         <div className="flex gap-2 mt-3">
           {[
-            { label: "Total", count: sessions.length,                                    color: "text-blue-400",   bg: "bg-blue-500/10 border-blue-500/20"   },
-            { label: "Live",  count: sessions.filter((s) => s.status === "active").length, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-            { label: "Wait",  count: waitingCount,                                        color: "text-amber-400",  bg: "bg-amber-500/10 border-amber-500/20"  },
+            { label: "Total", count: sessions.length, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+            { label: "Live", count: sessions.filter((s) => s.status === "active").length, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+            { label: "Wait", count: waitingCount, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
           ].map((s) => (
             <div key={s.label} className={`flex-1 text-center py-1.5 rounded-lg border ${s.bg}`}>
               <div className={`font-mono text-base font-bold ${s.color}`}>{s.count}</div>
@@ -375,7 +375,7 @@ const ChatSupportPanel = ({ token }) => {
               disabled={activeSession?.status !== "active"}
               placeholder={
                 activeSession?.status === "active" ? "Reply likhein..." :
-                activeSession?.status === "waiting" ? "Pehle accept karein..." : "Chat band ho gayi"
+                  activeSession?.status === "waiting" ? "Pehle accept karein..." : "Chat band ho gayi"
               }
               className="flex-1 bg-[#0a1220] border border-white/[0.06] rounded-xl px-4 py-2.5 text-sm text-slate-200 placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500/30 disabled:opacity-40 transition"
             />
@@ -458,7 +458,7 @@ const CustomerCareDashboard = () => {
   const [queryActionLoading, setQueryActionLoading] = useState(null);
   const [expandedQuery, setExpandedQuery] = useState(null);
 
-  const token  = localStorage.getItem("token");
+  const token = localStorage.getItem("token");
   const config = { headers: { Authorization: `Bearer ${token}` } };
   const navigate = useNavigate();
 
@@ -522,23 +522,23 @@ const CustomerCareDashboard = () => {
 
   /* ── Filtered lists ── */
   const filteredBookings = bookings.filter((b) => b.puja_name?.toLowerCase().includes(search.toLowerCase()));
-  const filteredPandits  = pandits.filter((p) => p.phone.includes(panditSearch) || p.name.toLowerCase().includes(panditSearch.toLowerCase()));
-  const filteredQueries  = queries.filter((q) => q.subject?.toLowerCase().includes(querySearch.toLowerCase()) || q.user_name?.toLowerCase().includes(querySearch.toLowerCase()));
+  const filteredPandits = pandits.filter((p) => p.phone.includes(panditSearch) || p.name.toLowerCase().includes(panditSearch.toLowerCase()));
+  const filteredQueries = queries.filter((q) => q.subject?.toLowerCase().includes(querySearch.toLowerCase()) || q.user_name?.toLowerCase().includes(querySearch.toLowerCase()));
 
   const navItems = [
-    { id: "overview",     icon: LayoutDashboard, label: "Overview"       },
-    { id: "pujas",        icon: BookOpen,         label: "Puja Requests"  },
-    { id: "users",        icon: Users,            label: "Users"          },
-    { id: "pandits",      icon: UserCheck,        label: "Pandits"        },
-    { id: "querys",       icon: MessageSquare,    label: "Support Queries"},
-    { id: "chatsupport",  icon: ChartArea,        label: "Chat Support"   },
+    { id: "overview", icon: LayoutDashboard, label: "Overview" },
+    { id: "pujas", icon: BookOpen, label: "Puja Requests" },
+    { id: "users", icon: Users, label: "Users" },
+    { id: "pandits", icon: UserCheck, label: "Pandits" },
+    { id: "querys", icon: MessageSquare, label: "Support Queries" },
+    { id: "chatsupport", icon: ChartArea, label: "Chat Support" },
   ];
 
   const stats = [
-    { label: "Total Bookings", value: bookings.length,                                    icon: <BookOpen size={20} />,   gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-blue-500/15",    border: "border-blue-500/20",    text: "text-blue-400"    } },
-    { label: "Pending",        value: bookings.filter((b) => b.status === "pending").length,   icon: <Clock size={20} />,      gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-amber-500/15",   border: "border-amber-500/20",   text: "text-amber-400"   } },
-    { label: "Completed",      value: bookings.filter((b) => b.status === "completed").length, icon: <CheckCircle size={20} />,gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-emerald-500/15", border: "border-emerald-500/20", text: "text-emerald-400" } },
-    { label: "Total Users",    value: users.length,                                       icon: <Users size={20} />,      gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-violet-500/15",  border: "border-violet-500/20",  text: "text-violet-400"  } },
+    { label: "Total Bookings", value: bookings.length, icon: <BookOpen size={20} />, gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-blue-500/15", border: "border-blue-500/20", text: "text-blue-400" } },
+    { label: "Pending", value: bookings.filter((b) => b.status === "pending").length, icon: <Clock size={20} />, gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-amber-500/15", border: "border-amber-500/20", text: "text-amber-400" } },
+    { label: "Completed", value: bookings.filter((b) => b.status === "completed").length, icon: <CheckCircle size={20} />, gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-emerald-500/15", border: "border-emerald-500/20", text: "text-emerald-400" } },
+    { label: "Total Users", value: users.length, icon: <Users size={20} />, gradient: "from-[#0d1829] to-[#080f1c]", iconColor: { bg: "bg-violet-500/15", border: "border-violet-500/20", text: "text-violet-400" } },
   ];
 
   return (
@@ -745,8 +745,8 @@ const CustomerCareDashboard = () => {
               {/* Mini stats */}
               <div className="grid grid-cols-3 gap-3">
                 {[
-                  { label: "Total",    value: queryTotal,                                        color: "text-blue-400",    bg: "bg-blue-500/10 border-blue-500/20"    },
-                  { label: "Open",     value: queries.filter((q) => q.status === "Open").length,     color: "text-amber-400",   bg: "bg-amber-500/10 border-amber-500/20"   },
+                  { label: "Total", value: queryTotal, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+                  { label: "Open", value: queries.filter((q) => q.status === "Open").length, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
                   { label: "Resolved", value: queries.filter((q) => q.status === "Resolved").length, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
                 ].map((s) => (
                   <div key={s.label} className={`flex items-center justify-between px-3 md:px-4 py-3 rounded-xl border ${s.bg}`}>
@@ -759,10 +759,10 @@ const CustomerCareDashboard = () => {
               {/* Filter pills */}
               <div className="flex items-center gap-2 flex-wrap">
                 {[
-                  { val: "",         label: "All",      active: "bg-blue-500/15 text-blue-400 border-blue-500/25"       },
-                  { val: "Open",     label: "Open",     active: "bg-amber-500/15 text-amber-400 border-amber-500/25"    },
+                  { val: "", label: "All", active: "bg-blue-500/15 text-blue-400 border-blue-500/25" },
+                  { val: "Open", label: "Open", active: "bg-amber-500/15 text-amber-400 border-amber-500/25" },
                   { val: "Resolved", label: "Resolved", active: "bg-emerald-500/15 text-emerald-400 border-emerald-500/25" },
-                  { val: "Closed",   label: "Closed",   active: "bg-slate-500/15 text-slate-400 border-slate-500/25"    },
+                  { val: "Closed", label: "Closed", active: "bg-slate-500/15 text-slate-400 border-slate-500/25" },
                 ].map((f) => (
                   <button key={f.val} onClick={() => { setQueryStatusFilter(f.val); setQueryPage(1); }}
                     className={`px-3 py-1 rounded-full text-[11px] font-bold border transition-all
@@ -784,7 +784,11 @@ const CustomerCareDashboard = () => {
                         <tr><td colSpan={7} className="py-16 text-center"><MessageSquare size={28} className="mx-auto mb-2 text-slate-700" /><span className="text-xs text-slate-600">No queries found</span></td></tr>
                       ) : filteredQueries.map((q) => (
                         <React.Fragment key={q.id}>
-                          <tr className={`transition-colors hover:bg-blue-500/[0.03] ${queryActionLoading === q.id ? "opacity-40 pointer-events-none" : ""}`}>
+                          <tr
+                            className={`transition-colors hover:bg-blue-500/[0.03] ${queryActionLoading === q.id ? "opacity-40 pointer-events-none" : ""
+                              }`}
+                            onClick={() => setExpandedQuery(expandedQuery === q.id ? null : q.id)}
+                          >
                             <td className="px-4 md:px-5 py-4"><IdBadge id={q.id} /></td>
                             <td className="px-4 md:px-5 py-4">
                               <div className="flex items-center gap-2">

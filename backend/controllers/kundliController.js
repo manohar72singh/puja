@@ -9,9 +9,7 @@ const __dirname  = path.dirname(__filename);
 let ephePath = path.resolve(__dirname, '../ephe').replace(/\\/g, '/');
 if (!ephePath.endsWith('/')) ephePath += '/';
 
-console.log('--- 🪐 Swiss Ephemeris Initialization ---');
 if (fs.existsSync(ephePath)) {
-  console.log(`✅ Folder found at: ${ephePath}`);
   const files = fs.readdirSync(ephePath).filter(f => f.endsWith('.se1'));
   console.log(files.length > 0
     ? `📂 Swiss Data Files: ${files.length} .se1 files found`
@@ -548,36 +546,27 @@ return doshas
 }
 
 export function debugSweph() {
-  console.log('\n========== 🔍 SWEPH DEBUG ==========');
   const jd = sweph.julday(2003, 11, 20, 7.5, SE.SE_GREG_CAL);
   sweph.set_sid_mode(SE.SE_SIDM_LAHIRI, 0, 0);
   try {
     const r = sweph.calc_ut(jd, SE.SE_SUN, SE.SEFLG_SPEED|SE.SEFLG_SIDEREAL|SE.SEFLG_MOSEPH);
-    console.log('calc_ut keys:', Object.keys(r));
-    console.log('calc_ut r.data:', r.data);
   } catch(e) { console.error('calc_ut:', e.message); }
   try {
     const r = sweph.get_ayanamsa_ex_ut(jd, 0);
-    console.log('ayanamsa_ex_ut:', JSON.stringify(r));
   } catch(e) { console.log('ayanamsa_ex_ut error:', e.message); }
   try {
     const h = sweph.houses_ex(jd, SE.SEFLG_SIDEREAL, 29.9, 78.0, 'W');
-    console.log('houses_ex keys:', Object.keys(h));
   } catch(e) { console.error('houses_ex:', e.message); }
-  console.log('=====================================\n');
 }
 
 export async function generateKundli(name, dateStr, timeStr, place, gender, tzOffset=5.5, lat=20.5937, lon=78.9629) {
-  console.log(`\n🔭 Kundli | ${name} | ${place}`);
-  console.log(`📍 Lat:${lat} Lon:${lon} TZ:UTC+${tzOffset}`);
+
 
   const jd       = getJulianDay(dateStr, timeStr, tzOffset);
   const ayanamsa = getAyanamsa(jd);
-  console.log(`📅 JD:${jd.toFixed(4)} | Ayanamsa:${ayanamsa.toFixed(4)}°`);
 
   let planets  = calcPlanets(jd, ayanamsa);
   const lagna  = calcLagna(jd, lat, lon, ayanamsa);
-  console.log(`🏠 Lagna: ${lagna.lagnaRashi} (${lagna.lagnaLon}°)`);
 
   planets = assignHouses(planets, lagna.lagnaRashiIdx);
 
@@ -594,7 +583,6 @@ export async function generateKundli(name, dateStr, timeStr, place, gender, tzOf
   const sources        = [...new Set(Object.values(planets).map(p=>p.source))];
   const dataSource     = sources.includes('swisseph')?'swisseph':sources.includes('moshier')?'moshier':'fallback';
 
-  console.log(`✅ Done | src:${dataSource} | Full:${fullDoshas} | Partial:${partialDoshas}`);
 
   return {
     nativeInfo        : { name, dateOfBirth:dateStr, timeOfBirth:timeStr, placeOfBirth:place, gender, timezoneOffset:tzOffset },

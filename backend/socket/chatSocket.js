@@ -36,7 +36,6 @@ const initChatSocket = (io) => {
 
   io.on("connection", (socket) => {
     const { id: userId, name, email, role } = socket.user;
-    console.log(`[CONNECTED] ${name} (${role})`);
 
     // ── AGENT JOIN ──────────────────────────────
     if (role === "customerCare" || role === "admin") {
@@ -49,7 +48,6 @@ const initChatSocket = (io) => {
       socket.emit("agent:sessions", openSessions);
       socket.to("agents-room").emit("agent:online", { userId, name });
 
-      console.log(`[AGENT ONLINE] ${name}`);
     }
 
     // ── USER: Chat shuru karo ───────────────────
@@ -92,7 +90,6 @@ const initChatSocket = (io) => {
       socket.emit("user:session", { sessionId, status: "waiting" });
       io.to("agents-room").emit("agent:new-session", sessions[sessionId]);
 
-      console.log(`[NEW SESSION] ${sessionId} by ${name}`);
     });
 
     // ── AGENT: Accept session ───────────────────
@@ -115,7 +112,6 @@ const initChatSocket = (io) => {
       io.to(sessionId).emit("session:accepted", { sessionId, agentName: name, agentId: userId });
       io.to("agents-room").emit("agent:session-updated", session);
 
-      console.log(`[ACCEPTED] ${sessionId} by ${name}`);
     });
 
     // ── MESSAGE bhejo ───────────────────────────
@@ -187,11 +183,9 @@ const initChatSocket = (io) => {
         io.to("agents-room").emit("agent:session-updated", userSession);
       }
 
-      console.log(`[DISCONNECTED] ${name} (${role})`);
     });
   });
 
-  console.log("✅ Chat Socket initialized");
 };
 
 export default initChatSocket;

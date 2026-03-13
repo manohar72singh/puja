@@ -107,7 +107,6 @@ export const homeORKathaPujaBookingDetails = async (req, res) => {
     } = req.body;
 
     const userId = req.user.id;
-    console.log("request body---", req.body);
     const formattedDate = date
       ? new Date(date).toISOString().split("T")[0]
       : new Date().toISOString().split("T")[0];

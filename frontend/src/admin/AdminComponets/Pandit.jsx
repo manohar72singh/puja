@@ -91,7 +91,6 @@ const Pandits = () => {
     setHistoryLoading(true);
     try {
       const res = await API.get(`/pandits/history/${pandit.id}`);
-      console.log("History Data:", res.data);
       setHistory(res.data);
     } catch (err) {
       showToast("History load nahi ho payi", "error");
