@@ -333,7 +333,7 @@ async function getAIAnalysis(params) {
   // ── 1. Gemini Primary ──────────────────────────────────────
   try {
     console.log('🔱 Name Correction: Trying Gemini...');
-    const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model  = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' });
     const result = await model.generateContent(
       `You are an expert numerologist. Always respond with valid JSON only. No markdown code blocks. No extra text before or after JSON.\n\n${prompt}`
     );

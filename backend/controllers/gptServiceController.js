@@ -1,9 +1,12 @@
 // ============================================================
 //  gptServiceController.js
-//  Groq AI — LLaMA 3.3 70B — Dual system analysis
+//  Gemini Primary + Groq Backup — Dual system analysis
 // ============================================================
 
 import Groq from 'groq-sdk';
+import { GoogleGenerativeAI } from '@google/generative-ai';
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 function buildPrompt(k) {
   const rows = Object.entries(k.planets)
@@ -151,33 +154,60 @@ export async function analyzeWithGPT(kundliData) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) throw new Error('GROQ_API_KEY missing in .env');
 
-  const groq = new Groq({ apiKey });
+  const prompt = buildPrompt(kundliData);
 
-  const response = await groq.chat.completions.create({
-    model      : 'llama-3.3-70b-versatile',
-    temperature: 0.15,
-    max_tokens : 4500,
-    messages   : [
-      {
-        role   : 'system',
-        content: `You are Jyotish Acharya — master Vedic Astrologer.
+  const SYSTEM_PROMPT = `You are Jyotish Acharya — master Vedic Astrologer.
 RULES:
 1. Use all 6 tags EXACTLY on their own lines
 2. Be specific to this person, never generic
 3. Use planet strength (EXALTED/DEBILITATED) in analysis
 4. Respect pre-calculated dosha cancellations
 5. Label life areas: GOOD / MIXED / CHALLENGING
-6. Whole Sign houses — H1 = Lagna Rashi`,
-      },
-      { role:'user', content: buildPrompt(kundliData) },
-    ],
-  });
+6. Whole Sign houses — H1 = Lagna Rashi`;
 
-  const raw = response.choices[0].message.content;
-  return {
-    sections   : parseSections(raw),
-    rawAnalysis: raw,
-    tokensUsed : response.usage?.total_tokens || 0,
-    model      : response.model,
-  };
+  // ── 1. Gemini Primary ──────────────────────────────────────
+  try {
+    console.log('🔱 Kundli Analysis: Trying Gemini...');
+    const model  = genAI.getGenerativeModel({ model: 'gemini-3.1-flash-lite-preview' });
+    const result = await model.generateContent(`${SYSTEM_PROMPT}\n\n${prompt}`);
+    const raw    = result.response.text();
+    if (!raw) throw new Error('Gemini returned empty response');
+    console.log('✅ Kundli Analysis: Gemini response received');
+    return {
+      sections   : parseSections(raw),
+      rawAnalysis: raw,
+      tokensUsed : 0,
+      model      : 'gemini-3.1-flash-lite-preview',
+    };
+
+  } catch (geminiErr) {
+    console.error('⚠️ Kundli Analysis: Gemini failed —', geminiErr.message);
+
+    // ── 2. Groq Backup ─────────────────────────────────────
+    try {
+      console.log('🔄 Kundli Analysis: Switching to Groq backup...');
+      const groq     = new Groq({ apiKey });
+      const response = await groq.chat.completions.create({
+        model      : 'llama-3.3-70b-versatile',
+        temperature: 0.15,
+        max_tokens : 4500,
+        messages   : [
+          { role: 'system', content: SYSTEM_PROMPT },
+          { role: 'user',   content: prompt         },
+        ],
+      });
+      const raw = response.choices[0].message.content;
+      console.log('✅ Kundli Analysis: Groq backup response received');
+      return {
+        sections   : parseSections(raw),
+        rawAnalysis: raw,
+        tokensUsed : response.usage?.total_tokens || 0,
+        model      : response.model,
+      };
+
+    } catch (groqErr) {
+      console.error('❌ Kundli Analysis: Groq also failed —', groqErr.message);
+      throw new Error('Both Gemini and Groq failed: ' + groqErr.message);
+    }
+  }
 }
